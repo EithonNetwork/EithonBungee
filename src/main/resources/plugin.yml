@@ -1,0 +1,19 @@
+name: EithonBungee
+main: net.eithon.plugin.bungee.Plugin
+version: 0.1
+author: vanbrayne
+description: A Minecraft plugin for bungee server support
+depend: [EithonLibrary]
+commands:
+  eithonbungee:
+    description: Teleport to other player
+    usage: /eithonbungee tp <player>
+    permission-message: You don't have <permission>
+permissions:
+  eithonbungee.*:
+    description: Gives access to all eithonbungee commands
+    default: op
+    eithonbungee.tp: true
+  eithonbungee.tp:
+    description: Access to /eithonbungee tp command
+    default: op

@@ -1,0 +1,22 @@
+eithon:
+  UseMarkUpForMessages: 0
+  UseWrappingForMessages: 0
+  
+  #
+  # Debug level
+  #  0 = NONE (no debug messages)
+  #  1 = MAJOR (only major messages)
+  #  2 = MINOR (also minor messages)
+  #  3 = VERBOSE (all messages)
+  #
+  DebugLevel: 1
+
+BotUUID: afa12010-b168-11e5-bf7f-feff819cdc9f
+BotName: EithonBungee
+BotWorld: world
+
+
+commands:
+
+messages:
+
