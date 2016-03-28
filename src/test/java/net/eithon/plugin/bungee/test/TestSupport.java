@@ -1,0 +1,26 @@
+package net.eithon.plugin.bungee.test;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import net.eithon.library.mysql.Database;
+import net.eithon.library.mysql.MySql;
+
+import org.junit.Assert;
+
+public class TestSupport {
+	public static Database getDatabaseAndTruncateTables() {
+		MySql mySql = new MySql("mc.eithon.net", "3306", "DEV_e_bungee", "DEV_e_bungee", "NnqGGK9Mcr328Mby");
+		try {
+			Connection connection = mySql.getOrOpenConnection();
+			Statement statement = connection.createStatement();
+			statement.executeUpdate("DELETE FROM `player`");
+			return mySql;
+		} catch (ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		return null;
+	}
+}

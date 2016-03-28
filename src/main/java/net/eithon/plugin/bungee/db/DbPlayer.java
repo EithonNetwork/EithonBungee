@@ -37,7 +37,7 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 	}
 
 	protected DbPlayer(Database database, long id) {
-		super(database, "bungee_player", id);
+		super(database, "player", id);
 	}
 
 	public String getBungeeServerName() { return this.bungeeServerName; }

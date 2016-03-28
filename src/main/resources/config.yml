@@ -11,10 +11,28 @@ eithon:
   #
   DebugLevel: 1
 
-BotUUID: afa12010-b168-11e5-bf7f-feff819cdc9f
-BotName: EithonBungee
-BotWorld: world
 
+database:
+  Name: TST_e_bungee
+  Hostname: mc.eithon.net
+  Port: 3306
+  Username: TST_e_bungee
+  Password: 4eu2yDNLWBJf8LqE
+
+# PRD
+#  Name: eithon_stats
+#  Username: eithon_stats
+#  Password: xxx
+
+# TST
+#  Name: TST_e_bungee
+#  Username: TST_e_bungee
+#  Password: 4eu2yDNLWBJf8LqE
+
+# DEV
+#  Name: DEV_e_bungee
+#  Username: DEV_e_bungee
+#  Password: NnqGGK9Mcr328Mby
 
 commands:
 
