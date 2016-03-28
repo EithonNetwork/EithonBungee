@@ -42,7 +42,7 @@ public class TestDbPlayer {
 		DbPlayer dbPlayer = DbPlayer.create(database, playerId, bungeeServerName);
 		dbPlayer = DbPlayer.getByPlayerId(database, playerId);
 		bungeeServerName = bungeeServerName + "2";
-		dbPlayer.update(bungeeServerName);
+		dbPlayer.updateBungeeServerName(bungeeServerName);
 		dbPlayer = DbPlayer.getByPlayerId(database, playerId);
 		assertEquals(bungeeServerName, dbPlayer.getBungeeServerName());
 	}

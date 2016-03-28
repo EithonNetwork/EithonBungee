@@ -15,11 +15,12 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 	private String bungeeServerName;
 	private UUID playerId;
 	private LocalDateTime updatedAt;
+	private String playerName;
 
-	public static DbPlayer create(Database database, UUID playerId, String bungeeServerName) {
+	public static DbPlayer create(Database database, UUID playerId, String playerName, String bungeeServerName) {
 		DbPlayer bungeePlayer = getByPlayerId(database, playerId);
 		if (bungeePlayer == null) {
-			bungeePlayer = new DbPlayer(database, playerId, bungeeServerName);
+			bungeePlayer = new DbPlayer(database, playerId, playerName, bungeeServerName);
 			bungeePlayer.dbCreate();
 		}
 		return bungeePlayer;	
@@ -29,10 +30,11 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 		return getByWhere(database, "player_id=?", playerId.toString());
 	}
 
-	private DbPlayer(Database database, UUID playerId, String bungeeServerName) {
+	private DbPlayer(Database database, UUID playerId, String playerName, String bungeeServerName) {
 		this(database);
 		this.bungeeServerName = bungeeServerName;
 		this.playerId = playerId;
+		this.playerName = playerName;
 	}
 
 	private DbPlayer(Database database) {
@@ -44,17 +46,23 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 	}
 
 	public UUID getPlayerId() { return this.playerId; }
+	public String getPlayerName() { return this.playerName; }
 	public String getBungeeServerName() { return this.bungeeServerName; }
 	public LocalDateTime getUpdatedAt() { return this.updatedAt; }
 
 	@Override
 	public String toString() {
-		String result = String.format("%s (%s)", this.playerId, this.bungeeServerName);
+		String result = String.format("%s@%s", this.playerName, this.bungeeServerName);
 		return result;
 	}
 
-	public void update(String bungeeServerName) {
+	public void updateBungeeServerName(String bungeeServerName) {
 		this.bungeeServerName = bungeeServerName;
+		dbUpdate();
+	}
+
+	public void updatePlayerName(String playerName) {
+		this.playerName = playerName;
 		dbUpdate();
 	}
 
@@ -66,6 +74,7 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 	@Override
 	public DbPlayer fromDb(ResultSet resultSet) throws SQLException {
 		this.playerId = UUID.fromString(resultSet.getString("player_id"));
+		this.playerName = resultSet.getString("player_name");
 		this.bungeeServerName = resultSet.getString("bungee_server_name");
 		Timestamp timestamp = resultSet.getTimestamp("updated_at");
 		this.updatedAt = null;
@@ -77,6 +86,7 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 	public HashMap<String, Object> getColumnValues() {
 		HashMap<String, Object> columnValues = new HashMap<String, Object>();
 		columnValues.put("player_id", this.playerId.toString());
+		columnValues.put("player_name", this.playerName);
 		columnValues.put("bungee_server_name", this.bungeeServerName);
 		return columnValues;
 	}

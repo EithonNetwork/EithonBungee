@@ -20,9 +20,20 @@ public class BungeePlayer {
 	public static BungeePlayer getByPlayerId(UUID playerId) {
 		DbPlayer dbPlayer = DbPlayer.getByPlayerId(Config.V.database, playerId);
 		if (dbPlayer == null) {
-			dbPlayer = DbPlayer.create(Config.V.database, playerId, null);
+			String playerName = getPlayerNameById(playerId);
+			dbPlayer = DbPlayer.create(Config.V.database, playerId, playerName, null);
+		} else if (dbPlayer.getPlayerName() == null) {
+			String playerName = getPlayerNameById(playerId);
+			if (playerName != null) dbPlayer.updatePlayerName(playerName);
 		}
 		return new BungeePlayer(dbPlayer);
+	}
+
+	private static String getPlayerNameById(UUID playerId) {
+		OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
+		String playerName = null;
+		if (player != null) playerName = player.getName();
+		return playerName;
 	}
 	
 	public static BungeePlayer getByOfflinePlayer(OfflinePlayer player) {
@@ -35,9 +46,9 @@ public class BungeePlayer {
 			String currentBungeeServerName = getBungeeServerName();
 			if (currentBungeeServerName == null) return;
 			if (!currentBungeeServerName.equalsIgnoreCase(bungeeServerName)) return;
-			this.dbPlayer.update(null);
+			this.dbPlayer.updateBungeeServerName(null);
 		}
-		this.dbPlayer.update(bungeeServerName);
+		this.dbPlayer.updateBungeeServerName(bungeeServerName);
 	}
 
 	public String getBungeeServerName() { return this.dbPlayer.getBungeeServerName(); }
