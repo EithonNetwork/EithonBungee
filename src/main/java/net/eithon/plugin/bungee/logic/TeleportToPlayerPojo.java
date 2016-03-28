@@ -10,18 +10,18 @@ import org.json.simple.JSONObject;
 import net.eithon.library.json.IJsonObject;
 import net.eithon.plugin.bungee.Config;
 
-public class TeleportToPlayer implements IJsonObject<TeleportToPlayer>{
+public class TeleportToPlayerPojo implements IJsonObject<TeleportToPlayerPojo>{
 	private UUID sourcePlayerId;
 	private UUID targetPlayerId;
 	private LocalDateTime createdAt;
 	
-	public TeleportToPlayer(Player sourcePlayer, OfflinePlayer targetPlayer) {
+	public TeleportToPlayerPojo(Player sourcePlayer, OfflinePlayer targetPlayer) {
 		this.sourcePlayerId = sourcePlayer.getUniqueId();
 		this.targetPlayerId = targetPlayer.getUniqueId();
 		this.createdAt = LocalDateTime.now();
 	}
 	
-	private TeleportToPlayer() {}
+	private TeleportToPlayerPojo() {}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -39,15 +39,15 @@ public class TeleportToPlayer implements IJsonObject<TeleportToPlayer>{
 	}
 
 	@Override
-	public TeleportToPlayer fromJsonObject(JSONObject json) {
+	public TeleportToPlayerPojo fromJsonObject(JSONObject json) {
 		this.sourcePlayerId = UUID.fromString((String) json.get("sourcePlayerId"));
 		this.targetPlayerId = UUID.fromString((String) json.get("targetPlayerId"));
 		this.createdAt = LocalDateTime.parse((String) json.get("createdAt"));
 		return this;
 	}
 
-	public static TeleportToPlayer createFromJsonObject(JSONObject json) {
-		TeleportToPlayer info = new TeleportToPlayer();
+	public static TeleportToPlayerPojo createFromJsonObject(JSONObject json) {
+		TeleportToPlayerPojo info = new TeleportToPlayerPojo();
 		return info.fromJsonObject(json);
 	}
 
