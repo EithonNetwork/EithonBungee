@@ -7,7 +7,6 @@ import net.eithon.plugin.bungee.db.DbPlayer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 public class BungeePlayer {
 	private OfflinePlayer offlinePlayer;
@@ -30,10 +29,17 @@ public class BungeePlayer {
 		return getByPlayerId(player.getUniqueId());
 	}
 	
-	public void update(String bungeeServerName) {
+	public void update(String bungeeServerName, boolean join) {
+		if (!join) {
+			this.dbPlayer.refresh();
+			String currentBungeeServerName = this.dbPlayer.getBungeeServerName();
+			if (currentBungeeServerName == null) return;
+			if (!currentBungeeServerName.equalsIgnoreCase(bungeeServerName)) return;
+			this.dbPlayer.update(null);
+		}
 		this.dbPlayer.update(bungeeServerName);
 	}
-	
+
 	public String getBungeeServerName() { return this.dbPlayer.getBungeeServerName(); }
 	public OfflinePlayer getOfflinePlayer() { return this.offlinePlayer; }
 }

@@ -33,8 +33,15 @@ public class Controller {
 	private void forcedTpToBungeePlayer(Player sourcePlayer,
 			OfflinePlayer targetPlayer) {
 		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(targetPlayer);
-		if (bungeePlayer == null) return;
+		if (bungeePlayer == null) {
+			sourcePlayer.sendMessage(String.format("Could not find player %s on any server.", targetPlayer.getName()));
+			return;
+		}
 		String bungeeServerName = bungeePlayer.getBungeeServerName();
+		if (bungeeServerName == null) {
+			sourcePlayer.sendMessage(String.format("Could not find player %s on any server.", targetPlayer.getName()));
+			return;
+		}
 		TeleportToPlayer teleportToServer = new TeleportToPlayer(sourcePlayer, targetPlayer);
 		this._eithonPlugin.getApi().bungeeSendDataToServer(bungeeServerName, "TeleportToPlayer", teleportToServer, true);
 		this._eithonPlugin.getApi().teleportPlayerToServer(sourcePlayer, bungeeServerName);
@@ -57,7 +64,7 @@ public class Controller {
 	public void playerJoined(Player player) {
 		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
 		if (bungeePlayer == null) return;
-		bungeePlayer.update(getBungeeServerName());
+		bungeePlayer.update(getBungeeServerName(), true);
 		TeleportToPlayer info = this._waitingForTeleport.get(player.getUniqueId());
 		if (info == null) return;
 		this._waitingForTeleport.remove(player.getUniqueId());
@@ -70,6 +77,6 @@ public class Controller {
 	public void playerQuitted(Player player) {
 		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
 		if (bungeePlayer == null) return;
-		bungeePlayer.update(null);
+		bungeePlayer.update(getBungeeServerName(), false);
 	}
 }

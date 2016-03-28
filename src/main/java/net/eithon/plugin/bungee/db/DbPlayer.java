@@ -2,6 +2,8 @@ package net.eithon.plugin.bungee.db;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -12,6 +14,7 @@ import net.eithon.library.mysql.IDbRecord;
 public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> {
 	private String bungeeServerName;
 	private UUID playerId;
+	private LocalDateTime updatedAt;
 
 	public static DbPlayer create(Database database, UUID playerId, String bungeeServerName) {
 		DbPlayer bungeePlayer = getByPlayerId(database, playerId);
@@ -40,8 +43,9 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 		super(database, "player", id);
 	}
 
-	public String getBungeeServerName() { return this.bungeeServerName; }
 	public UUID getPlayerId() { return this.playerId; }
+	public String getBungeeServerName() { return this.bungeeServerName; }
+	public LocalDateTime getUpdatedAt() { return this.updatedAt; }
 
 	@Override
 	public String toString() {
@@ -63,6 +67,9 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 	public DbPlayer fromDb(ResultSet resultSet) throws SQLException {
 		this.playerId = UUID.fromString(resultSet.getString("player_id"));
 		this.bungeeServerName = resultSet.getString("bungee_server_name");
+		Timestamp timestamp = resultSet.getTimestamp("updated_at");
+		this.updatedAt = null;
+		if (timestamp != null) this.updatedAt = timestamp.toLocalDateTime();
 		return this;
 	}
 
