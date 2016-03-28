@@ -1,13 +1,11 @@
 package net.eithon.plugin.bungee;
 
 import net.eithon.library.extensions.EithonPlugin;
+import net.eithon.library.mysql.Database;
+import net.eithon.library.mysql.MySql;
 import net.eithon.library.plugin.ConfigurableCommand;
 import net.eithon.library.plugin.ConfigurableMessage;
 import net.eithon.library.plugin.Configuration;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
 
 public class Config {
 	public static void load(EithonPlugin plugin)
@@ -18,17 +16,25 @@ public class Config {
 		M.load(config);
 
 	}
+	
 	public static class V {
-		public static Location botLocation;
-		public static String botName;
-		public static String botUUID;
+		public static Database database;
+		public static long maxAllowedTeleportDelayInSeconds;
 
 		static void load(Configuration config) {
-			botName = config.getString("BotName", "EithonBungee");
-			botUUID = config.getString("BotUUID", "afa12010-b168-11e5-bf7f-feff819cdc9f");
-			String worldName = config.getString("BotWorld", "world");
-			World world = Bukkit.getWorld(worldName);
-			botLocation = world.getSpawnLocation();
+			database = null;
+			maxAllowedTeleportDelayInSeconds = config.getSeconds("MaxAllowedTeleportDelayTimeSpan", 30);
+			database = getDatabase(config);
+		}
+
+		private static Database getDatabase(Configuration config) {
+			final String databaseHostname = config.getString("database.Hostname", null);
+			final String databasePort = config.getString("database.Port", null);
+			final String databaseName = config.getString("database.Name", null);
+			final String databaseUsername = config.getString("database.Username", null);
+			final String databasePassword = config.getString("database.Password", null);
+			return new MySql(databaseHostname, databasePort, databaseName,
+					databaseUsername, databasePassword);
 		}
 
 	}
