@@ -43,7 +43,7 @@ public class TeleportController {
 			return;
 		}
 		if (bungeeServerName.equalsIgnoreCase(getBungeeServerName())) {
-			bungeePlayer.update(bungeeServerName, false);
+			bungeePlayer.maybeDelete(bungeeServerName);
 			sourcePlayer.sendMessage(String.format("Could not find player %s on any server.", targetPlayer.getName()));
 			return;
 		}
@@ -67,14 +67,15 @@ public class TeleportController {
 	}
 
 	public void playerJoined(Player player) {
-		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
+		BungeePlayer bungeePlayer = BungeePlayer.getOrCreateByOfflinePlayer(player);
 		if (bungeePlayer == null) return;
-		bungeePlayer.update(getBungeeServerName(), true);
+		bungeePlayer.update(getBungeeServerName());
 		TeleportToPlayerPojo info = this._waitingForTeleport.get(player.getUniqueId());
 		if (info == null) return;
 		this._waitingForTeleport.remove(player.getUniqueId());
 		if (info.isTooOld()) return;
 		bungeePlayer = BungeePlayer.getByPlayerId(info.getTargetPlayerId());
+		if (bungeePlayer == null) return;
 		String bungeeServerName = bungeePlayer.getBungeeServerName();
 		if (bungeeServerName == null) return;
 		if (!bungeeServerName.equalsIgnoreCase(getBungeeServerName())) {
@@ -92,6 +93,6 @@ public class TeleportController {
 	public void playerQuitted(Player player) {
 		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
 		if (bungeePlayer == null) return;
-		bungeePlayer.update(getBungeeServerName(), false);
+		bungeePlayer.maybeDelete(getBungeeServerName());
 	}
 }

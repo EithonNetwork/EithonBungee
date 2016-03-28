@@ -15,31 +15,36 @@ public class TestDbPlayer {
 	@Test
 	public void create() {
 		UUID playerId = UUID.randomUUID();
+		String playerName = "player1";
 		String bungeeServerName = "a";
 		Database database = TestSupport.getDatabaseAndTruncateTables();
-		DbPlayer dbPlayer = DbPlayer.create(database, playerId, bungeeServerName);
+		DbPlayer dbPlayer = DbPlayer.create(database, playerId, playerName, bungeeServerName);
 		assertEquals(playerId, dbPlayer.getPlayerId());
+		assertEquals(playerName, dbPlayer.getPlayerName());
 		assertEquals(bungeeServerName, dbPlayer.getBungeeServerName());
 	}	
 	
 	@Test
 	public void getByPlayerId() {
 		UUID playerId = UUID.randomUUID();
+		String playerName = "player1";
 		String bungeeServerName = "a";
 		Database database = TestSupport.getDatabaseAndTruncateTables();
-		DbPlayer dbPlayer = DbPlayer.create(database, playerId, bungeeServerName);
+		DbPlayer dbPlayer = DbPlayer.create(database, playerId, playerName, bungeeServerName);
 		dbPlayer = DbPlayer.getByPlayerId(database, playerId);
 		Assert.assertNotNull(dbPlayer);
 		assertEquals(playerId, dbPlayer.getPlayerId());
+		assertEquals(playerName, dbPlayer.getPlayerName());
 		assertEquals(bungeeServerName, dbPlayer.getBungeeServerName());
 	}	
 	
 	@Test
 	public void update() {
 		UUID playerId = UUID.randomUUID();
+		String playerName = "player1";
 		String bungeeServerName = "a";
 		Database database = TestSupport.getDatabaseAndTruncateTables();
-		DbPlayer dbPlayer = DbPlayer.create(database, playerId, bungeeServerName);
+		DbPlayer dbPlayer = DbPlayer.create(database, playerId, playerName, bungeeServerName);
 		dbPlayer = DbPlayer.getByPlayerId(database, playerId);
 		bungeeServerName = bungeeServerName + "2";
 		dbPlayer.updateBungeeServerName(bungeeServerName);

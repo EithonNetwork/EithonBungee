@@ -4,6 +4,10 @@ A Bot plugin for Minecraft
 
 ## Release history
 
+### 0.3 (2016-03-28)
+
+* CHANGE: Now deletes records when quitting.
+
 ### 0.2.1 (2016-03-28)
 
 * BUG: Moving between servers could result in thinking that the player has quitted.

@@ -11,13 +11,23 @@ import org.bukkit.OfflinePlayer;
 public class BungeePlayer {
 	private OfflinePlayer offlinePlayer;
 	private DbPlayer dbPlayer;
-	
+
 	private BungeePlayer(DbPlayer dbPlayer) {
 		this.dbPlayer = dbPlayer;
 		this.offlinePlayer = Bukkit.getOfflinePlayer(dbPlayer.getPlayerId());
 	}
-	
+
 	public static BungeePlayer getByPlayerId(UUID playerId) {
+		DbPlayer dbPlayer = DbPlayer.getByPlayerId(Config.V.database, playerId);
+		if (dbPlayer == null) return null;
+		if (dbPlayer.getPlayerName() == null) {
+			String playerName = getPlayerNameById(playerId);
+			if (playerName != null) dbPlayer.updatePlayerName(playerName);
+		}
+		return new BungeePlayer(dbPlayer);
+	}
+
+	public static BungeePlayer getOrCreateByPlayerId(UUID playerId) {
 		DbPlayer dbPlayer = DbPlayer.getByPlayerId(Config.V.database, playerId);
 		if (dbPlayer == null) {
 			String playerName = getPlayerNameById(playerId);
@@ -35,20 +45,25 @@ public class BungeePlayer {
 		if (player != null) playerName = player.getName();
 		return playerName;
 	}
-	
+
+	public static BungeePlayer getOrCreateByOfflinePlayer(OfflinePlayer player) {
+		return getOrCreateByPlayerId(player.getUniqueId());
+	}
+
 	public static BungeePlayer getByOfflinePlayer(OfflinePlayer player) {
 		return getByPlayerId(player.getUniqueId());
 	}
-	
-	public void update(String bungeeServerName, boolean join) {
-		if (!join) {
-			this.dbPlayer.refresh();
-			String currentBungeeServerName = getBungeeServerName();
-			if (currentBungeeServerName == null) return;
-			if (!currentBungeeServerName.equalsIgnoreCase(bungeeServerName)) return;
-			this.dbPlayer.updateBungeeServerName(null);
-		}
+
+	public void update(String bungeeServerName) {
 		this.dbPlayer.updateBungeeServerName(bungeeServerName);
+	}
+
+	public void maybeDelete(String bungeeServerName) {
+		this.dbPlayer.refresh();
+		String currentBungeeServerName = getBungeeServerName();
+		if (currentBungeeServerName == null) return;
+		if (!currentBungeeServerName.equalsIgnoreCase(bungeeServerName)) return;
+		this.dbPlayer.delete();
 	}
 
 	public String getBungeeServerName() { return this.dbPlayer.getBungeeServerName(); }

@@ -4,14 +4,10 @@ import net.eithon.library.command.CommandSyntaxException;
 import net.eithon.library.command.EithonCommand;
 import net.eithon.library.command.EithonCommandUtilities;
 import net.eithon.library.command.ICommandSyntax;
-import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.extensions.EithonPlugin;
-import net.eithon.library.plugin.CommandParser;
-import net.eithon.library.plugin.ICommandHandler;
 import net.eithon.plugin.bungee.logic.Controller;
 
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
