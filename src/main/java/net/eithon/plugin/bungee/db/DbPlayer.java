@@ -40,7 +40,7 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 	}
 
 	protected DbPlayer(Database database, long id) {
-		super(database, "player", id);
+		super(database, "player", id, true);
 	}
 
 	public UUID getPlayerId() { return this.playerId; }

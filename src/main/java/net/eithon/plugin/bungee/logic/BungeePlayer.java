@@ -32,7 +32,7 @@ public class BungeePlayer {
 	public void update(String bungeeServerName, boolean join) {
 		if (!join) {
 			this.dbPlayer.refresh();
-			String currentBungeeServerName = this.dbPlayer.getBungeeServerName();
+			String currentBungeeServerName = getBungeeServerName();
 			if (currentBungeeServerName == null) return;
 			if (!currentBungeeServerName.equalsIgnoreCase(bungeeServerName)) return;
 			this.dbPlayer.update(null);
