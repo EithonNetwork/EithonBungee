@@ -17,7 +17,7 @@ public class Controller {
 	public Controller(EithonPlugin eithonPlugin) {
 		this._eithonPlugin = eithonPlugin;
 		this._waitingForTeleport = new HashMap<UUID, TeleportToPlayer>();
-		this._bungeeServerName = this._eithonPlugin.getApi().getBungeeServerName();
+		this._bungeeServerName = null;
 	}
 
 	public void forcedTpToPlayer(Player sourcePlayer, OfflinePlayer targetPlayer) {
@@ -39,6 +39,12 @@ public class Controller {
 		this._eithonPlugin.getApi().bungeeSendDataToServer(bungeeServerName, "TeleportToPlayer", teleportToServer, true);
 		this._eithonPlugin.getApi().teleportPlayerToServer(sourcePlayer, bungeeServerName);
 	}
+	
+	private String getBungeeServerName() {
+		if (this._bungeeServerName != null) return this._bungeeServerName;
+		this._bungeeServerName = this._eithonPlugin.getApi().getBungeeServerName();
+		return this._bungeeServerName;
+	}
 
 	private void forcedTpToOnlinePlayer(Player sourcePlayer, Player targetPlayer) {
 		sourcePlayer.teleport(targetPlayer);
@@ -51,7 +57,7 @@ public class Controller {
 	public void playerJoined(Player player) {
 		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
 		if (bungeePlayer == null) return;
-		bungeePlayer.update(this._bungeeServerName);
+		bungeePlayer.update(getBungeeServerName());
 		TeleportToPlayer info = this._waitingForTeleport.get(player.getUniqueId());
 		if (info == null) return;
 		this._waitingForTeleport.remove(player.getUniqueId());
