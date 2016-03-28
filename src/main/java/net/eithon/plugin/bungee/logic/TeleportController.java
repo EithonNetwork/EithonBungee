@@ -43,6 +43,7 @@ public class TeleportController {
 			return;
 		}
 		if (bungeeServerName.equalsIgnoreCase(getBungeeServerName())) {
+			bungeePlayer.update(bungeeServerName, false);
 			sourcePlayer.sendMessage(String.format("Could not find player %s on any server.", targetPlayer.getName()));
 			return;
 		}
@@ -73,6 +74,16 @@ public class TeleportController {
 		if (info == null) return;
 		this._waitingForTeleport.remove(player.getUniqueId());
 		if (info.isTooOld()) return;
+		bungeePlayer = BungeePlayer.getByPlayerId(info.getTargetPlayerId());
+		String bungeeServerName = bungeePlayer.getBungeeServerName();
+		if (bungeeServerName == null) return;
+		if (!bungeeServerName.equalsIgnoreCase(getBungeeServerName())) {
+			// The player has moved to another server, make another server switch
+			OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(info.getTargetPlayerId());
+			if (targetPlayer == null) return;
+			forcedTpToBungeePlayer(player, targetPlayer);
+			return;
+		}
 		Player targetPlayer = Bukkit.getPlayer(info.getTargetPlayerId());
 		if (targetPlayer == null) return;
 		forcedTpToOnlinePlayer(player, targetPlayer);
