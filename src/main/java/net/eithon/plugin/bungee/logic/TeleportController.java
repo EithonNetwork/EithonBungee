@@ -67,7 +67,7 @@ public class TeleportController {
 	}
 
 	public void playerJoined(Player player) {
-		BungeePlayer bungeePlayer = BungeePlayer.getOrCreateByOfflinePlayer(player);
+		BungeePlayer bungeePlayer = BungeePlayer.getOrCreateByOfflinePlayer(player, getBungeeServerName());
 		if (bungeePlayer == null) return;
 		bungeePlayer.update(getBungeeServerName());
 		TeleportToPlayerPojo info = this._waitingForTeleport.get(player.getUniqueId());

@@ -12,12 +12,10 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class EventListener implements Listener {
-	private EithonPlugin _eithonPlugin = null;
 	private Controller _controller;
 
 	public EventListener(EithonPlugin eithonPlugin, Controller controller) {
 		this._controller = controller;
-		this._eithonPlugin = eithonPlugin;
 	}
 
 	@EventHandler

@@ -27,11 +27,11 @@ public class BungeePlayer {
 		return new BungeePlayer(dbPlayer);
 	}
 
-	public static BungeePlayer getOrCreateByPlayerId(UUID playerId) {
+	public static BungeePlayer getOrCreateByPlayerId(UUID playerId, String bungeeServerName) {
 		DbPlayer dbPlayer = DbPlayer.getByPlayerId(Config.V.database, playerId);
 		if (dbPlayer == null) {
 			String playerName = getPlayerNameById(playerId);
-			dbPlayer = DbPlayer.create(Config.V.database, playerId, playerName, null);
+			dbPlayer = DbPlayer.create(Config.V.database, playerId, playerName, bungeeServerName);
 		} else if (dbPlayer.getPlayerName() == null) {
 			String playerName = getPlayerNameById(playerId);
 			if (playerName != null) dbPlayer.updatePlayerName(playerName);
@@ -46,8 +46,8 @@ public class BungeePlayer {
 		return playerName;
 	}
 
-	public static BungeePlayer getOrCreateByOfflinePlayer(OfflinePlayer player) {
-		return getOrCreateByPlayerId(player.getUniqueId());
+	public static BungeePlayer getOrCreateByOfflinePlayer(OfflinePlayer player, String bungeeServerName) {
+		return getOrCreateByPlayerId(player.getUniqueId(), bungeeServerName);
 	}
 
 	public static BungeePlayer getByOfflinePlayer(OfflinePlayer player) {

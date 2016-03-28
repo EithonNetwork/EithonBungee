@@ -6,11 +6,9 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public class Controller {
-	private EithonPlugin _eithonPlugin;
 	private TeleportController _teleportController;
 
 	public Controller(EithonPlugin eithonPlugin) {
-		this._eithonPlugin = eithonPlugin;
 		this._teleportController = new TeleportController(eithonPlugin);
 	}
 
