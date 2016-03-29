@@ -11,9 +11,9 @@ import net.eithon.library.json.IJsonObject;
 import net.eithon.plugin.bungee.Config;
 
 public class TeleportToPlayerPojo implements IJsonObject<TeleportToPlayerPojo>{
-	private static short FORCE= 1;
-	private static short REQUEST = 2;
-	private static short DENY_RESPONSE = 3;
+	public static final short FORCE = 1;
+	public static final short REQUEST = 2;
+	public static final short DENY_RESPONSE = 3;
 	
 	private UUID sourcePlayerId;	// The player that should be teleported
 	private UUID targetPlayerId;	// The player that we should teleport to
@@ -21,7 +21,7 @@ public class TeleportToPlayerPojo implements IJsonObject<TeleportToPlayerPojo>{
 	private short messageType;
 	private boolean messageDirectionIsFromSourceToTarget;
 	
-	public TeleportToPlayerPojo(Player sourcePlayer, OfflinePlayer targetPlayer) {
+	public TeleportToPlayerPojo(OfflinePlayer sourcePlayer, OfflinePlayer targetPlayer) {
 		this.sourcePlayerId = sourcePlayer.getUniqueId();
 		this.targetPlayerId = targetPlayer.getUniqueId();
 		this.createdAt = LocalDateTime.now();
@@ -41,6 +41,11 @@ public class TeleportToPlayerPojo implements IJsonObject<TeleportToPlayerPojo>{
 		this.messageType = DENY_RESPONSE;
 		this.messageDirectionIsFromSourceToTarget = ! this.messageDirectionIsFromSourceToTarget;
 	}
+
+	public UUID getSourcePlayerId() { return this.sourcePlayerId; }
+	public UUID getTargetPlayerId() { return this.targetPlayerId; }
+	public short getMessageType() { return this.messageType; }
+	public boolean getMessageDirectionIsFromSourceToTarget() { return this.messageDirectionIsFromSourceToTarget; }
 	
 	private TeleportToPlayerPojo() {}
 
@@ -79,9 +84,6 @@ public class TeleportToPlayerPojo implements IJsonObject<TeleportToPlayerPojo>{
 		TeleportToPlayerPojo info = new TeleportToPlayerPojo();
 		return info.fromJsonObject(json);
 	}
-
-	public UUID getSourcePlayerId() { return this.sourcePlayerId; }
-	public UUID getTargetPlayerId() { return this.targetPlayerId; }
 
 	public boolean isTooOld() {
 		return this.createdAt.plusSeconds(Config.V.maxAllowedTeleportDelayInSeconds).isBefore(LocalDateTime.now());

@@ -13,11 +13,11 @@ public class Controller {
 	}
 
 	public void forcedTpToPlayer(Player sourcePlayer, OfflinePlayer targetPlayer) {
-		this._teleportController.forcedTpToPlayer(sourcePlayer, targetPlayer);
+		this._teleportController.tpToPlayer(sourcePlayer, sourcePlayer, targetPlayer, true);
 	}
 	
-	public void prepareTeleport(TeleportToPlayerPojo info) {
-		this._teleportController.prepareTeleport(info);
+	public void handleTeleportEvent(TeleportToPlayerPojo info) {
+		this._teleportController.handleTeleportEvent(info);
 	}
 
 	public void playerJoined(Player player) {
