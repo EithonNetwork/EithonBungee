@@ -26,30 +26,26 @@ public class TeleportController {
 		if (targetPlayer.isOnline()) {
 			forcedTpToOnlinePlayer(sourcePlayer, targetPlayer.getPlayer());
 		} else {
-			forcedTpToBungeePlayer(sourcePlayer, targetPlayer);
+			tpToBungeePlayer(sourcePlayer, targetPlayer, true);
 		}
 	}
 
-	private void forcedTpToBungeePlayer(Player sourcePlayer,
-			OfflinePlayer targetPlayer) {
+	private void tpToBungeePlayer(Player sourcePlayer, OfflinePlayer targetPlayer, boolean force) {
 		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(targetPlayer);
 		if (bungeePlayer == null) {
 			sourcePlayer.sendMessage(String.format("Could not find player %s on any server.", targetPlayer.getName()));
 			return;
 		}
 		String bungeeServerName = bungeePlayer.getBungeeServerName();
-		if (bungeeServerName == null) {
-			sourcePlayer.sendMessage(String.format("Could not find player %s on any server.", targetPlayer.getName()));
-			return;
-		}
 		if (bungeeServerName.equalsIgnoreCase(getBungeeServerName())) {
 			bungeePlayer.maybeDelete(bungeeServerName);
 			sourcePlayer.sendMessage(String.format("Could not find player %s on any server.", targetPlayer.getName()));
 			return;
 		}
 		TeleportToPlayerPojo teleportToServer = new TeleportToPlayerPojo(sourcePlayer, targetPlayer);
+		teleportToServer.setAsRequestFromSourcePlayer(force);
 		this._eithonPlugin.getApi().bungeeSendDataToServer(bungeeServerName, "TeleportToPlayer", teleportToServer, true);
-		this._eithonPlugin.getApi().teleportPlayerToServer(sourcePlayer, bungeeServerName);
+		if (force) this._eithonPlugin.getApi().teleportPlayerToServer(sourcePlayer, bungeeServerName);
 	}
 	
 	private String getBungeeServerName() {
@@ -82,7 +78,7 @@ public class TeleportController {
 			// The player has moved to another server, make another server switch
 			OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(info.getTargetPlayerId());
 			if (targetPlayer == null) return;
-			forcedTpToBungeePlayer(player, targetPlayer);
+			tpToBungeePlayer(player, targetPlayer, true);
 			return;
 		}
 		Player targetPlayer = Bukkit.getPlayer(info.getTargetPlayerId());
