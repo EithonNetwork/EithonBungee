@@ -27,45 +27,28 @@ public class TeleportController {
 	}
 
 	public void tpToPlayer(CommandSender sender, Player movingPlayer, OfflinePlayer anchorPlayer, boolean force) {
-		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(anchorPlayer);
-		if (bungeePlayer == null) {
-			if (sender != null) sender.sendMessage(String.format("Could not find player %s on any server.", anchorPlayer.getName()));
-			return;
-		}
-		String bungeeServerName = bungeePlayer.getBungeeServerName();
-		if (bungeeServerName.equalsIgnoreCase(getBungeeServerName())) {
-			bungeePlayer.maybeDelete(bungeeServerName);
-			if (sender != null) sender.sendMessage(String.format("Could not find player %s on any server.", anchorPlayer.getName()));
-			return;
-		}
+		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayerOrInformSender(sender, anchorPlayer);
 		if (anchorPlayer.isOnline() && force) {
 			movingPlayer.teleport(anchorPlayer.getPlayer());
 		} else {
 			TeleportToPlayerPojo info = new TeleportToPlayerPojo(movingPlayer, anchorPlayer);
 			info.setAsRequestFromMovingPlayer(force);
+			String bungeeServerName = bungeePlayer.getBungeeServerName();
 			sendTeleportMessageToBungeeServer(bungeeServerName, info);
 			if (force) this._eithonPlugin.getApi().teleportPlayerToServer(movingPlayer, bungeeServerName);
 		}
 	}
 
 	public void tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) {
-		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(movingPlayer);
-		if (bungeePlayer == null) {
-			if (sender != null) sender.sendMessage(String.format("Could not find player %s on any server.", movingPlayer.getName()));
-			return;
-		}
-		String bungeeServerName = bungeePlayer.getBungeeServerName();
-		if (bungeeServerName.equalsIgnoreCase(getBungeeServerName())) {
-			bungeePlayer.maybeDelete(bungeeServerName);
-			if (sender != null) sender.sendMessage(String.format("Could not find player %s on any server.", movingPlayer.getName()));
-			return;
-		}
+		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayerOrInformSender(sender, movingPlayer);
+		if (bungeePlayer == null) return;
+		
 		if (movingPlayer.isOnline() && force) {
 			movingPlayer.getPlayer().teleport(anchorPlayer);
 		} else {
 			TeleportToPlayerPojo info = new TeleportToPlayerPojo(movingPlayer, anchorPlayer);
 			info.setAsRequestFromAnchorPlayer(force);
-			sendTeleportMessageToBungeeServer(bungeeServerName, info);
+			sendTeleportMessageToBungeeServer(bungeePlayer.getBungeeServerName(), info);
 		}
 	}
 

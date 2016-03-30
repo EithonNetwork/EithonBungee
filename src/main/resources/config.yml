@@ -40,12 +40,12 @@ messages:
 	#
 	# Parameters: <player name> (%s)
 	#
-	RequestTpTo: 'Player %s requests to teleport to you. Enter one of the commands "/eithonbungee tpa accept" or "/eithonbungee tpa deny".'
+	RequestTpTo: 'Player %s requests to teleport to you. Enter one of the commands "/eithonbungee tp accept" or "/eithonbungee tp deny".'
 	
 	#
 	# Parameters: <player name> (%s)
 	#
-	RequestTpHere: 'Player %s requests to teleport you to him/her. Enter one of the commands "/eithonbungee tpa accept" or "/eithonbungee tpa deny".'
+	RequestTpHere: 'Player %s requests to teleport you to him/her. Enter one of the commands "/eithonbungee tp accept" or "/eithonbungee tp deny".'
 	
 	#
 	# Parameters: <player name> (%s)

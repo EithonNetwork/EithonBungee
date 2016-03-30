@@ -59,10 +59,10 @@ public class Config {
 		static void load(Configuration config) {
 			requestTpTo = config.getConfigurableMessage(
 					"messages.RequestTpTo", 1, 
-					"Player %s requests to teleport to you. Enter one of the commands \"/eithonbungee tpa accept\" or \"/eithonbungee tpa deny\".");
+					"Player %s requests to teleport to you. Enter one of the commands \"/eithonbungee tp accept\" or \"/eithonbungee tp deny\".");
 			requestTpHere = config.getConfigurableMessage(
 					"messages.RequestTpHere", 2, 
-					"Player %s requests to teleport you to him/her. Enter one of the commands \"/eithonbungee tpahere accept\" or \"/eithonbungee tpahere deny\".");
+					"Player %s requests to teleport you to him/her. Enter one of the commands \"/eithonbungee tp accept\" or \"/eithonbungee tp deny\".");
 			denyTpTo = config.getConfigurableMessage(
 					"messages.DenyTpTo", 1, 
 					"Player %s denied you to teleport to him/her.");
