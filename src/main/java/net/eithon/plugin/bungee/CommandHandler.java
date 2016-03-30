@@ -32,25 +32,101 @@ public class CommandHandler {
 	
 	ICommandSyntax getCommandSyntax() { return this._commandSyntax; }
 
-	private ICommandSyntax setupTpCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
-		// tp <player>
-		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("tp <player>")
+	private void setupTpCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
+		
+		// tpto request <player>
+		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("tpto request <player>")
+				.setCommandExecutor(eithonCommand -> requestTpToPlayer(eithonCommand));
+		setPlayerValues(cmd);
+		
+		// tpto force <player>
+		cmd = commandSyntax.parseCommandSyntax("tpto force <player>")
 				.setCommandExecutor(eithonCommand -> forcedTpToPlayer(eithonCommand));
+		setPlayerValues(cmd);
+
+		// tphere request <player>
+		cmd = commandSyntax.parseCommandSyntax("tphere request <player>")
+				.setCommandExecutor(eithonCommand -> requestTpPlayerHere(eithonCommand));
+		setPlayerValues(cmd);
+
+		// tphere force <player>
+		cmd = commandSyntax.parseCommandSyntax("tphere force <player>")
+				.setCommandExecutor(eithonCommand -> forcedTpPlayerHere(eithonCommand));
+		setPlayerValues(cmd);
+
+		// deny
+		cmd = commandSyntax.parseCommandSyntax("tp deny")
+				.setCommandExecutor(eithonCommand -> tpDeny(eithonCommand));
+
+		// accept
+		cmd = commandSyntax.parseCommandSyntax("tp accept")
+				.setCommandExecutor(eithonCommand -> tpAccept(eithonCommand));
+	}
+
+	private void setPlayerValues(ICommandSyntax cmd) {
 		cmd
 		.getParameterSyntax("player")
 		.setExampleValues(ec -> EithonCommandUtilities.getOnlinePlayerNames(ec));
-		return cmd;
 	}
 
 
 	private void forcedTpToPlayer(EithonCommand eithonCommand)
 	{
-		Player sourcePlayer = eithonCommand.getPlayerOrInformSender();
-		if (sourcePlayer == null) return;
-		OfflinePlayer targetPlayer = eithonCommand.getArgument("player").asOfflinePlayer();
-		if (targetPlayer == null) {
+		Player movingPlayer = eithonCommand.getPlayerOrInformSender();
+		if (movingPlayer == null) return;
+		OfflinePlayer anchorPlayer = eithonCommand.getArgument("player").asOfflinePlayer();
+		if (anchorPlayer == null) {
 			throw new NotImplementedException();
 		}
-		this._controller.forcedTpToPlayer(sourcePlayer, targetPlayer);
+		this._controller.forcedTpToPlayer(movingPlayer, anchorPlayer);
+	}
+
+
+	private void requestTpToPlayer(EithonCommand eithonCommand)
+	{
+		Player movingPlayer = eithonCommand.getPlayerOrInformSender();
+		if (movingPlayer == null) return;
+		OfflinePlayer anchorPlayer = eithonCommand.getArgument("player").asOfflinePlayer();
+		if (anchorPlayer == null) {
+			throw new NotImplementedException();
+		}
+		this._controller.requestTpToPlayer(movingPlayer, anchorPlayer);
+	}
+
+
+	private void forcedTpPlayerHere(EithonCommand eithonCommand)
+	{
+		Player anchorPlayer = eithonCommand.getPlayerOrInformSender();
+		if (anchorPlayer == null) return;
+		OfflinePlayer movingPlayer = eithonCommand.getArgument("player").asOfflinePlayer();
+		if (movingPlayer == null) {
+			throw new NotImplementedException();
+		}
+		this._controller.forcedTpPlayerHere(anchorPlayer, movingPlayer);
+	}
+
+	private void requestTpPlayerHere(EithonCommand eithonCommand)
+	{
+		Player anchorPlayer = eithonCommand.getPlayerOrInformSender();
+		if (anchorPlayer == null) return;
+		OfflinePlayer movingPlayer = eithonCommand.getArgument("player").asOfflinePlayer();
+		if (movingPlayer == null) {
+			throw new NotImplementedException();
+		}
+		this._controller.requestTpPlayerHere(anchorPlayer, movingPlayer);
+	}
+
+	private void tpDeny(EithonCommand eithonCommand)
+	{
+		Player player = eithonCommand.getPlayerOrInformSender();
+		if (player == null) return;
+		this._controller.tpDeny(player);
+	}
+
+	private void tpAccept(EithonCommand eithonCommand)
+	{
+		Player player = eithonCommand.getPlayerOrInformSender();
+		if (player == null) return;
+		this._controller.tpAccept(player);
 	}
 }

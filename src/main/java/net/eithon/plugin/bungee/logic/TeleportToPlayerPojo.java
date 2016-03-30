@@ -3,49 +3,48 @@ package net.eithon.plugin.bungee.logic;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-import org.json.simple.JSONObject;
-
 import net.eithon.library.json.IJsonObject;
 import net.eithon.plugin.bungee.Config;
+
+import org.bukkit.OfflinePlayer;
+import org.json.simple.JSONObject;
 
 public class TeleportToPlayerPojo implements IJsonObject<TeleportToPlayerPojo>{
 	public static final short FORCE = 1;
 	public static final short REQUEST = 2;
 	public static final short DENY_RESPONSE = 3;
 	
-	private UUID sourcePlayerId;	// The player that should be teleported
-	private UUID targetPlayerId;	// The player that we should teleport to
+	private UUID movingPlayerId;	// The player that should be teleported
+	private UUID anchorPlayerId;	// The player that we should teleport to
 	private LocalDateTime createdAt;
 	private short messageType;
-	private boolean messageDirectionIsFromSourceToTarget;
+	private boolean messageDirectionIsFromMovingToAnchor;
 	
-	public TeleportToPlayerPojo(OfflinePlayer sourcePlayer, OfflinePlayer targetPlayer) {
-		this.sourcePlayerId = sourcePlayer.getUniqueId();
-		this.targetPlayerId = targetPlayer.getUniqueId();
+	public TeleportToPlayerPojo(OfflinePlayer movingPlayer, OfflinePlayer anchorPlayer) {
+		this.movingPlayerId = movingPlayer.getUniqueId();
+		this.anchorPlayerId = anchorPlayer.getUniqueId();
 		this.createdAt = LocalDateTime.now();
 	}
 	
-	public void setAsRequestFromSourcePlayer(boolean force) {
+	public void setAsRequestFromMovingPlayer(boolean force) {
 		this.messageType = force ? FORCE : REQUEST;
-		this.messageDirectionIsFromSourceToTarget = true;
+		this.messageDirectionIsFromMovingToAnchor = true;
 	}
 	
-	public void setAsRequestFromTargetPlayer(boolean force) {
+	public void setAsRequestFromAnchorPlayer(boolean force) {
 		this.messageType = force ? FORCE : REQUEST;
-		this.messageDirectionIsFromSourceToTarget = false;
+		this.messageDirectionIsFromMovingToAnchor = false;
 	}
 	
 	public void setAsDenyResponse() {
 		this.messageType = DENY_RESPONSE;
-		this.messageDirectionIsFromSourceToTarget = ! this.messageDirectionIsFromSourceToTarget;
+		this.messageDirectionIsFromMovingToAnchor = ! this.messageDirectionIsFromMovingToAnchor;
 	}
 
-	public UUID getSourcePlayerId() { return this.sourcePlayerId; }
-	public UUID getTargetPlayerId() { return this.targetPlayerId; }
+	public UUID getMovingPlayerId() { return this.movingPlayerId; }
+	public UUID getAnchorPlayerId() { return this.anchorPlayerId; }
 	public short getMessageType() { return this.messageType; }
-	public boolean getMessageDirectionIsFromSourceToTarget() { return this.messageDirectionIsFromSourceToTarget; }
+	public boolean getMessageDirectionIsFromMovingToAnchor() { return this.messageDirectionIsFromMovingToAnchor; }
 	
 	private TeleportToPlayerPojo() {}
 
@@ -53,11 +52,11 @@ public class TeleportToPlayerPojo implements IJsonObject<TeleportToPlayerPojo>{
 	@Override
 	public JSONObject toJsonObject() {
 		JSONObject json = new JSONObject();
-		json.put("sourcePlayerId", this.sourcePlayerId.toString());
-		json.put("targetPlayerId", this.targetPlayerId.toString());
+		json.put("movingPlayerId", this.movingPlayerId.toString());
+		json.put("anchorPlayerId", this.anchorPlayerId.toString());
 		json.put("createdAt", this.createdAt.toString());
 		json.put("messageType", (long) this.messageType);
-		json.put("messageDirectionIsFromSourceToTarget", this.messageDirectionIsFromSourceToTarget);
+		json.put("messageDirectionIsFromMovingToAnchor", this.messageDirectionIsFromMovingToAnchor);
 		return json;
 	}
 
@@ -68,15 +67,15 @@ public class TeleportToPlayerPojo implements IJsonObject<TeleportToPlayerPojo>{
 
 	@Override
 	public TeleportToPlayerPojo fromJsonObject(JSONObject json) {
-		this.sourcePlayerId = UUID.fromString((String) json.get("sourcePlayerId"));
-		this.targetPlayerId = UUID.fromString((String) json.get("targetPlayerId"));
+		this.movingPlayerId = UUID.fromString((String) json.get("movingPlayerId"));
+		this.anchorPlayerId = UUID.fromString((String) json.get("anchorPlayerId"));
 		this.createdAt = LocalDateTime.parse((String) json.get("createdAt"));
 		Long type = (Long) json.get("messageType");
 		this.messageType = REQUEST;
 		if (type != null) this.messageType = type.shortValue();
-		Boolean direction = (Boolean) json.get("messageDirectionIsFromSourceToTarget");
-		this.messageDirectionIsFromSourceToTarget = true;
-		if (direction != null) this.messageDirectionIsFromSourceToTarget = direction.booleanValue();
+		Boolean direction = (Boolean) json.get("messageDirectionIsFromMovingToAnchor");
+		this.messageDirectionIsFromMovingToAnchor = true;
+		if (direction != null) this.messageDirectionIsFromMovingToAnchor = direction.booleanValue();
 		return this;
 	}
 
