@@ -7,6 +7,7 @@ import net.eithon.plugin.bungee.db.DbPlayer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 
 public class BungeePlayer {
 	private OfflinePlayer offlinePlayer;
@@ -52,6 +53,13 @@ public class BungeePlayer {
 
 	public static BungeePlayer getByOfflinePlayer(OfflinePlayer player) {
 		return getByPlayerId(player.getUniqueId());
+	}
+
+	public static BungeePlayer getByOfflinePlayerOrInformSender(CommandSender sender, OfflinePlayer player) {
+		BungeePlayer bungeePlayer = getByOfflinePlayer(player);
+		if (bungeePlayer != null) return bungeePlayer;
+		if (sender != null) sender.sendMessage(String.format("Could not find player %s on any server.", player.getName()));
+		return null;
 	}
 
 	public void update(String bungeeServerName) {

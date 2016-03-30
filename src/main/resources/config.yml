@@ -37,4 +37,23 @@ database:
 commands:
 
 messages:
-
+	#
+	# Parameters: <player name> (%s)
+	#
+	RequestTpTo: 'Player %s requests to teleport to you. Enter one of the commands "/eithonbungee tp accept" or "/eithonbungee tp deny".'
+	
+	#
+	# Parameters: <player name> (%s)
+	#
+	RequestTpHere: 'Player %s requests to teleport you to him/her. Enter one of the commands "/eithonbungee tp accept" or "/eithonbungee tp deny".'
+	
+	#
+	# Parameters: <player name> (%s)
+	#
+	DenyTpTo: 'Player %s denied you to teleport to him/her.'
+	
+	#
+	# Parameters: <player name> (%s)
+	#
+	DenyTpHere: 'Player %s denied to be teleported to you.'
+	

@@ -4,6 +4,10 @@ A Bot plugin for Minecraft
 
 ## Release history
 
+### 0.4 (2016-03-30)
+
+* NEW: Added support for tpa, tphere, tpahere, deny and accept
+
 ### 0.3 (2016-03-28)
 
 * CHANGE: Now deletes records when quitting.

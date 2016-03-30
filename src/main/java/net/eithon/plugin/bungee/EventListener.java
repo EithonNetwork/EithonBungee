@@ -22,7 +22,7 @@ public class EventListener implements Listener {
 	public void onEithonBungeeEvent(EithonBungeeEvent event) {
 		if (event.getName().equalsIgnoreCase("TeleportToPlayer")) {
 			TeleportToPlayerPojo info = TeleportToPlayerPojo.createFromJsonObject(event.getData());
-			this._controller.prepareTeleport(info);
+			this._controller.handleTeleportEvent(info);
 		}
 	}
 
