@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.UUID;
 
 import net.eithon.library.extensions.EithonPlugin;
+import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitScheduler;
 
 public class TeleportController {
 	private EithonPlugin _eithonPlugin;
@@ -141,19 +143,33 @@ public class TeleportController {
 		return null;			
 	}
 
-	public void playerJoined(Player player) {
-		BungeePlayer bungeePlayer = BungeePlayer.getOrCreateByOfflinePlayer(player, getBungeeServerName());
+	public void playerJoined(final Player player) {
+		String currentBungeeServerName = getBungeeServerName();
+		if (currentBungeeServerName != null) {
+			playerJoinedAndServerNameIsKnown(player, currentBungeeServerName);
+			return;
+		}
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.scheduleSyncDelayedTask(this._eithonPlugin, new Runnable() {
+			public void run() {
+				playerJoined(player);
+			}
+		}, TimeMisc.secondsToTicks(1));
+	}
+
+	private void playerJoinedAndServerNameIsKnown(final Player player, final String currentBungeeServerName) {
+		final BungeePlayer bungeePlayer = BungeePlayer.getOrCreateByOfflinePlayer(player, currentBungeeServerName);
 		if (bungeePlayer == null) return;
 		bungeePlayer.update(getBungeeServerName());
 		TeleportToPlayerPojo info = this._waitingForTeleport.get(player.getUniqueId());
 		if (info == null) return;
 		this._waitingForTeleport.remove(player.getUniqueId());
 		if (info.isTooOld()) return;
-		bungeePlayer = BungeePlayer.getByPlayerId(info.getAnchorPlayerId());
-		if (bungeePlayer == null) return;
-		String bungeeServerName = bungeePlayer.getBungeeServerName();
-		if (bungeeServerName == null) return;
-		if (!bungeeServerName.equalsIgnoreCase(getBungeeServerName())) {
+		final BungeePlayer anchorBungeePlayer = BungeePlayer.getByPlayerId(info.getAnchorPlayerId());
+		if (anchorBungeePlayer == null) return;
+		String anchorBungeeServerName = anchorBungeePlayer.getBungeeServerName();
+		if (anchorBungeeServerName == null) return;
+		if (!anchorBungeeServerName.equalsIgnoreCase(getBungeeServerName())) {
 			// The player has moved to another server, make another server switch
 			OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(info.getAnchorPlayerId());
 			if (targetPlayer == null) return;
@@ -209,11 +225,15 @@ public class TeleportController {
 
 	public void accept(CommandSender sender, Player localPlayer) {
 		List<TeleportToPlayerPojo> list = this._requestsForTeleport.get(localPlayer.getUniqueId());
+		if (list == null) {
+			sender.sendMessage("You don't have any pending request.");
+			return;
+		}
 		for (TeleportToPlayerPojo info : list) {
 			if (info.getMessageDirectionIsFromMovingToAnchor()) {
 				tpPlayerHere(sender, localPlayer, info.getMovingPlayerId(), true);
 			} else {
-				tpToPlayer(sender, localPlayer, info.getMovingPlayerId(), true);			
+				tpToPlayer(sender, localPlayer, info.getAnchorPlayerId(), true);			
 			}
 		}
 		this._requestsForTeleport.remove(localPlayer.getUniqueId());
