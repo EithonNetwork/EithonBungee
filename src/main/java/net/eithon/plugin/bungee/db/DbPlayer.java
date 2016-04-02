@@ -3,6 +3,7 @@ package net.eithon.plugin.bungee.db;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import net.eithon.library.mysql.Database;
@@ -25,6 +26,11 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 
 	public static DbPlayer getByPlayerId(Database database, UUID playerId) {
 		return getByWhere(database, "player_id=?", playerId.toString());
+	}
+
+	public static List<DbPlayer> findAll(Database database) {
+		DbPlayer dbPlayer = new DbPlayer(database);
+		return dbPlayer.findAll();
 	}
 
 	private DbPlayer(Database database, UUID playerId, String playerName, String bungeeServerName) {
@@ -63,8 +69,8 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 	}
 
 	private static DbPlayer getByWhere(Database database, String format, Object... arguments) {
-		DbPlayer similar = new DbPlayer(database);
-		return similar.getByWhere(format, arguments);
+		DbPlayer dbPlayer = new DbPlayer(database);
+		return dbPlayer.getByWhere(format, arguments);
 	}
 
 	@Override

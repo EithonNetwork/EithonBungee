@@ -1,8 +1,11 @@
 package net.eithon.plugin.bungee;
 
 import net.eithon.library.bungee.EithonBungeeEvent;
+import net.eithon.library.bungee.EithonBungeeJoinEvent;
+import net.eithon.library.bungee.EithonBungeeQuitEvent;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.plugin.bungee.logic.Controller;
+import net.eithon.plugin.bungee.logic.MessageToPlayerPojo;
 import net.eithon.plugin.bungee.logic.TeleportToPlayerPojo;
 
 import org.bukkit.entity.Player;
@@ -18,12 +21,23 @@ public class EventListener implements Listener {
 		this._controller = controller;
 	}
 
+	// Handle teleport events
 	@EventHandler
 	public void onEithonBungeeEvent(EithonBungeeEvent event) {
 		if (event.getName().equalsIgnoreCase("TeleportToPlayer")) {
-			TeleportToPlayerPojo info = TeleportToPlayerPojo.createFromJsonObject(event.getData());
-			this._controller.handleTeleportEvent(info);
+			onBungeeTeleportToPlayer(event);
 		}
+		if (event.getName().equalsIgnoreCase("MessageToPlayer")) {
+			onBungeeMessageToPlayer(event);
+		}
+	}
+
+	private void onBungeeTeleportToPlayer(EithonBungeeEvent event) {
+		this._controller.handleTeleportEvent(event.getData());
+	}
+
+	private void onBungeeMessageToPlayer(EithonBungeeEvent event) {
+		this._controller.handleMessageEvent(event.getData());
 	}
 
 	@EventHandler
@@ -36,6 +50,19 @@ public class EventListener implements Listener {
 		Player player = event.getPlayer();
 		if (player == null) return;
 		this._controller.playerQuitted(player);
+	}
+
+	// Player joined on any bungee server
+	@EventHandler
+	public void onEithonBungeeJoinEvent(EithonBungeeJoinEvent event) {
+		this._controller.bungeePlayerJoined(event.getPlayer(), event.getThatServerName());
+		
+	}
+
+	// Player quit on any bungee server
+	@EventHandler
+	public void onEithonBungeeQuitEvent(EithonBungeeQuitEvent event) {
+		this._controller.bungeePlayerQuitted(event.getPlayer(), event.getThatServerName());
 	}
 	
 	

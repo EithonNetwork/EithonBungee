@@ -24,6 +24,7 @@ public class CommandHandler {
 
 		try {
 			setupTpCommand(commandSyntax);
+			setupMessageCommand(commandSyntax);
 			this._commandSyntax = commandSyntax;
 		} catch (CommandSyntaxException e) {
 			e.printStackTrace();
@@ -63,10 +64,22 @@ public class CommandHandler {
 				.setCommandExecutor(eithonCommand -> tpAccept(eithonCommand));
 	}
 
+	private void setupMessageCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
+		
+		// message <player> <message>
+		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("message <player> <message:REST>")
+				.setCommandExecutor(eithonCommand -> sendMessageToPlayer(eithonCommand));
+		setPlayerValues(cmd);
+		
+		// message reply <message>
+		cmd = commandSyntax.parseCommandSyntax("reply <message:REST>")
+				.setCommandExecutor(eithonCommand -> sendReply(eithonCommand));
+	}
+
 	private void setPlayerValues(ICommandSyntax cmd) {
 		cmd
 		.getParameterSyntax("player")
-		.setExampleValues(ec -> EithonCommandUtilities.getOnlinePlayerNames(ec));
+		.setMandatoryValues(ec -> this._controller.getBungeePlayerNames());
 	}
 
 
@@ -128,5 +141,27 @@ public class CommandHandler {
 		Player player = eithonCommand.getPlayerOrInformSender();
 		if (player == null) return;
 		this._controller.tpAccept(player);
+	}
+
+	private void sendMessageToPlayer(EithonCommand eithonCommand) {
+		Player sender = eithonCommand.getPlayerOrInformSender();
+		if (sender == null) return;
+		OfflinePlayer receiver = eithonCommand.getArgument("player").asOfflinePlayer();
+		if (receiver == null) {
+			throw new NotImplementedException();
+		}
+		String message = eithonCommand.getArgument("message").asString();
+		boolean success = this._controller.sendMessageToPlayer(sender, receiver, message);
+		if (!success) return;
+		Config.M.messageSent.sendMessage(sender, receiver.getName(), message);
+	}
+
+	private void sendReply(EithonCommand eithonCommand) {
+		Player sender = eithonCommand.getPlayerOrInformSender();
+		if (sender == null) return;
+		String message = eithonCommand.getArgument("message").asString();
+		String receiverName = this._controller.replyMessageToPlayer(sender, message);
+		if (receiverName == null) return;
+		Config.M.messageSent.sendMessage(sender, receiverName, message);
 	}
 }

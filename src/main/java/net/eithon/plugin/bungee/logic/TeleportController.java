@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
@@ -247,5 +248,10 @@ public class TeleportController {
 	private void tpPlayerHere(CommandSender sender, Player anchorPlayer, UUID movingPlayerId, boolean force) {
 		OfflinePlayer movingPlayer = Bukkit.getOfflinePlayer(movingPlayerId);
 		tpPlayerHere(sender, anchorPlayer, movingPlayer, force);
+	}
+
+	public void bungeePlayerJoined(EithonPlayer player, String thatServerName) {
+		// TODO Auto-generated method stub
+		
 	}
 }

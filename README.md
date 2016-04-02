@@ -4,6 +4,10 @@ A Bot plugin for Minecraft
 
 ## Release history
 
+### 0.5 (2016-04-02)
+
+* NEW: Added support for message and reply
+
 ### 0.4 (2016-03-30)
 
 * NEW: Added support for tpa, tphere, tpahere, deny and accept

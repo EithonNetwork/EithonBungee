@@ -11,6 +11,8 @@ eithon:
   #
   DebugLevel: 1
 
+MaxAllowedTeleportDelayTimeSpan: 30
+MaxAllowedMessageDelayInSeconds: 10
 
 database:
   Name: TST_e_bungee
@@ -56,4 +58,14 @@ messages:
   # Parameters: <player name> (%s)
   #
   DenyTpHere: 'Player %s denied to be teleported to you.'
+  
+  #
+  # Parameters: <player name> (%s), <message> (%s)
+  #
+  MessageSent: 'To %s: %s'
+  
+  #
+  # Parameters: <player name> (%s), <message> (%s)
+  #
+  MessageFrom: 'From %s: %s'
   

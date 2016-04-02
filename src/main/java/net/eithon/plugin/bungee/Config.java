@@ -20,10 +20,12 @@ public class Config {
 	public static class V {
 		public static Database database;
 		public static long maxAllowedTeleportDelayInSeconds;
+		public static long maxAllowedMessageDelayInSeconds;
 
 		static void load(Configuration config) {
 			database = null;
 			maxAllowedTeleportDelayInSeconds = config.getSeconds("MaxAllowedTeleportDelayTimeSpan", 30);
+			maxAllowedMessageDelayInSeconds = config.getSeconds("MaxAllowedMessageDelayInSeconds", 10);
 			database = getDatabase(config);
 		}
 
@@ -39,14 +41,8 @@ public class Config {
 
 	}
 	public static class C {
-		public static ConfigurableCommand setSpeed;
-		public static ConfigurableCommand stopFly;
 
 		static void load(Configuration config) {
-			setSpeed = config.getConfigurableCommand("commands.SetSpeed", 2,
-					"speed fly %.2f %s");
-			stopFly = config.getConfigurableCommand("commands.StopFly", 0,
-					"fly");
 		}
 
 	}
@@ -55,6 +51,8 @@ public class Config {
 		public static ConfigurableMessage requestTpHere;
 		public static ConfigurableMessage denyTpTo;
 		public static ConfigurableMessage denyTpHere;
+		public static ConfigurableMessage messageSent;
+		public static ConfigurableMessage messageFrom;
 
 		static void load(Configuration config) {
 			requestTpTo = config.getConfigurableMessage(
@@ -69,6 +67,12 @@ public class Config {
 			denyTpHere = config.getConfigurableMessage(
 					"messages.DenyTpHere", 1, 
 					"Player %s denied to be teleported to you.");
+			messageSent = config.getConfigurableMessage(
+					"messages.MessageSent", 2, 
+					"To %s: %s");
+			messageFrom = config.getConfigurableMessage(
+					"messages.MessageFrom", 2, 
+					"From %s: %s");
 		}		
 	}
 

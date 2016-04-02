@@ -1,6 +1,8 @@
 package net.eithon.plugin.bungee.logic;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.db.DbPlayer;
@@ -26,6 +28,10 @@ public class BungeePlayer {
 			if (playerName != null) dbPlayer.updatePlayerName(playerName);
 		}
 		return new BungeePlayer(dbPlayer);
+	}
+
+	public static List<BungeePlayer> findAll() {
+		return DbPlayer.findAll(Config.V.database).stream().map(dbPlayer -> new BungeePlayer(dbPlayer)).collect(Collectors.toList());
 	}
 
 	public static BungeePlayer getOrCreateByPlayerId(UUID playerId, String bungeeServerName) {
