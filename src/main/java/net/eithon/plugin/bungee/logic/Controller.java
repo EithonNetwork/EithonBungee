@@ -13,7 +13,9 @@ import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONObject;
 
@@ -23,12 +25,14 @@ public class Controller {
 	private EithonPlugin _eithonPlugin;
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
 	private String _bungeeServerName;
+	private HashMap<String, WarpLocation> _warpLocations;
 
 	public Controller(EithonPlugin eithonPlugin) {
 		this._eithonPlugin = eithonPlugin;
 		this._bungeePlayers = new BungeePlayers(eithonPlugin);
 		this._teleportController = new TeleportController(eithonPlugin);
 		this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
+		this._warpLocations = new HashMap<String, WarpLocation>();
 	}
 
 	public void requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
@@ -131,6 +135,26 @@ public class Controller {
 		}
 		boolean success = sendMessageToPlayer(sender, receiver, message);
 		return success ? receiver.getName() : null;
+	}
+
+	public List<String> getWarpNames() {
+		return WarpLocation.findAll()
+				.stream()
+				.map(w -> w.getName())
+				.collect(Collectors.toList());
+	}
+
+	public boolean warpAdd(CommandSender sender, String name, Location location) {
+		String bungeeServer = this._eithonPlugin.getApi().getBungeeServerName();
+		if (bungeeServer == null) {
+			sender.sendMessage("Could not find the bungee name for this server. Please try again.");
+			return false;
+		}
+		return true;
+	}
+
+	public void warpTo(String name) {
+		this._teleportController.tpToWarp();
 	}
 
 	private String getBungeeServerName() {

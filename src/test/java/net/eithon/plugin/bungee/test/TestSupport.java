@@ -15,6 +15,7 @@ public class TestSupport {
 		try {
 			Connection connection = mySql.getOrOpenConnection();
 			Statement statement = connection.createStatement();
+			statement.executeUpdate("DELETE FROM `warp_location`");
 			statement.executeUpdate("DELETE FROM `player`");
 			return mySql;
 		} catch (ClassNotFoundException | SQLException e) {

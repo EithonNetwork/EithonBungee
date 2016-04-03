@@ -2,7 +2,6 @@ package net.eithon.plugin.bungee;
 
 import net.eithon.library.command.CommandSyntaxException;
 import net.eithon.library.command.EithonCommand;
-import net.eithon.library.command.EithonCommandUtilities;
 import net.eithon.library.command.ICommandSyntax;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.plugin.bungee.logic.Controller;
@@ -25,6 +24,7 @@ public class CommandHandler {
 		try {
 			setupTpCommand(commandSyntax);
 			setupMessageCommand(commandSyntax);
+			setupWarpCommand(commandSyntax);
 			this._commandSyntax = commandSyntax;
 		} catch (CommandSyntaxException e) {
 			e.printStackTrace();
@@ -74,6 +74,20 @@ public class CommandHandler {
 		// message reply <message>
 		cmd = commandSyntax.parseCommandSyntax("reply <message:REST>")
 				.setCommandExecutor(eithonCommand -> sendReply(eithonCommand));
+	}
+
+	private void setupWarpCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
+		
+		// message <player> <message>
+		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("warp add <name>")
+				.setCommandExecutor(eithonCommand -> warpAdd(eithonCommand));
+		
+		// message reply <message>
+		cmd = commandSyntax.parseCommandSyntax("warp to <name>")
+				.setCommandExecutor(eithonCommand -> warpTo(eithonCommand));
+		cmd.
+		getParameterSyntax("name")
+		.setMandatoryValues(ec -> this._controller.getWarpNames());
 	}
 
 	private void setPlayerValues(ICommandSyntax cmd) {
@@ -163,5 +177,21 @@ public class CommandHandler {
 		String receiverName = this._controller.replyMessageToPlayer(sender, message);
 		if (receiverName == null) return;
 		Config.M.messageSent.sendMessage(sender, receiverName, message);
+	}
+
+	private void warpAdd(EithonCommand eithonCommand) {
+		Player player = eithonCommand.getPlayerOrInformSender();
+		if (player == null) return;
+		String name = eithonCommand.getArgument("name").asString();
+		boolean success = this._controller.warpAdd(name, player.getLocation());
+		if (!success) return;
+		Config.M.warpAdded.sendMessage(name);
+	}
+
+	private void warpTo(EithonCommand eithonCommand) {
+		Player player = eithonCommand.getPlayerOrInformSender();
+		if (player == null) return;
+		String name = eithonCommand.getArgument("name").asString();
+		this._controller.warpTo(name, player.getLocation());
 	}
 }

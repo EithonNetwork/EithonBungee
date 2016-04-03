@@ -3,7 +3,6 @@ package net.eithon.plugin.bungee;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.mysql.Database;
 import net.eithon.library.mysql.MySql;
-import net.eithon.library.plugin.ConfigurableCommand;
 import net.eithon.library.plugin.ConfigurableMessage;
 import net.eithon.library.plugin.Configuration;
 
