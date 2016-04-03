@@ -18,7 +18,7 @@ public class TestDbWarpLocation {
 	public void create() {
 		String name = "warp11";
 		String bungeeServerName = "a";
-		Location location = new Location(null, 1, 2, 3, 4, 5);
+		String location = "location 11";
 		Database database = TestSupport.getDatabaseAndTruncateTables();
 		DbWarpLocation warpLocation = DbWarpLocation.create(database, name, bungeeServerName, location);
 		assertEquals(name, warpLocation.getName());
@@ -30,7 +30,7 @@ public class TestDbWarpLocation {
 	public void getByName() {
 		String name = "warp12";
 		String bungeeServerName = "a";
-		Location location = new Location(null, 1, 2, 3, 4, 5);
+		String location = "location 12";
 		Database database = TestSupport.getDatabaseAndTruncateTables();
 		DbWarpLocation warpLocation = DbWarpLocation.create(database, name, bungeeServerName, location);
 		warpLocation = DbWarpLocation.getByName(database, name);
@@ -44,14 +44,16 @@ public class TestDbWarpLocation {
 	public void update() {
 		String name = "warp13";
 		String bungeeServerName = "a";
-		Location location = new Location(null, 1, 2, 3, 4, 5);
+		String location = "location 13";
 		Database database = TestSupport.getDatabaseAndTruncateTables();
 		DbWarpLocation warpLocation = DbWarpLocation.create(database, name, bungeeServerName, location);
 		warpLocation = DbWarpLocation.getByName(database, name);
 		bungeeServerName = bungeeServerName + "2";
-		warpLocation.updateBungeeServerName(bungeeServerName);
+		location = location + "2";
+		warpLocation.update(bungeeServerName, location);
 		warpLocation = DbWarpLocation.getByName(database, name);
 		assertEquals(bungeeServerName, warpLocation.getBungeeServerName());
+		assertEquals(location, warpLocation.getLocation());
 	}
 
 }

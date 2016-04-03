@@ -60,7 +60,7 @@ public class Controller {
 	}
 	
 	public void handleTeleportEvent(JSONObject jsonObject) {
-		TeleportToPlayerPojo info = TeleportToPlayerPojo.createFromJsonObject(jsonObject);
+		TeleportPojo info = TeleportPojo.createFromJsonObject(jsonObject);
 		this._teleportController.handleTeleportEvent(info);
 	}
 	
@@ -138,23 +138,15 @@ public class Controller {
 	}
 
 	public List<String> getWarpNames() {
-		return WarpLocation.findAll()
-				.stream()
-				.map(w -> w.getName())
-				.collect(Collectors.toList());
+		return this._teleportController.getWarpNames();
 	}
 
 	public boolean warpAdd(CommandSender sender, String name, Location location) {
-		String bungeeServer = this._eithonPlugin.getApi().getBungeeServerName();
-		if (bungeeServer == null) {
-			sender.sendMessage("Could not find the bungee name for this server. Please try again.");
-			return false;
-		}
-		return true;
+		return this._teleportController.warpAdd(sender, name, location);
 	}
 
-	public void warpTo(String name) {
-		this._teleportController.tpToWarp();
+	public void warpTo(Player player, String name) {
+		this._teleportController.warpTo(player, name);
 	}
 
 	private String getBungeeServerName() {

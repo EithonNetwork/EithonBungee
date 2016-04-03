@@ -69,3 +69,8 @@ messages:
   #
   MessageFrom: 'From %s: %s'
   
+  #
+  # Parameters: <name> (%s)
+  #
+  WarpAdded: 'Warp locaiton %s has been added.'
+  

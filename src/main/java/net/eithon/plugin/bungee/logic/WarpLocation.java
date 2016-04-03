@@ -3,14 +3,19 @@ package net.eithon.plugin.bungee.logic;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import net.eithon.library.extensions.EithonLocation;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.db.DbWarpLocation;
 
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class WarpLocation {
 	private DbWarpLocation warpLocation;
+	private Location location;
 
 	private WarpLocation(DbWarpLocation warpLocation) {
 		this.warpLocation = warpLocation;
@@ -27,11 +32,18 @@ public class WarpLocation {
 	}
 
 	public static WarpLocation getOrCreateByName(String name, String bungeeServerName, Location location) {
-		DbWarpLocation warpLocation = DbWarpLocation.getByName(Config.V.database, name);
-		if (warpLocation == null) {
-			warpLocation = DbWarpLocation.create(Config.V.database, name, bungeeServerName, location);
+		DbWarpLocation dbWarpLocation = DbWarpLocation.getByName(Config.V.database, name);
+		if (dbWarpLocation == null) {
+			dbWarpLocation = DbWarpLocation.create(Config.V.database, name, bungeeServerName, 
+					locationToString(location));
+		} else {
+			dbWarpLocation.update(bungeeServerName, locationToString(location));
 		}
-		return new WarpLocation(warpLocation);
+		return new WarpLocation(dbWarpLocation);
+	}
+
+	private static String locationToString(Location location) {
+		return location == null ? null : new EithonLocation(location).toJsonString();
 	}
 
 	public static WarpLocation getByONameOrInformSender(CommandSender sender, String name) {
@@ -41,11 +53,20 @@ public class WarpLocation {
 		return null;
 	}
 
-	public void update(String bungeeServerName) {
-		this.warpLocation.updateBungeeServerName(bungeeServerName);
-	}
-
 	public String getName() { return this.warpLocation.getName(); }
 	public String getBungeeServerName() { return this.warpLocation.getBungeeServerName(); }
-	public Location getLocation() { return this.warpLocation.getLocation(); }
+	public Location getLocation() { 
+		if (this.location != null) return this.location;
+
+		JSONParser parser = new JSONParser();
+		EithonLocation eithonLocation = null;
+		try {
+			JSONObject jsonObject = (JSONObject) parser.parse(this.warpLocation.getLocation()); 
+			eithonLocation = EithonLocation.getFromJson(jsonObject);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		if (eithonLocation != null) this.location = eithonLocation.getLocation();
+		return this.location;
+	}
 }

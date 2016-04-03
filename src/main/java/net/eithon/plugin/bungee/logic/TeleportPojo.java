@@ -9,44 +9,59 @@ import net.eithon.plugin.bungee.Config;
 import org.bukkit.OfflinePlayer;
 import org.json.simple.JSONObject;
 
-public class TeleportToPlayerPojo implements IJsonObject<TeleportToPlayerPojo>{
-	public static final short FORCE = 1;
-	public static final short REQUEST = 2;
-	public static final short DENY_RESPONSE = 3;
+public class TeleportPojo implements IJsonObject<TeleportPojo>{
+	public static final short WARP = 1;
+	public static final short PLAYER_FORCE = 2;
+	public static final short PLAYER_REQUEST = 3;
+	public static final short PLAYER_DENY_RESPONSE = 4;
 	
 	private UUID movingPlayerId;	// The player that should be teleported
 	private UUID anchorPlayerId;	// The player that we should teleport to
+	private String warpLocationName;
 	private LocalDateTime createdAt;
 	private short messageType;
-	private boolean messageDirectionIsFromMovingToAnchor;
+	private boolean messageDirectionIsFromPlayerMoving;
 	
-	public TeleportToPlayerPojo(OfflinePlayer movingPlayer, OfflinePlayer anchorPlayer) {
+	public TeleportPojo(OfflinePlayer movingPlayer, OfflinePlayer anchorPlayer) {
 		this.movingPlayerId = movingPlayer.getUniqueId();
 		this.anchorPlayerId = anchorPlayer.getUniqueId();
 		this.createdAt = LocalDateTime.now();
 	}
 	
+	public TeleportPojo(OfflinePlayer movingPlayer, String warpLocationName) {
+		this.movingPlayerId = movingPlayer.getUniqueId();
+		this.warpLocationName = warpLocationName;
+		this.createdAt = LocalDateTime.now();
+		setAsWarp();
+	}
+	
+	public void setAsWarp() {
+		this.messageType = WARP;
+		this.messageDirectionIsFromPlayerMoving = true;
+	}
+	
 	public void setAsRequestFromMovingPlayer(boolean force) {
-		this.messageType = force ? FORCE : REQUEST;
-		this.messageDirectionIsFromMovingToAnchor = true;
+		this.messageType = force ? PLAYER_FORCE : PLAYER_REQUEST;
+		this.messageDirectionIsFromPlayerMoving = true;
 	}
 	
 	public void setAsRequestFromAnchorPlayer(boolean force) {
-		this.messageType = force ? FORCE : REQUEST;
-		this.messageDirectionIsFromMovingToAnchor = false;
+		this.messageType = force ? PLAYER_FORCE : PLAYER_REQUEST;
+		this.messageDirectionIsFromPlayerMoving = false;
 	}
 	
 	public void setAsDenyResponse() {
-		this.messageType = DENY_RESPONSE;
-		this.messageDirectionIsFromMovingToAnchor = ! this.messageDirectionIsFromMovingToAnchor;
+		this.messageType = PLAYER_DENY_RESPONSE;
+		this.messageDirectionIsFromPlayerMoving = ! this.messageDirectionIsFromPlayerMoving;
 	}
 
 	public UUID getMovingPlayerId() { return this.movingPlayerId; }
 	public UUID getAnchorPlayerId() { return this.anchorPlayerId; }
+	public String getWarpLocationName() { return this.warpLocationName; }
 	public short getMessageType() { return this.messageType; }
-	public boolean getMessageDirectionIsFromMovingToAnchor() { return this.messageDirectionIsFromMovingToAnchor; }
+	public boolean getMessageDirectionIsFromMovingToAnchor() { return this.messageDirectionIsFromPlayerMoving; }
 	
-	private TeleportToPlayerPojo() {}
+	private TeleportPojo() {}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -54,9 +69,10 @@ public class TeleportToPlayerPojo implements IJsonObject<TeleportToPlayerPojo>{
 		JSONObject json = new JSONObject();
 		json.put("movingPlayerId", this.movingPlayerId.toString());
 		json.put("anchorPlayerId", this.anchorPlayerId.toString());
+		json.put("warpLocationName", this.warpLocationName);
 		json.put("createdAt", this.createdAt.toString());
 		json.put("messageType", (long) this.messageType);
-		json.put("messageDirectionIsFromMovingToAnchor", this.messageDirectionIsFromMovingToAnchor);
+		json.put("messageDirectionIsFromMovingToAnchor", this.messageDirectionIsFromPlayerMoving);
 		return json;
 	}
 
@@ -66,21 +82,22 @@ public class TeleportToPlayerPojo implements IJsonObject<TeleportToPlayerPojo>{
 	}
 
 	@Override
-	public TeleportToPlayerPojo fromJsonObject(JSONObject json) {
+	public TeleportPojo fromJsonObject(JSONObject json) {
 		this.movingPlayerId = UUID.fromString((String) json.get("movingPlayerId"));
 		this.anchorPlayerId = UUID.fromString((String) json.get("anchorPlayerId"));
+		this.warpLocationName = ((String) json.get("warpLocationName"));
 		this.createdAt = LocalDateTime.parse((String) json.get("createdAt"));
 		Long type = (Long) json.get("messageType");
-		this.messageType = REQUEST;
+		this.messageType = PLAYER_REQUEST;
 		if (type != null) this.messageType = type.shortValue();
 		Boolean direction = (Boolean) json.get("messageDirectionIsFromMovingToAnchor");
-		this.messageDirectionIsFromMovingToAnchor = true;
-		if (direction != null) this.messageDirectionIsFromMovingToAnchor = direction.booleanValue();
+		this.messageDirectionIsFromPlayerMoving = true;
+		if (direction != null) this.messageDirectionIsFromPlayerMoving = direction.booleanValue();
 		return this;
 	}
 
-	public static TeleportToPlayerPojo createFromJsonObject(JSONObject json) {
-		TeleportToPlayerPojo info = new TeleportToPlayerPojo();
+	public static TeleportPojo createFromJsonObject(JSONObject json) {
+		TeleportPojo info = new TeleportPojo();
 		return info.fromJsonObject(json);
 	}
 

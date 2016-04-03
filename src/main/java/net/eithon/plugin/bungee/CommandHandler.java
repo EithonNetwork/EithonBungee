@@ -183,15 +183,15 @@ public class CommandHandler {
 		Player player = eithonCommand.getPlayerOrInformSender();
 		if (player == null) return;
 		String name = eithonCommand.getArgument("name").asString();
-		boolean success = this._controller.warpAdd(name, player.getLocation());
+		boolean success = this._controller.warpAdd(player, name, player.getLocation());
 		if (!success) return;
-		Config.M.warpAdded.sendMessage(name);
+		Config.M.warpAdded.sendMessage(player, name);
 	}
 
 	private void warpTo(EithonCommand eithonCommand) {
 		Player player = eithonCommand.getPlayerOrInformSender();
 		if (player == null) return;
 		String name = eithonCommand.getArgument("name").asString();
-		this._controller.warpTo(name, player.getLocation());
+		this._controller.warpTo(player, name);
 	}
 }

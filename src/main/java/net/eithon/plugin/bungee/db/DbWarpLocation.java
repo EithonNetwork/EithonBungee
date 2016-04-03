@@ -18,9 +18,9 @@ import org.json.simple.parser.ParseException;
 public class DbWarpLocation extends DbRecord<DbWarpLocation> implements IDbRecord<DbWarpLocation> {
 	private String name;
 	private String bungeeServerName;
-	private Location location;
+	private String location;
 
-	public static DbWarpLocation create(Database database, String name, String bungeeServerName, Location location) {
+	public static DbWarpLocation create(Database database, String name, String bungeeServerName, String location) {
 		DbWarpLocation warpLocation = getByName(database, name);
 		if (warpLocation == null) {
 			warpLocation = new DbWarpLocation(database, name, bungeeServerName, location);
@@ -38,7 +38,7 @@ public class DbWarpLocation extends DbRecord<DbWarpLocation> implements IDbRecor
 		return warpLocation.findAll();
 	}
 
-	private DbWarpLocation(Database database, String name, String bungeeServerName, Location location) {
+	private DbWarpLocation(Database database, String name, String bungeeServerName, String location) {
 		this(database);
 		this.name = name;
 		this.bungeeServerName = bungeeServerName;
@@ -55,7 +55,7 @@ public class DbWarpLocation extends DbRecord<DbWarpLocation> implements IDbRecor
 
 	public String getName() { return this.name; }
 	public String getBungeeServerName() { return this.bungeeServerName; }
-	public Location getLocation() { return this.location; }
+	public String getLocation() { return this.location; }
 
 	@Override
 	public String toString() {
@@ -63,12 +63,8 @@ public class DbWarpLocation extends DbRecord<DbWarpLocation> implements IDbRecor
 		return result;
 	}
 
-	public void updateBungeeServerName(String bungeeServerName) {
+	public void update(String bungeeServerName, String location) {
 		this.bungeeServerName = bungeeServerName;
-		dbUpdate();
-	}
-
-	public void updateLocation(Location location) {
 		this.location = location;
 		dbUpdate();
 	}
@@ -82,17 +78,8 @@ public class DbWarpLocation extends DbRecord<DbWarpLocation> implements IDbRecor
 	public DbWarpLocation fromDb(ResultSet resultSet) throws SQLException {
 		super.fromDb(resultSet);
 		this.name = resultSet.getString("name");
-		this.bungeeServerName = resultSet.getString("bungee_server_name");		
-		JSONParser parser = new JSONParser();
-		EithonLocation eithonLocation = null;
-		try {
-			JSONObject jsonObject = (JSONObject) parser.parse(resultSet.getString("location")); 
-			eithonLocation = EithonLocation.getFromJson(jsonObject);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		this.location = null;
-		if (eithonLocation != null) this.location = eithonLocation.getLocation();
+		this.bungeeServerName = resultSet.getString("bungee_server_name");
+		this.location = resultSet.getString("location");
 		return this;
 	}
 
@@ -101,9 +88,7 @@ public class DbWarpLocation extends DbRecord<DbWarpLocation> implements IDbRecor
 		HashMap<String, Object> columnValues = new HashMap<String, Object>();
 		columnValues.put("name", this.name);
 		columnValues.put("bungee_server_name", this.bungeeServerName);
-		String locationAsString = null;
-		if (this.location != null) locationAsString = new EithonLocation(this.location).toJsonString();
-		columnValues.put("location", locationAsString);
+		columnValues.put("location", this.location);
 		return columnValues;
 	}
 
