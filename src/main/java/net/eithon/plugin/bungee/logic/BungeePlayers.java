@@ -20,6 +20,7 @@ public class BungeePlayers {
 
 	public BungeePlayers(EithonPlugin eithonPlugin) {
 		this._eithonPlugin = eithonPlugin;
+		this._bungeePlayers = new PlayerCollection<BungeePlayer>();
 		delayedRefresh();
 	}
 
@@ -33,10 +34,12 @@ public class BungeePlayers {
 	}
 
 	private void refresh() {
-		this._bungeePlayers = new PlayerCollection<BungeePlayer>();
-		for (BungeePlayer bungeePlayer : BungeePlayer.findAll()) {
-			this._bungeePlayers.put(bungeePlayer.getOfflinePlayer(), bungeePlayer);
-		};
+		synchronized(this._bungeePlayers) {
+			this._bungeePlayers.clear();
+			for (BungeePlayer bungeePlayer : BungeePlayer.findAll()) {
+				this._bungeePlayers.put(bungeePlayer.getOfflinePlayer(), bungeePlayer);
+			};
+		}
 	}
 
 	public void put(EithonPlayer player, String thatServerName) {
@@ -49,33 +52,42 @@ public class BungeePlayers {
 			return;
 		}
 		verbose("put", "Stored");
-		this._bungeePlayers.put(player, bungeePlayer);
+		synchronized(this._bungeePlayers) {
+			this._bungeePlayers.put(player, bungeePlayer);
+		}
 	}
 
 	public void remove(EithonPlayer player, String thatServerName) {
 		verbose("remove", "Player = %s, BungeeServer=%s", player.getName(), thatServerName);
-		BungeePlayer bungeePlayer = this._bungeePlayers.get(player);
-		if ((bungeePlayer == null) || !bungeePlayer.getBungeeServerName().equalsIgnoreCase(thatServerName)) {
-			verbose("remove", "Server name in cache = %s. Will refresh.", 
-					bungeePlayer == null? "Null" : bungeePlayer.getBungeeServerName());
-			delayedRefresh();
-			return;
+		synchronized(this._bungeePlayers) {
+			BungeePlayer bungeePlayer = this._bungeePlayers.get(player);
+			if ((bungeePlayer == null) || !bungeePlayer.getBungeeServerName().equalsIgnoreCase(thatServerName)) {
+				verbose("remove", "Server name in cache = %s. Will refresh.", 
+						bungeePlayer == null? "Null" : bungeePlayer.getBungeeServerName());
+				delayedRefresh();
+				return;
+			}
+			verbose("remove", "Removed");
+			this._bungeePlayers.remove(player);
 		}
-		verbose("remove", "Removed");
-		this._bungeePlayers.remove(player);
 	}
-	
+
 	public List<String> getNames() {
-		return this._bungeePlayers.values()
-				.stream()
-				.map(bp -> bp.getOfflinePlayer().getName())
-				.collect(Collectors.toList());
+		synchronized(this._bungeePlayers) {
+			return this._bungeePlayers.values()
+					.stream()
+					.map(bp -> bp.getOfflinePlayer().getName())
+					.collect(Collectors.toList());
+		}
 	}
 
 	public BungeePlayer getBungeePlayer(OfflinePlayer player) {
 		verbose("getBungeePlayer", "Player = %s", player.getName());
 		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
-		BungeePlayer cachedBungeePlayer = this._bungeePlayers.get(player);
+		BungeePlayer cachedBungeePlayer = null;
+		synchronized(this._bungeePlayers) {
+			cachedBungeePlayer = this._bungeePlayers.get(player);
+		}
 		if (bungeePlayer == null) {
 			verbose("getBungeePlayer", "Cached server name differ from name int database. Will refresh.");
 			if (cachedBungeePlayer != null) delayedRefresh();
