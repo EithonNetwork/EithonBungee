@@ -3,17 +3,33 @@ package net.eithon.plugin.bungee.logic;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.scheduler.BukkitScheduler;
 
+import net.eithon.library.core.CoreMisc;
 import net.eithon.library.core.PlayerCollection;
 import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.extensions.EithonPlugin;
+import net.eithon.library.plugin.Logger.DebugPrintLevel;
+import net.eithon.library.time.TimeMisc;
 
 public class BungeePlayers {
 	private PlayerCollection<BungeePlayer> _bungeePlayers;
+	private EithonPlugin _eithonPlugin;
 
 	public BungeePlayers(EithonPlugin eithonPlugin) {
-		refresh();
+		this._eithonPlugin = eithonPlugin;
+		delayedRefresh();
+	}
+
+	private void delayedRefresh() {
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.scheduleSyncDelayedTask(this._eithonPlugin, new Runnable() {
+			public void run() {
+				refresh();
+			}
+		}, TimeMisc.secondsToTicks(1));
 	}
 
 	private void refresh() {
@@ -24,12 +40,27 @@ public class BungeePlayers {
 	}
 
 	public void put(EithonPlayer player, String thatServerName) {
+		verbose("put", "Player = %s, BungeeServer=%s", player.getName(), thatServerName);
 		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player.getOfflinePlayer());
-		if (bungeePlayer == null) return;
+		if ((bungeePlayer == null) || !bungeePlayer.getBungeeServerName().equalsIgnoreCase(thatServerName)) {
+			verbose("put", "Server name in DB = %s. Will refresh.", bungeePlayer.getBungeeServerName());
+			delayedRefresh();
+			return;
+		}
+		verbose("put", "Stored");
 		this._bungeePlayers.put(player, bungeePlayer);
 	}
 
 	public void remove(EithonPlayer player, String thatServerName) {
+		verbose("remove", "Player = %s, BungeeServer=%s", player.getName(), thatServerName);
+		BungeePlayer bungeePlayer = this._bungeePlayers.get(player);
+		if ((bungeePlayer == null) || !bungeePlayer.getBungeeServerName().equalsIgnoreCase(thatServerName)) {
+			verbose("remove", "Server name in cache = %s. Will refresh.", 
+					bungeePlayer == null? "Null" : bungeePlayer.getBungeeServerName());
+			delayedRefresh();
+			return;
+		}
+		verbose("remove", "Removed");
 		this._bungeePlayers.remove(player);
 	}
 	
@@ -41,10 +72,26 @@ public class BungeePlayers {
 	}
 
 	public BungeePlayer getBungeePlayer(OfflinePlayer player) {
-		if (this._bungeePlayers.hasInformation(player)) return this._bungeePlayers.get(player);
+		verbose("getBungeePlayer", "Player = %s", player.getName());
 		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
-		if (bungeePlayer == null) return null;
-		refresh();
+		BungeePlayer cachedBungeePlayer = this._bungeePlayers.get(player);
+		if (bungeePlayer == null) {
+			verbose("getBungeePlayer", "Cached server name differ from name int database. Will refresh.");
+			if (cachedBungeePlayer != null) delayedRefresh();
+			verbose("getBungeePlayer", "Null");
+			return null;
+		}
+		if ((cachedBungeePlayer == null) 
+				|| !cachedBungeePlayer.getBungeeServerName().equalsIgnoreCase(bungeePlayer.getBungeeServerName())) {
+			verbose("getBungeePlayer", "Cached server name differ from name int database. Will refresh.");
+			delayedRefresh();
+		}
+		verbose("getBungeePlayer", "Found on server %s", bungeePlayer.getBungeeServerName());
 		return bungeePlayer;
+	}
+
+	void verbose(String method, String format, Object... args) {
+		String message = CoreMisc.safeFormat(format, args);
+		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "BungeePlayers.%s: %s", method, message);
 	}
 }

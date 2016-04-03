@@ -79,7 +79,7 @@ public class CommandHandler {
 	private void setPlayerValues(ICommandSyntax cmd) {
 		cmd
 		.getParameterSyntax("player")
-		.setMandatoryValues(ec -> this._controller.getBungeePlayerNames());
+		.setExampleValues(ec -> this._controller.getBungeePlayerNames(ec));
 	}
 
 

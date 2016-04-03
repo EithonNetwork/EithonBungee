@@ -9,7 +9,7 @@ eithon:
   #  2 = MINOR (also minor messages)
   #  3 = VERBOSE (all messages)
   #
-  DebugLevel: 1
+  DebugLevel: 3
 
 MaxAllowedTeleportDelayTimeSpan: 30
 MaxAllowedMessageDelayInSeconds: 10
