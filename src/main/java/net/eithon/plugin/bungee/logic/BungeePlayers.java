@@ -43,7 +43,8 @@ public class BungeePlayers {
 		verbose("put", "Player = %s, BungeeServer=%s", player.getName(), thatServerName);
 		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player.getOfflinePlayer());
 		if ((bungeePlayer == null) || !bungeePlayer.getBungeeServerName().equalsIgnoreCase(thatServerName)) {
-			verbose("put", "Server name in DB = %s. Will refresh.", bungeePlayer.getBungeeServerName());
+			verbose("remove", "Server name in DB = %s. Will refresh.", 
+					bungeePlayer == null? "Null" : bungeePlayer.getBungeeServerName());
 			delayedRefresh();
 			return;
 		}
