@@ -3,7 +3,6 @@ package net.eithon.plugin.bungee;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.mysql.Database;
 import net.eithon.library.mysql.MySql;
-import net.eithon.library.plugin.ConfigurableCommand;
 import net.eithon.library.plugin.ConfigurableMessage;
 import net.eithon.library.plugin.Configuration;
 
@@ -53,6 +52,7 @@ public class Config {
 		public static ConfigurableMessage denyTpHere;
 		public static ConfigurableMessage messageSent;
 		public static ConfigurableMessage messageFrom;
+		public static ConfigurableMessage warpAdded;
 
 		static void load(Configuration config) {
 			requestTpTo = config.getConfigurableMessage(
@@ -73,6 +73,9 @@ public class Config {
 			messageFrom = config.getConfigurableMessage(
 					"messages.MessageFrom", 2, 
 					"From %s: %s");
+			warpAdded = config.getConfigurableMessage(
+					"messages.WarpAdded", 1, 
+					"Warp locaiton %s has been added.");
 		}		
 	}
 

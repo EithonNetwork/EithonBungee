@@ -5,8 +5,6 @@ import net.eithon.library.bungee.EithonBungeeJoinEvent;
 import net.eithon.library.bungee.EithonBungeeQuitEvent;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.plugin.bungee.logic.Controller;
-import net.eithon.plugin.bungee.logic.MessageToPlayerPojo;
-import net.eithon.plugin.bungee.logic.TeleportToPlayerPojo;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

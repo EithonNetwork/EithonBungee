@@ -1,6 +1,6 @@
 name: EithonBungee
 main: net.eithon.plugin.bungee.Plugin
-version: 0.5
+version: 0.6
 author: vanbrayne
 description: A Minecraft plugin for bungee server support
 depend: [EithonLibrary]
@@ -18,6 +18,7 @@ permissions:
     eithonbungee.tphere.*: true
     eithonbungee.reply.*: true
     eithonbungee.message.*: true
+    eithonbungee.warp.*: true
   eithonbungee.tp.*:
     description: Access to /eithonbungee tp command
     default: op
@@ -32,4 +33,9 @@ permissions:
     default: op
   eithonbungee.reply.*:
     description: Access to /eithonbungee reply command
+    default: op
+  eithonbungee.warp.add.*:
+    description: Access to /eithonbungee warp add command
+  eithonbungee.warp.to.*:
+    description: Access to /eithonbungee warp to command
     default: op
