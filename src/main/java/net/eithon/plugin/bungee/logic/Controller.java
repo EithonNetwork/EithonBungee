@@ -35,8 +35,8 @@ public class Controller {
 		this._warpLocations = new HashMap<String, WarpLocation>();
 	}
 
-	public void requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
-		this._teleportController.tpToPlayer(movingPlayer, movingPlayer, anchorPlayer, false);
+	public boolean requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
+		return this._teleportController.tpToPlayer(movingPlayer, movingPlayer, anchorPlayer, false);
 	}
 
 	public void forcedTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
@@ -120,6 +120,10 @@ public class Controller {
 	public boolean sendMessageToPlayer(Player sender, OfflinePlayer receiver,
 			String message) {
 		BungeePlayer bungeePlayer = this._bungeePlayers.getBungeePlayer(receiver);
+		if (bungeePlayer == null) {
+			sender.sendMessage(String.format("Player %s seems to be offline.", receiver.getName()));
+			return false;
+		}
 		MessageToPlayerPojo info = new MessageToPlayerPojo(sender, receiver, message);
 		String bungeeServerName = bungeePlayer.getBungeeServerName();
 		this._eithonPlugin.getApi().bungeeSendDataToServer(bungeeServerName, "MessageToPlayer", info, true);
