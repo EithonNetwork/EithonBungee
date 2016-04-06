@@ -31,8 +31,12 @@ public class TeleportController {
 		this._bungeeServerName = null;
 	}
 
-	public void tpToPlayer(CommandSender sender, Player movingPlayer, OfflinePlayer anchorPlayer, boolean force) {
+	public boolean tpToPlayer(CommandSender sender, Player movingPlayer, OfflinePlayer anchorPlayer, boolean force) {
 		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayerOrInformSender(sender, anchorPlayer);
+		if (bungeePlayer == null) {
+			sender.sendMessage(String.format("Player %s seems to be offline.", anchorPlayer.getName()));
+			return false;
+		}
 		if (anchorPlayer.isOnline() && force) {
 			movingPlayer.teleport(anchorPlayer.getPlayer());
 		} else {
@@ -42,6 +46,7 @@ public class TeleportController {
 			sendTeleportMessageToBungeeServer(bungeeServerName, info);
 			if (force) this._eithonPlugin.getApi().teleportPlayerToServer(movingPlayer, bungeeServerName);
 		}
+		return true;
 	}
 
 	public void warpTo(Player player, String name) {

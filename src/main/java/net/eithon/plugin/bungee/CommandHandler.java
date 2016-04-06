@@ -93,9 +93,8 @@ public class CommandHandler {
 	private void setPlayerValues(ICommandSyntax cmd) {
 		cmd
 		.getParameterSyntax("player")
-		.setExampleValues(ec -> this._controller.getBungeePlayerNames(ec));
+		.setMandatoryValues(ec -> this._controller.getBungeePlayerNames(ec));
 	}
-
 
 	private void forcedTpToPlayer(EithonCommand eithonCommand)
 	{
@@ -117,7 +116,9 @@ public class CommandHandler {
 		if (anchorPlayer == null) {
 			throw new NotImplementedException();
 		}
-		this._controller.requestTpToPlayer(movingPlayer, anchorPlayer);
+		boolean success = this._controller.requestTpToPlayer(movingPlayer, anchorPlayer);
+		if (!success) return;
+		movingPlayer.sendMessage(String.format("Request sent to player %s", anchorPlayer.getName()));
 	}
 
 

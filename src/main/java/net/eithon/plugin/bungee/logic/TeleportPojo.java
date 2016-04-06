@@ -68,7 +68,7 @@ public class TeleportPojo implements IJsonObject<TeleportPojo>{
 	public JSONObject toJsonObject() {
 		JSONObject json = new JSONObject();
 		json.put("movingPlayerId", this.movingPlayerId.toString());
-		json.put("anchorPlayerId", this.anchorPlayerId.toString());
+		json.put("anchorPlayerId", this.anchorPlayerId == null ? null : this.anchorPlayerId.toString());
 		json.put("warpLocationName", this.warpLocationName);
 		json.put("createdAt", this.createdAt.toString());
 		json.put("messageType", (long) this.messageType);
@@ -84,7 +84,8 @@ public class TeleportPojo implements IJsonObject<TeleportPojo>{
 	@Override
 	public TeleportPojo fromJsonObject(JSONObject json) {
 		this.movingPlayerId = UUID.fromString((String) json.get("movingPlayerId"));
-		this.anchorPlayerId = UUID.fromString((String) json.get("anchorPlayerId"));
+		String UuidAsString = (String) json.get("anchorPlayerId");
+		this.anchorPlayerId = UuidAsString == null ? null : UUID.fromString(UuidAsString);
 		this.warpLocationName = ((String) json.get("warpLocationName"));
 		this.createdAt = LocalDateTime.parse((String) json.get("createdAt"));
 		Long type = (Long) json.get("messageType");
