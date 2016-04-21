@@ -5,15 +5,9 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 
-import net.eithon.library.extensions.EithonLocation;
 import net.eithon.library.mysql.Database;
 import net.eithon.library.mysql.DbRecord;
 import net.eithon.library.mysql.IDbRecord;
-
-import org.bukkit.Location;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class DbWarpLocation extends DbRecord<DbWarpLocation> implements IDbRecord<DbWarpLocation> {
 	private String name;

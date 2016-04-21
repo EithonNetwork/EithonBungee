@@ -25,14 +25,12 @@ public class Controller {
 	private EithonPlugin _eithonPlugin;
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
 	private String _bungeeServerName;
-	private HashMap<String, WarpLocation> _warpLocations;
-
 	public Controller(EithonPlugin eithonPlugin) {
 		this._eithonPlugin = eithonPlugin;
 		this._bungeePlayers = new BungeePlayers(eithonPlugin);
 		this._teleportController = new TeleportController(eithonPlugin);
 		this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
-		this._warpLocations = new HashMap<String, WarpLocation>();
+		new HashMap<String, WarpLocation>();
 	}
 
 	public boolean requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {

@@ -1,15 +1,10 @@
 package net.eithon.plugin.bungee.test;
 
 import static org.junit.Assert.assertEquals;
-
-import java.util.UUID;
-
 import junit.framework.Assert;
 import net.eithon.library.mysql.Database;
 import net.eithon.plugin.bungee.db.DbWarpLocation;
 
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.junit.Test;
 
 public class TestDbWarpLocation {
