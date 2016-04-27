@@ -7,6 +7,7 @@ A Bot plugin for Minecraft
 ### 0.7 (2016-04-27)
 
 * NEW: Added permissions for teleporting to other servers.
+* NEW: Added a server command (and removed it from eithonfixes)
 
 ### 0.6 (2016-04-03)
 
