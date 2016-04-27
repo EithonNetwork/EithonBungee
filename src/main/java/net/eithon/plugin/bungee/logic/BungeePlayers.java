@@ -77,6 +77,7 @@ public class BungeePlayers {
 			return this._bungeePlayers.values()
 					.stream()
 					.map(bp -> bp.getOfflinePlayer().getName())
+					.filter(n -> (n != null))
 					.collect(Collectors.toList());
 		}
 	}

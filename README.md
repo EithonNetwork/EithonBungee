@@ -8,6 +8,7 @@ A Bot plugin for Minecraft
 
 * NEW: Added permissions for teleporting to other servers.
 * NEW: Added a server command (and removed it from eithonfixes)
+* BUG: Could not handle list of bungee players on server with no bungee connnection
 
 ### 0.6 (2016-04-03)
 
