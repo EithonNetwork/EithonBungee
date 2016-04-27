@@ -193,6 +193,6 @@ public class CommandHandler {
 		Player player = eithonCommand.getPlayerOrInformSender();
 		if (player == null) return;
 		String name = eithonCommand.getArgument("name").asString();
-		this._controller.warpTo(player, name);
+		this._controller.warpTo(player, player, name);
 	}
 }

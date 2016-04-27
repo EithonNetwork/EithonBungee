@@ -43,22 +43,25 @@ public class TeleportController {
 			TeleportPojo info = new TeleportPojo(movingPlayer, anchorPlayer);
 			info.setAsRequestFromMovingPlayer(force);
 			String bungeeServerName = bungeePlayer.getBungeeServerName();
+			if (!this._eithonPlugin.getApi().playerHasPermissionToAccessServerOrInformSender(sender, movingPlayer, bungeeServerName)) return false;
 			sendTeleportMessageToBungeeServer(bungeeServerName, info);
 			if (force) this._eithonPlugin.getApi().teleportPlayerToServer(movingPlayer, bungeeServerName);
 		}
 		return true;
 	}
 
-	public void warpTo(Player player, String name) {
+	public boolean warpTo(CommandSender sender, Player player, String name) {
 		WarpLocation warpLocation = WarpLocation.getByName(name);
 		if (warpLocation.getBungeeServerName().equalsIgnoreCase(getBungeeServerName())) {
 			player.teleport(warpLocation.getLocation());
 		} else {
 			TeleportPojo info = new TeleportPojo(player, name);
 			String bungeeServerName = warpLocation.getBungeeServerName();
+			if (!this._eithonPlugin.getApi().playerHasPermissionToAccessServerOrInformSender(sender, player, bungeeServerName)) return false;
 			sendTeleportMessageToBungeeServer(bungeeServerName, info);
 			this._eithonPlugin.getApi().teleportPlayerToServer(player, bungeeServerName);
 		}
+		return true;
 	}
 
 	public void tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) {

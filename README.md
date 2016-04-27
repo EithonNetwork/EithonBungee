@@ -4,6 +4,10 @@ A Bot plugin for Minecraft
 
 ## Release history
 
+### 0.7 (2016-04-27)
+
+* NEW: Added permissions for teleporting to other servers.
+
 ### 0.6 (2016-04-03)
 
 * NEW: Added support for warp

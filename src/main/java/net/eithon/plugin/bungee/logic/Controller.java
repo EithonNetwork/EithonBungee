@@ -147,8 +147,8 @@ public class Controller {
 		return this._teleportController.warpAdd(sender, name, location);
 	}
 
-	public void warpTo(Player player, String name) {
-		this._teleportController.warpTo(player, name);
+	public boolean warpTo(CommandSender sender, Player player, String name) {
+		return this._teleportController.warpTo(sender, player, name);
 	}
 
 	private String getBungeeServerName() {

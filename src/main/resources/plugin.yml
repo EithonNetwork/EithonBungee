@@ -19,6 +19,7 @@ permissions:
     eithonbungee.reply.*: true
     eithonbungee.message.*: true
     eithonbungee.warp.*: true
+    eithonbungee.access.server.*: true
   eithonbungee.tp.*:
     description: Access to /eithonbungee tp command
     default: op
@@ -39,3 +40,7 @@ permissions:
   eithonbungee.warp.to.*:
     description: Access to /eithonbungee warp to command
     default: op
+  eithonbungee.access.server.*:
+    description: Access to the different servers
+    default: op
+  
