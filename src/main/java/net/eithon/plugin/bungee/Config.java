@@ -53,6 +53,9 @@ public class Config {
 		public static ConfigurableMessage messageSent;
 		public static ConfigurableMessage messageFrom;
 		public static ConfigurableMessage warpAdded;
+		public static ConfigurableMessage alreadyConnectedToServer;
+		public static ConfigurableMessage couldNotConnectToServer;
+		public static ConfigurableMessage connectedToServer;
 
 		static void load(Configuration config) {
 			requestTpTo = config.getConfigurableMessage(
@@ -76,6 +79,12 @@ public class Config {
 			warpAdded = config.getConfigurableMessage(
 					"messages.WarpAdded", 1, 
 					"Warp locaiton %s has been added.");
+			alreadyConnectedToServer = config.getConfigurableMessage("messages.AlreadyConnectedToServer", 1,
+					"You are already connected to server %s.");
+			couldNotConnectToServer = config.getConfigurableMessage("messages.CouldNotConnectToServer", 2,
+					"Could not connect to server %s: %s");
+			connectedToServer = config.getConfigurableMessage("messages.ConnectedToServer", 1,
+					"Connected to server %s.");
 		}		
 	}
 

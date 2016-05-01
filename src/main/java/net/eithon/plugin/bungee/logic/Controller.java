@@ -147,8 +147,30 @@ public class Controller {
 		return this._teleportController.warpAdd(sender, name, location);
 	}
 
-	public void warpTo(Player player, String name) {
-		this._teleportController.warpTo(player, name);
+	public boolean warpTo(CommandSender sender, Player player, String name) {
+		return this._teleportController.warpTo(sender, player, name);
+	}
+
+	public boolean connectPlayerToServer(Player player, String serverName) {
+		// TODO: Is serverName the same as Server.getServerName() or bungeeController.getServerName?
+		if (player.getServer().getServerName().equalsIgnoreCase(serverName)) {
+			Config.M.alreadyConnectedToServer.sendMessage(player, serverName);
+			return false;
+		}
+
+		if (!playerCanConnectToServer(player, serverName)) return false;
+
+		boolean success = this._eithonPlugin.getApi().teleportPlayerToServer(player, serverName);
+
+		if (!success) {
+			Config.M.couldNotConnectToServer.sendMessage(player, serverName, "Unspecified fail reason");
+			return false;
+		}
+		return true;
+	}
+
+	private boolean playerCanConnectToServer(Player player, String serverName) {
+		return this._eithonPlugin.getApi().playerHasPermissionToAccessServerOrInformSender(player, player, serverName);
 	}
 
 	private String getBungeeServerName() {

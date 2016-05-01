@@ -72,5 +72,17 @@ messages:
   #
   # Parameters: <name> (%s)
   #
-  WarpAdded: 'Warp locaiton %s has been added.'
+  WarpAdded: 'Warp location %s has been added.'
+
+  #
+  # Parameters: <server name> (%s)
+  AlreadyConnectedToServer: You are already connected to server %s.
+
+  #
+  # Parameters: <server name> (%s), <error message> (%s)
+  CouldNotConnectToServer: "Could not connect to server %s: %s"
+
+  #
+  # Parameters: <server name> (%s)
+  ConnectedToServer: Connected to server %s.
   

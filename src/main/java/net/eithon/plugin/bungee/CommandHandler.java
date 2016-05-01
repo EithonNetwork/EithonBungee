@@ -21,7 +21,10 @@ public class CommandHandler {
 		ICommandSyntax commandSyntax = EithonCommand.createRootCommand("eithonbungee");
 		commandSyntax.setPermissionsAutomatically();
 
-		try {
+		try {	
+			commandSyntax
+			.parseCommandSyntax("server <name>")
+			.setCommandExecutor(p -> serverCommand(p));
 			setupTpCommand(commandSyntax);
 			setupMessageCommand(commandSyntax);
 			setupWarpCommand(commandSyntax);
@@ -193,6 +196,15 @@ public class CommandHandler {
 		Player player = eithonCommand.getPlayerOrInformSender();
 		if (player == null) return;
 		String name = eithonCommand.getArgument("name").asString();
-		this._controller.warpTo(player, name);
+		this._controller.warpTo(player, player, name);
+	}
+
+	private void serverCommand(EithonCommand command)
+	{
+		String serverName = command.getArgument("name").asString();
+		Player player = command.getPlayer();
+		boolean success = this._controller.connectPlayerToServer(player, serverName);
+		if (!success) return;
+		Config.M.connectedToServer.sendMessage(player, serverName);
 	}
 }
