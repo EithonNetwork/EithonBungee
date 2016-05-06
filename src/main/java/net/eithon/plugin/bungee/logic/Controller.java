@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import net.eithon.library.bungee.BungeeController;
 import net.eithon.library.bungee.EithonBungeeQuitEvent;
 import net.eithon.library.command.EithonCommand;
 import net.eithon.library.core.CoreMisc;
@@ -46,21 +47,9 @@ public class Controller {
 	void playerDisconnected(String serverName, UUID playerUuid) {
 		String thisServerName = this._eithonPlugin.getApi().getBungeeServerName();
 		EithonPlayer player = new EithonPlayer(playerUuid);
-		String highestGroup = getHighestGroup(player.getOfflinePlayer());
+		String highestGroup = BungeeController.getHighestGroup(player.getOfflinePlayer());
 		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, serverName, player, highestGroup);
 		Bukkit.getServer().getPluginManager().callEvent(e);	
-	}
-
-	private static String getHighestGroup(OfflinePlayer player) {
-		String[] currentGroups = PermissionsFacade.getPlayerPermissionGroups(player);
-		for (String priorityGroup : Config.V.groupPriorities) {
-			for (String playerGroup : currentGroups) {
-				if (playerGroup.equalsIgnoreCase(priorityGroup)) {
-					return priorityGroup;
-				}
-			}
-		}
-		return null;
 	}
 
 	public boolean requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
