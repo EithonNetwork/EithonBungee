@@ -1,5 +1,7 @@
 package net.eithon.plugin.bungee;
 
+import java.util.List;
+
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.mysql.Database;
 import net.eithon.library.mysql.MySql;
@@ -20,11 +22,13 @@ public class Config {
 		public static Database database;
 		public static long maxAllowedTeleportDelayInSeconds;
 		public static long maxAllowedMessageDelayInSeconds;
+		public static List<String> groupPriorities;
 
 		static void load(Configuration config) {
 			database = null;
 			maxAllowedTeleportDelayInSeconds = config.getSeconds("MaxAllowedTeleportDelayTimeSpan", 30);
 			maxAllowedMessageDelayInSeconds = config.getSeconds("MaxAllowedMessageDelayInSeconds", 10);
+			groupPriorities = config.getStringList("GroupPriorities");
 			database = getDatabase(config);
 		}
 
