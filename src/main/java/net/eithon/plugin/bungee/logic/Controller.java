@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import net.eithon.library.bungee.EithonBungeeQuitEvent;
 import net.eithon.library.command.EithonCommand;
 import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlayer;
@@ -19,18 +20,33 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONObject;
 
-public class Controller {
+public class Controller {	
+
 	private TeleportController _teleportController;
 	private BungeePlayers _bungeePlayers;
 	private EithonPlugin _eithonPlugin;
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
 	private String _bungeeServerName;
+	
 	public Controller(EithonPlugin eithonPlugin) {
 		this._eithonPlugin = eithonPlugin;
 		this._bungeePlayers = new BungeePlayers(eithonPlugin);
 		this._teleportController = new TeleportController(eithonPlugin);
 		this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
-		new HashMap<String, WarpLocation>();
+		createEithonBungeeFixesListener();
+	}
+
+	private void createEithonBungeeFixesListener() {
+		BungeeListener bungeeListener = new BungeeListener(this._eithonPlugin, this);
+		this._eithonPlugin.getServer().getMessenger().
+		registerIncomingPluginChannel(this._eithonPlugin, BungeeListener.EITHON_BUNGEE_FIXES_CHANNEL, bungeeListener);
+	}
+
+	void playerDisconnected(String serverName, UUID playerUuid) {
+		String thisServerName = this._eithonPlugin.getApi().getBungeeServerName();
+		EithonPlayer player = new EithonPlayer(playerUuid);
+		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, serverName, player, null);
+		Bukkit.getServer().getPluginManager().callEvent(e);	
 	}
 
 	public boolean requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
