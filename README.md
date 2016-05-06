@@ -7,6 +7,7 @@ A Bot plugin for Minecraft
 ### 0.8 (2016-05-06)
 
 * NEW: Added connection to EithonBungeeFixes
+* BUG: When warping, the player sometimes is sent to the server, but not to the final warp location.
 
 ### 0.7 (2016-04-27)
 

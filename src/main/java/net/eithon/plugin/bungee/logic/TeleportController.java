@@ -80,7 +80,7 @@ public class TeleportController {
 	public void handleTeleportEvent(TeleportPojo info) {
 		if (info.getMessageType() == TeleportPojo.WARP) {
 			// Prepare to teleport the moving player when he/she arrives
-			this._waitingForTeleport.put(info.getMovingPlayerId(), info);
+			waitForPlayerToComeToServer(info);
 			return;
 		}
 		Player localPlayer = getLocalPlayer(info);
@@ -90,8 +90,7 @@ public class TeleportController {
 		switch (info.getMessageType()) {
 		case TeleportPojo.PLAYER_FORCE:
 			if (info.getMessageDirectionIsFromMovingToAnchor()) {
-				// Prepare to teleport the moving player when he/she arrives
-				this._waitingForTeleport.put(info.getMovingPlayerId(), info);
+				waitForPlayerToComeToServer(info);
 			} else {
 				// Initiate a teleport from this server
 				tpToPlayer(null, localPlayer, remotePlayer, true);
@@ -115,6 +114,17 @@ public class TeleportController {
 		default:
 			throw new IllegalArgumentException();
 		}
+	}
+
+	private void waitForPlayerToComeToServer(TeleportPojo info) {
+		UUID playerId = info.getMovingPlayerId();
+		// Maybe player is already on server?
+		Player player = Bukkit.getPlayer(playerId);
+		if (player != null) {
+			teleportPlayerAccordingToInfo(player, info);
+			return;
+		}
+		this._waitingForTeleport.put(playerId, info);
 	}
 
 	private void saveRequest(Player localPlayer, TeleportPojo info) {
@@ -193,6 +203,10 @@ public class TeleportController {
 		if (info == null) return;
 		this._waitingForTeleport.remove(movingPlayer.getUniqueId());
 		if (info.isTooOld()) return;
+		teleportPlayerAccordingToInfo(movingPlayer, info);
+	}
+
+	private void teleportPlayerAccordingToInfo(final Player movingPlayer, TeleportPojo info) {
 		if (info.getMessageType() == TeleportPojo.WARP) {
 			teleportToWarpLocation(movingPlayer, info);
 			return;
