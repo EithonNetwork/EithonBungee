@@ -17,26 +17,23 @@ MaxAllowedMessageDelayInSeconds: 10
 GroupPriorities: [Owner, Admin, Developer, Architect, Designer, Mod, Submod, Tourist, Trusted, Vip1, Vip2, Vip3, Builder, Legendary, Veteran, Citizen, Member, New, Funder, Founder, RetiredAdmin, RetiredArchitect, RetiredMod]
 
 database:
-  Name: TST_e_bungee
-  Hostname: mc.eithon.net
+  Name: eithon_bungee
+  Hostname: localhost
   Port: 3306
-  Username: TST_e_bungee
-  Password: 4eu2yDNLWBJf8LqE
-
-# PRD
-#  Name: eithon_stats
-#  Username: eithon_stats
-#  Password: xxx
+  Username: eithon_plugin
+  Password: 94SnHAGP3RV0mESN
 
 # TST
 #  Name: TST_e_bungee
-#  Username: TST_e_bungee
-#  Password: 4eu2yDNLWBJf8LqE
+#  Hostname: rookgard.eithon.net
+#  Username: TST_e_plugin
+#  Password: bWfRHZsAy42RdFBJ
 
 # DEV
 #  Name: DEV_e_bungee
-#  Username: DEV_e_bungee
-#  Password: NnqGGK9Mcr328Mby
+#  Hostname: rookgard.eithon.net
+#  Username: DEV_e_plugin
+#  Password: J5FE9EFCD1GX8tjg
 
 commands:
 
