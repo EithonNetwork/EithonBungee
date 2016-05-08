@@ -23,6 +23,7 @@ public class Config {
 		public static long maxAllowedTeleportDelayInSeconds;
 		public static long maxAllowedMessageDelayInSeconds;
 		public static List<String> groupPriorities;
+		public static double reloadWarpLocationsAfterSeconds;
 
 		static void load(Configuration config) {
 			database = null;
@@ -30,6 +31,7 @@ public class Config {
 			maxAllowedMessageDelayInSeconds = config.getSeconds("MaxAllowedMessageDelayInSeconds", 10);
 			groupPriorities = config.getStringList("GroupPriorities");
 			database = getDatabase(config);
+			reloadWarpLocationsAfterSeconds = config.getSeconds("ReloadWarpLocationsAfterTimeSpan", "5m");
 		}
 
 		private static Database getDatabase(Configuration config) {

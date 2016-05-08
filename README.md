@@ -4,6 +4,10 @@ A Bot plugin for Minecraft
 
 ## Release history
 
+### 0.9 (2016-05-08)
+
+* CHANGE: Replaced a frequent call to the database with a scheduled call.
+
 ### 0.8 (2016-05-06)
 
 * NEW: Added connection to EithonBungeeFixes
