@@ -1,14 +1,18 @@
 package net.eithon.plugin.bungee.logic;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import net.eithon.library.extensions.EithonLocation;
+import net.eithon.library.extensions.EithonPlugin;
+import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.db.DbWarpLocation;
 
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -16,6 +20,38 @@ import org.json.simple.parser.ParseException;
 public class WarpLocation {
 	private DbWarpLocation warpLocation;
 	private Location location;
+	private static Object lock = new Object();
+	private static List<WarpLocation> _all = new ArrayList<WarpLocation>();
+	private static EithonPlugin eithonPlugin;
+	private static int counter = 0;
+
+	public static void initialize(EithonPlugin plugin) {
+		counter++;
+		eithonPlugin = plugin;
+		reloadWarpLocationsRegularly(counter);
+	}
+
+	public static void reloadWarpLocationsRegularly(final int myCounter) {
+		// End if a new initialize() has been issued.
+		BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				if (myCounter != counter) {
+					this.cancel();
+				} else {
+					synchronized(lock) {
+						_all = readAllFromDb();
+					}
+				}
+			}
+
+		};
+		runnable.runTaskTimer(eithonPlugin, 0, TimeMisc.secondsToTicks(Config.V.reloadWarpLocationsAfterSeconds));
+	}
+
+	private static List<WarpLocation> readAllFromDb() {
+		return DbWarpLocation.findAll(Config.V.database).stream().map(dbPlayer -> new WarpLocation(dbPlayer)).collect(Collectors.toList());
+	}
 
 	private WarpLocation(DbWarpLocation warpLocation) {
 		this.warpLocation = warpLocation;
@@ -27,8 +63,10 @@ public class WarpLocation {
 		return new WarpLocation(warpLocation);
 	}
 
-	public static List<WarpLocation> findAll() {
-		return DbWarpLocation.findAll(Config.V.database).stream().map(dbPlayer -> new WarpLocation(dbPlayer)).collect(Collectors.toList());
+	public static List<WarpLocation> getAllWarpLocations() {
+		synchronized(lock) {
+			return _all;
+		}
 	}
 
 	public static WarpLocation getOrCreateByName(String name, String bungeeServerName, Location location) {

@@ -29,6 +29,7 @@ public class TeleportController {
 		this._waitingForTeleport = new HashMap<UUID, TeleportPojo>();
 		this._requestsForTeleport = new HashMap<UUID, List<TeleportPojo>>();
 		this._bungeeServerName = null;
+		WarpLocation.initialize(eithonPlugin);
 	}
 
 	public boolean tpToPlayer(CommandSender sender, Player movingPlayer, OfflinePlayer anchorPlayer, boolean force) {
@@ -298,7 +299,7 @@ public class TeleportController {
 	}
 
 	public List<String> getWarpNames() {
-		return WarpLocation.findAll()
+		return WarpLocation.getAllWarpLocations()
 				.stream()
 				.map(w -> w.getName())
 				.collect(Collectors.toList());
