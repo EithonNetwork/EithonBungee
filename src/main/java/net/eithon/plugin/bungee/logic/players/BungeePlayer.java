@@ -1,4 +1,4 @@
-package net.eithon.plugin.bungee.logic;
+package net.eithon.plugin.bungee.logic.players;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,7 +9,6 @@ import net.eithon.plugin.bungee.db.DbPlayer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 
 public class BungeePlayer {
 	private OfflinePlayer offlinePlayer;
@@ -34,14 +33,19 @@ public class BungeePlayer {
 		return DbPlayer.findAll(Config.V.database).stream().map(dbPlayer -> new BungeePlayer(dbPlayer)).collect(Collectors.toList());
 	}
 
-	public static BungeePlayer getOrCreateByPlayerId(UUID playerId, String bungeeServerName) {
+	public static BungeePlayer createOrUpdate(OfflinePlayer player, String bungeeServerName) {
+		UUID playerId = player.getUniqueId();
 		DbPlayer dbPlayer = DbPlayer.getByPlayerId(Config.V.database, playerId);
 		if (dbPlayer == null) {
-			String playerName = getPlayerNameById(playerId);
-			dbPlayer = DbPlayer.create(Config.V.database, playerId, playerName, bungeeServerName);
-		} else if (dbPlayer.getPlayerName() == null) {
-			String playerName = getPlayerNameById(playerId);
-			if (playerName != null) dbPlayer.updatePlayerName(playerName);
+			dbPlayer = DbPlayer.create(Config.V.database, playerId, player.getName(), bungeeServerName);
+		} else {
+			if (!player.getName().equals(dbPlayer.getPlayerName())) {
+				dbPlayer.updatePlayerName(player.getName());
+			}
+			if ((bungeeServerName != null)
+					&& !bungeeServerName.equalsIgnoreCase(dbPlayer.getBungeeServerName())) {
+				dbPlayer.updateBungeeServerName(bungeeServerName);
+			}
 		}
 		return new BungeePlayer(dbPlayer);
 	}
@@ -53,19 +57,8 @@ public class BungeePlayer {
 		return playerName;
 	}
 
-	public static BungeePlayer getOrCreateByOfflinePlayer(OfflinePlayer player, String bungeeServerName) {
-		return getOrCreateByPlayerId(player.getUniqueId(), bungeeServerName);
-	}
-
 	public static BungeePlayer getByOfflinePlayer(OfflinePlayer player) {
 		return getByPlayerId(player.getUniqueId());
-	}
-
-	public static BungeePlayer getByOfflinePlayerOrInformSender(CommandSender sender, OfflinePlayer player) {
-		BungeePlayer bungeePlayer = getByOfflinePlayer(player);
-		if (bungeePlayer != null) return bungeePlayer;
-		if (sender != null) sender.sendMessage(String.format("Could not find player %s on any server.", player.getName()));
-		return null;
 	}
 
 	public void update(String bungeeServerName) {

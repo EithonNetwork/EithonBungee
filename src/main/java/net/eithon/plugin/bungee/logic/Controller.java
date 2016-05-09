@@ -13,6 +13,9 @@ import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
+import net.eithon.plugin.bungee.logic.players.BungeePlayer;
+import net.eithon.plugin.bungee.logic.players.BungeePlayers;
+import net.eithon.plugin.bungee.logic.teleport.TeleportController;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -32,7 +35,7 @@ public class Controller {
 	public Controller(EithonPlugin eithonPlugin) {
 		this._eithonPlugin = eithonPlugin;
 		this._bungeePlayers = new BungeePlayers(eithonPlugin);
-		this._teleportController = new TeleportController(eithonPlugin);
+		this._teleportController = new TeleportController(eithonPlugin, this._bungeePlayers);
 		this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
 		createEithonBungeeFixesListener();
 	}
@@ -76,8 +79,7 @@ public class Controller {
 	}
 	
 	public void handleTeleportEvent(JSONObject jsonObject) {
-		TeleportPojo info = TeleportPojo.createFromJsonObject(jsonObject);
-		this._teleportController.handleTeleportEvent(info);
+		this._teleportController.handleTeleportEvent(jsonObject);
 	}
 	
 	public void handleMessageEvent(JSONObject jsonObject) {
@@ -106,20 +108,19 @@ public class Controller {
 
 	public void playerJoined(Player player) {
 		this._teleportController.playerJoined(player);
-		bungeePlayerJoined(new EithonPlayer(player), getBungeeServerName());
+		this._bungeePlayers.addPlayerOnThisServerAsync(player);
 	}
 
 	public void playerLeft(Player player) {
-		this._teleportController.playerQuitted(player);
-		bungeePlayerLeft(new EithonPlayer(player), getBungeeServerName());
+		this._bungeePlayers.removePlayerOnThisServerAsync(player);
 	}
 
-	public void bungeePlayerJoined(EithonPlayer player, String thatServerName) {
-		this._bungeePlayers.put(player, thatServerName);
+	public void bungeePlayerJoined(EithonPlayer player, String otherServerName) {
+		this._bungeePlayers.addPlayerOnOtherServerAsync(player.getOfflinePlayer(), otherServerName);
 	}
 
-	public void bungeePlayerLeft(EithonPlayer player, String thatServerName) {
-		this._bungeePlayers.remove(player, thatServerName);
+	public void bungeePlayerLeft(EithonPlayer player, String otherServerName) {
+		this._bungeePlayers.removePlayerOnOtherServerAsync(player.getOfflinePlayer(), otherServerName);
 	}
 	
 	public List<String> getBungeePlayerNames(EithonCommand ec) {
@@ -170,7 +171,6 @@ public class Controller {
 	}
 
 	public boolean connectPlayerToServer(Player player, String serverName) {
-		// TODO: Is serverName the same as Server.getServerName() or bungeeController.getServerName?
 		if (serverName.equalsIgnoreCase(getBungeeServerName())) {
 			Config.M.alreadyConnectedToServer.sendMessage(player, serverName);
 			return false;

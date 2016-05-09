@@ -1,4 +1,4 @@
-package net.eithon.plugin.bungee.logic;
+package net.eithon.plugin.bungee.logic.teleport;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package net.eithon.plugin.bungee.logic;
+package net.eithon.plugin.bungee.logic.teleport;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -9,7 +9,7 @@ import net.eithon.plugin.bungee.Config;
 import org.bukkit.OfflinePlayer;
 import org.json.simple.JSONObject;
 
-public class TeleportPojo implements IJsonObject<TeleportPojo>{
+class TeleportPojo implements IJsonObject<TeleportPojo>{
 	public static final short WARP = 1;
 	public static final short PLAYER_FORCE = 2;
 	public static final short PLAYER_REQUEST = 3;
