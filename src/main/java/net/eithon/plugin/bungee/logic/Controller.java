@@ -11,7 +11,6 @@ import net.eithon.library.command.EithonCommand;
 import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.extensions.EithonPlugin;
-import net.eithon.library.facades.PermissionsFacade;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
 
@@ -110,16 +109,16 @@ public class Controller {
 		bungeePlayerJoined(new EithonPlayer(player), getBungeeServerName());
 	}
 
-	public void playerQuitted(Player player) {
+	public void playerLeft(Player player) {
 		this._teleportController.playerQuitted(player);
-		bungeePlayerQuitted(new EithonPlayer(player), getBungeeServerName());
+		bungeePlayerLeft(new EithonPlayer(player), getBungeeServerName());
 	}
 
 	public void bungeePlayerJoined(EithonPlayer player, String thatServerName) {
 		this._bungeePlayers.put(player, thatServerName);
 	}
 
-	public void bungeePlayerQuitted(EithonPlayer player, String thatServerName) {
+	public void bungeePlayerLeft(EithonPlayer player, String thatServerName) {
 		this._bungeePlayers.remove(player, thatServerName);
 	}
 	
@@ -172,7 +171,7 @@ public class Controller {
 
 	public boolean connectPlayerToServer(Player player, String serverName) {
 		// TODO: Is serverName the same as Server.getServerName() or bungeeController.getServerName?
-		if (player.getServer().getServerName().equalsIgnoreCase(serverName)) {
+		if (serverName.equalsIgnoreCase(getBungeeServerName())) {
 			Config.M.alreadyConnectedToServer.sendMessage(player, serverName);
 			return false;
 		}

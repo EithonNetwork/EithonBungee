@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class EventListener implements Listener {
@@ -43,11 +44,18 @@ public class EventListener implements Listener {
 		this._controller.playerJoined(event.getPlayer());
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled=true)
 	public void onPlayerQuitEvent(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
-		this._controller.playerQuitted(player);
+		this._controller.playerLeft(player);
+	}
+
+	@EventHandler(ignoreCancelled=true)
+	public void onPlayerKickEvent(PlayerKickEvent event) {
+		Player player = event.getPlayer();
+		if (player == null) return;
+		this._controller.playerLeft(player);
 	}
 
 	// Player joined on any bungee server
@@ -60,7 +68,7 @@ public class EventListener implements Listener {
 	// Player quit on any bungee server
 	@EventHandler
 	public void onEithonBungeeQuitEvent(EithonBungeeQuitEvent event) {
-		this._controller.bungeePlayerQuitted(event.getPlayer(), event.getThatServerName());
+		this._controller.bungeePlayerLeft(event.getPlayer(), event.getThatServerName());
 	}
 	
 	
