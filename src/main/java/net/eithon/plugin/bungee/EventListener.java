@@ -1,10 +1,10 @@
 package net.eithon.plugin.bungee;
 
-import net.eithon.library.bungee.EithonBungeeEvent;
-import net.eithon.library.bungee.EithonBungeeJoinEvent;
-import net.eithon.library.bungee.EithonBungeeQuitEvent;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.plugin.bungee.logic.Controller;
+import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeEvent;
+import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeJoinEvent;
+import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeQuitEvent;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,7 +15,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class EventListener implements Listener {
 	private Controller _controller;
-
+	
 	public EventListener(EithonPlugin eithonPlugin, Controller controller) {
 		this._controller = controller;
 	}
@@ -41,6 +41,8 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onPlayerJoinEvent(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+		if (player == null) return;
 		this._controller.playerJoined(event.getPlayer());
 	}
 

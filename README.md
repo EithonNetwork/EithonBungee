@@ -4,6 +4,10 @@ A Bot plugin for Minecraft
 
 ## Release history
 
+### 1.1 (2016-05-10)
+
+* NEW: Moved all Bungee related code from EithonLibrary to BungeePlugin.
+
 ### 1.0 (2016-05-09)
 
 * CHANGE: Complete rewrite of how we keep track of all players on all BungeeCord servers.

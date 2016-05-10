@@ -24,6 +24,7 @@ public class Config {
 		public static long maxAllowedMessageDelayInSeconds;
 		public static List<String> groupPriorities;
 		public static double reloadWarpLocationsAfterSeconds;
+		public static String primaryBungeeServer;
 
 		static void load(Configuration config) {
 			database = null;
@@ -32,6 +33,7 @@ public class Config {
 			groupPriorities = config.getStringList("GroupPriorities");
 			database = getDatabase(config);
 			reloadWarpLocationsAfterSeconds = config.getSeconds("ReloadWarpLocationsAfterTimeSpan", "5m");
+			primaryBungeeServer = config.getString("PrimaryBungeeServer", "Hub");
 		}
 
 		private static Database getDatabase(Configuration config) {

@@ -5,14 +5,15 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import net.eithon.library.bungee.BungeeController;
-import net.eithon.library.bungee.EithonBungeeQuitEvent;
 import net.eithon.library.command.EithonCommand;
 import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlayer;
-import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
+import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
+import net.eithon.plugin.bungee.EithonBungeePlugin;
+import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
+import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeQuitEvent;
 import net.eithon.plugin.bungee.logic.players.BungeePlayer;
 import net.eithon.plugin.bungee.logic.players.BungeePlayers;
 import net.eithon.plugin.bungee.logic.teleport.TeleportController;
@@ -22,32 +23,35 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.json.simple.JSONObject;
 
 public class Controller {	
 
 	private TeleportController _teleportController;
 	private BungeePlayers _bungeePlayers;
-	private EithonPlugin _eithonPlugin;
+	private EithonBungeePlugin _plugin;
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
 	private String _bungeeServerName;
+	private BungeeController _bungeeController;
 	
-	public Controller(EithonPlugin eithonPlugin) {
-		this._eithonPlugin = eithonPlugin;
-		this._bungeePlayers = new BungeePlayers(eithonPlugin);
-		this._teleportController = new TeleportController(eithonPlugin, this._bungeePlayers);
+	public Controller(EithonBungeePlugin plugin, BungeeController bungeeController) {
+		this._plugin = plugin;
+		this._bungeePlayers = new BungeePlayers(plugin, bungeeController);
+		this._bungeeController = bungeeController;
+		this._teleportController = new TeleportController(plugin, this._bungeePlayers, bungeeController);
 		this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
 		createEithonBungeeFixesListener();
 	}
 
 	private void createEithonBungeeFixesListener() {
-		BungeeListener bungeeListener = new BungeeListener(this._eithonPlugin, this);
-		this._eithonPlugin.getServer().getMessenger().
-		registerIncomingPluginChannel(this._eithonPlugin, BungeeListener.EITHON_BUNGEE_FIXES_CHANNEL, bungeeListener);
+		BungeeListener bungeeListener = new BungeeListener(this._plugin, this);
+		this._plugin.getServer().getMessenger().
+		registerIncomingPluginChannel(this._plugin, BungeeListener.EITHON_BUNGEE_FIXES_CHANNEL, bungeeListener);
 	}
 
 	void playerDisconnected(String serverName, UUID playerUuid) {
-		String thisServerName = this._eithonPlugin.getApi().getBungeeServerName();
+		String thisServerName = this._plugin.getApi().getBungeeServerName();
 		EithonPlayer player = new EithonPlayer(playerUuid);
 		String highestGroup = BungeeController.getHighestGroup(player.getOfflinePlayer());
 		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, serverName, player, highestGroup);
@@ -109,6 +113,17 @@ public class Controller {
 	public void playerJoined(Player player) {
 		this._teleportController.playerJoined(player);
 		this._bungeePlayers.addPlayerOnThisServerAsync(player);
+		delayedBungeeJoinEvent(player);
+	}
+
+	private void delayedBungeeJoinEvent(final Player player) {
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		final BungeeController controller = this._bungeeController;
+		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
+			public void run() {
+				controller.joinEvent(player);
+			}
+		}, TimeMisc.secondsToTicks(2));
 	}
 
 	public void playerLeft(Player player) {
@@ -143,7 +158,7 @@ public class Controller {
 		}
 		MessageToPlayerPojo info = new MessageToPlayerPojo(sender, receiver, message);
 		String bungeeServerName = bungeePlayer.getBungeeServerName();
-		this._eithonPlugin.getApi().bungeeSendDataToServer(bungeeServerName, "MessageToPlayer", info, true);
+		this._plugin.getApi().bungeeSendDataToServer(bungeeServerName, "MessageToPlayer", info, true);
 		return true;
 	}
 
@@ -178,7 +193,7 @@ public class Controller {
 
 		if (!playerCanConnectToServer(player, serverName)) return false;
 
-		boolean success = this._eithonPlugin.getApi().teleportPlayerToServer(player, serverName);
+		boolean success = this._plugin.getApi().teleportPlayerToServer(player, serverName);
 
 		if (!success) {
 			Config.M.couldNotConnectToServer.sendMessage(player, serverName, "Unspecified fail reason");
@@ -188,17 +203,17 @@ public class Controller {
 	}
 
 	private boolean playerCanConnectToServer(Player player, String serverName) {
-		return this._eithonPlugin.getApi().playerHasPermissionToAccessServerOrInformSender(player, player, serverName);
+		return this._plugin.getApi().playerHasPermissionToAccessServerOrInformSender(player, player, serverName);
 	}
 
 	private String getBungeeServerName() {
 		if (this._bungeeServerName != null) return this._bungeeServerName;
-		this._bungeeServerName = this._eithonPlugin.getApi().getBungeeServerName();
+		this._bungeeServerName = this._plugin.getApi().getBungeeServerName();
 		return this._bungeeServerName;
 	}
 
 	void verbose(String method, String format, Object... args) {
 		String message = CoreMisc.safeFormat(format, args);
-		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "Controller.%s: %s", method, message);
+		this._plugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "Controller.%s: %s", method, message);
 	}
 }

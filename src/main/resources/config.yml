@@ -22,6 +22,10 @@ ReloadWarpLocationsAfterTimeSpan: 5m
 
 GroupPriorities: [Owner, Admin, Developer, Architect, Designer, Mod, Submod, Tourist, Trusted, Vip1, Vip2, Vip3, Builder, Legendary, Veteran, Citizen, Member, New, Funder, Founder, RetiredAdmin, RetiredArchitect, RetiredMod]
 
+#
+# The primary server (from a BungeeChord perspective)
+PrimaryBungeeServer: Hub
+
 database:
   Name: eithon_bungee
   Hostname: localhost

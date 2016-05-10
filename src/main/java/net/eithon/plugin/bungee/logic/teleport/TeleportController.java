@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.plugin.bungee.Config;
+import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 import net.eithon.plugin.bungee.logic.players.BungeePlayers;
 
 import org.bukkit.Bukkit;
@@ -18,15 +19,18 @@ import org.bukkit.entity.Player;
 import org.json.simple.JSONObject;
 
 public class TeleportController {
-	private EithonPlugin _eithonPlugin;
 	private HashMap<UUID, TeleportPojo> _waitingForTeleport;
 	private HashMap<UUID, List<TeleportPojo>> _requestsForTeleport;
 	private String _bungeeServerName;
 	final private BungeePlayers _bungeePlayers;
+	private BungeeController _bungeeController;
 
-	public TeleportController(final EithonPlugin eithonPlugin, final BungeePlayers bungeePlayers) {
-		this._eithonPlugin = eithonPlugin;
+	public TeleportController(
+			final EithonPlugin eithonPlugin,
+			final BungeePlayers bungeePlayers, 
+			final BungeeController bungeeController) {
 		this._bungeePlayers = bungeePlayers;
+		this._bungeeController = bungeeController;
 		this._waitingForTeleport = new HashMap<UUID, TeleportPojo>();
 		this._requestsForTeleport = new HashMap<UUID, List<TeleportPojo>>();
 		this._bungeeServerName = null;
@@ -44,9 +48,9 @@ public class TeleportController {
 		} else {
 			TeleportPojo info = new TeleportPojo(movingPlayer, anchorPlayer);
 			info.setAsRequestFromMovingPlayer(force);
-			if (!this._eithonPlugin.getApi().playerHasPermissionToAccessServerOrInformSender(sender, movingPlayer, bungeeServerName)) return false;
+			if (!this._bungeeController.playerHasPermissionToAccessServerOrInformSender(sender, movingPlayer, bungeeServerName)) return false;
 			sendTeleportMessageToBungeeServer(bungeeServerName, info);
-			if (force) this._eithonPlugin.getApi().teleportPlayerToServer(movingPlayer, bungeeServerName);
+			if (force) this._bungeeController.connectToServer(movingPlayer, bungeeServerName);
 		}
 		return true;
 	}
@@ -58,9 +62,9 @@ public class TeleportController {
 		} else {
 			TeleportPojo info = new TeleportPojo(player, name);
 			String bungeeServerName = warpLocation.getBungeeServerName();
-			if (!this._eithonPlugin.getApi().playerHasPermissionToAccessServerOrInformSender(sender, player, bungeeServerName)) return false;
+			if (!this._bungeeController.playerHasPermissionToAccessServerOrInformSender(sender, player, bungeeServerName)) return false;
 			sendTeleportMessageToBungeeServer(bungeeServerName, info);
-			this._eithonPlugin.getApi().teleportPlayerToServer(player, bungeeServerName);
+			this._bungeeController.connectToServer(player, bungeeServerName);
 		}
 		return true;
 	}
@@ -231,16 +235,16 @@ public class TeleportController {
 		}
 		String bungeeServerName = this._bungeePlayers.getBungeeServerName(remotePlayerId);
 		if (bungeeServerName == null) return;
-		this._eithonPlugin.getApi().bungeeSendDataToServer(bungeeServerName, "TeleportToPlayer", info, true);
+		this._bungeeController.sendDataToServer(bungeeServerName, "TeleportToPlayer", info, true);
 	}
 
 	private void sendTeleportMessageToBungeeServer(String bungeeServerName, TeleportPojo info) {
-		this._eithonPlugin.getApi().bungeeSendDataToServer(bungeeServerName, "TeleportToPlayer", info, true);
+		this._bungeeController.sendDataToServer(bungeeServerName, "TeleportToPlayer", info, true);
 	}
 
 	private String getBungeeServerName() {
 		if (this._bungeeServerName != null) return this._bungeeServerName;
-		this._bungeeServerName = this._eithonPlugin.getApi().getBungeeServerName();
+		this._bungeeServerName = this._bungeeController.getBungeeServerName();
 		return this._bungeeServerName;
 	}
 
@@ -281,7 +285,7 @@ public class TeleportController {
 	}
 
 	public boolean warpAdd(CommandSender sender, String name, Location location) {
-		String bungeeServerName = this._eithonPlugin.getApi().getBungeeServerName();
+		String bungeeServerName = this._bungeeController.getBungeeServerName();
 		if (bungeeServerName == null) {
 			sender.sendMessage("Could not find the bungee name for this server. Please try again.");
 			return false;
