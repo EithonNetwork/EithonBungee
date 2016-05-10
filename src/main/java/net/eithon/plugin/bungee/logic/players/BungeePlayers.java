@@ -64,12 +64,34 @@ public class BungeePlayers {
 	}
 
 	private void addPlayerOnThisServer(final OfflinePlayer player) {
-		this._localPlayers++;
-		if (this._localPlayers == 1) refresh();
-		final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, getBungeeServerName());
-		synchronized(this._allCurrentPlayers) {
-			this._allCurrentPlayers.put(player, bungeePlayer);
+		addPlayerOnThisServer(player, 0);
+	}
+
+	private void addPlayerOnThisServer(final OfflinePlayer player, final int retries) {
+		if (retries >= 5) {
+			this._eithonPlugin.getEithonLogger().error("BungeePlayers.addPlayerOnThisServer: Could not find the bungee server name. Giving up after 5 retries.");
+			return;
 		}
+		String bungeeServerName = getBungeeServerName();
+		if (bungeeServerName != null) {
+			final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, bungeeServerName);
+			this._localPlayers++;
+			if (this._localPlayers == 1) {
+				refresh();
+				return;
+			}
+			synchronized(this._allCurrentPlayers) {
+				this._allCurrentPlayers.put(player, bungeePlayer);
+			}
+			return;
+		}
+		final BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				addPlayerOnThisServer(player, retries+1);
+			}
+		};
+		runnable.runTaskLaterAsynchronously(this._eithonPlugin, TimeMisc.secondsToTicks(1));
 	}
 
 	public void addPlayerOnOtherServerAsync(final OfflinePlayer player, final String otherServerName) {
