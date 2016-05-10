@@ -9,6 +9,7 @@ import net.eithon.library.core.PlayerCollection;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.library.time.TimeMisc;
+import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -22,9 +23,11 @@ public class BungeePlayers {
 	private EithonPlugin _eithonPlugin;
 	private String _bungeeServerName;
 	private int _localPlayers;
+	private BungeeController _bungeeController;
 
-	public BungeePlayers(EithonPlugin eithonPlugin) {
+	public BungeePlayers(EithonPlugin eithonPlugin, BungeeController bungeeController) {
 		this._eithonPlugin = eithonPlugin;
+		this._bungeeController = bungeeController;
 		this._bungeeServerName = null;
 		this._localPlayers = 0;
 		this._allCurrentPlayers = new PlayerCollection<BungeePlayer>();
@@ -193,7 +196,7 @@ public class BungeePlayers {
 
 	private String getBungeeServerName() {
 		if (this._bungeeServerName != null) return this._bungeeServerName;
-		this._bungeeServerName = this._eithonPlugin.getApi().getBungeeServerName();
+		this._bungeeServerName = this._bungeeController.getBungeeServerName();
 		return this._bungeeServerName;
 	}
 

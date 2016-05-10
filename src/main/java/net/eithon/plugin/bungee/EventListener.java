@@ -1,10 +1,11 @@
 package net.eithon.plugin.bungee;
 
-import net.eithon.library.bungee.EithonBungeeEvent;
-import net.eithon.library.bungee.EithonBungeeJoinEvent;
-import net.eithon.library.bungee.EithonBungeeQuitEvent;
+import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.plugin.bungee.logic.Controller;
+import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeEvent;
+import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeJoinEvent;
+import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeQuitEvent;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,7 +16,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class EventListener implements Listener {
 	private Controller _controller;
-
+	
 	public EventListener(EithonPlugin eithonPlugin, Controller controller) {
 		this._controller = controller;
 	}
@@ -41,7 +42,21 @@ public class EventListener implements Listener {
 
 	@EventHandler
 	public void onPlayerJoinEvent(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+		if (player == null) return;
 		this._controller.playerJoined(event.getPlayer());
+		maybeBroadcast(event, player);
+		String joinMessage = this._controller.getJoinMessage(player);
+		if (joinMessage != null) event.setJoinMessage(joinMessage);
+	}
+
+	private boolean maybeBroadcast(PlayerJoinEvent event, Player player) {
+		if (player.hasPlayedBefore()) {
+			return false;
+		}
+		event.setJoinMessage(Config.M.joinedServerFirstTime.getMessageWithColorCoding(player.getName()));
+		Config.M.pleaseWelcomeNewPlayer.broadcastMessage(player.getName());
+		return true;
 	}
 
 	@EventHandler(ignoreCancelled=true)
@@ -49,6 +64,8 @@ public class EventListener implements Listener {
 		Player player = event.getPlayer();
 		if (player == null) return;
 		this._controller.playerLeft(player);
+		String quitMessage = this._controller.getQuitMessage(player);
+		if (quitMessage != null) event.setQuitMessage(quitMessage);
 	}
 
 	@EventHandler(ignoreCancelled=true)
@@ -61,14 +78,19 @@ public class EventListener implements Listener {
 	// Player joined on any bungee server
 	@EventHandler
 	public void onEithonBungeeJoinEvent(EithonBungeeJoinEvent event) {
-		this._controller.bungeePlayerJoined(event.getPlayer(), event.getThatServerName());
-		
+		EithonPlayer player = event.getPlayer();
+		if (player == null) return;
+		this._controller.bungeePlayerJoined(player, event.getThatServerName());
+		this._controller.broadcastPlayerJoined(event.getThatServerName(), player, event.getMainGroup());		
 	}
 
 	// Player quit on any bungee server
 	@EventHandler
 	public void onEithonBungeeQuitEvent(EithonBungeeQuitEvent event) {
-		this._controller.bungeePlayerLeft(event.getPlayer(), event.getThatServerName());
+		EithonPlayer player = event.getPlayer();
+		if (player == null) return;
+		this._controller.bungeePlayerLeft(player, event.getThatServerName());
+		this._controller.broadcastPlayerQuitted(event.getThatServerName(), player, event.getMainGroup());
 	}
 	
 	
