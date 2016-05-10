@@ -44,13 +44,17 @@ public class BungeePlayers {
 	}
 
 	private void refresh() {
+		verbose("refresh", "Enter");
 		synchronized(this._allCurrentPlayers) {
 			this._allCurrentPlayers.clear();
 			for (BungeePlayer bungeePlayer : BungeePlayer.findAll()) {
 				this._allCurrentPlayers.put(bungeePlayer.getOfflinePlayer(), bungeePlayer);
+				verbose("refresh", "Added player %s, server %s", 
+						bungeePlayer.getOfflinePlayer().getName(), bungeePlayer.getBungeeServerName());
 			}
 			this._localPlayers = Bukkit.getOnlinePlayers().size();
 		}
+		verbose("refresh", "Leave");
 	}
 
 	public void addPlayerOnThisServerAsync(final Player player) {
@@ -68,11 +72,13 @@ public class BungeePlayers {
 	}
 
 	private void addPlayerOnThisServer(final OfflinePlayer player, final int retries) {
+		verbose("addPlayerOnThisServer", "player=%s, retries=%d", player.getName(), retries);
 		if (retries >= 5) {
 			this._eithonPlugin.getEithonLogger().error("BungeePlayers.addPlayerOnThisServer: Could not find the bungee server name. Giving up after 5 retries.");
 			return;
 		}
 		String bungeeServerName = getBungeeServerName();
+		verbose("addPlayerOnThisServer", "Local bungeeServerName=%s", bungeeServerName);
 		if (bungeeServerName != null) {
 			final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, bungeeServerName);
 			this._localPlayers++;
@@ -105,6 +111,7 @@ public class BungeePlayers {
 	}
 
 	private void addPlayerOnOtherServer(final OfflinePlayer player, final String otherServerName) {
+		verbose("addPlayerOnOtherServer", "player=%s, otherServerName=%s", player.getName(), otherServerName);
 		final BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
 		if ((bungeePlayer == null) || !otherServerName.equalsIgnoreCase(bungeePlayer.getBungeeServerName())) {
 			this._eithonPlugin.getEithonLogger().error(
@@ -129,6 +136,7 @@ public class BungeePlayers {
 	}
 
 	private void removePlayerOnThisServer(final OfflinePlayer player) {
+		verbose("removePlayerOnThisServer", "player=%s", player.getName());
 		this._localPlayers--;
 		final BungeePlayer bungeePlayer;
 		synchronized(this._allCurrentPlayers) {
@@ -150,11 +158,14 @@ public class BungeePlayers {
 	}
 
 	private void removePlayerOnOtherServer(final OfflinePlayer player, final String otherServerName) {
+		verbose("removePlayerOnOtherServer", "player=%s, otherServerName=%s", player.getName(), otherServerName);
 		synchronized(this._allCurrentPlayers) {
 			final BungeePlayer bungeePlayer = this._allCurrentPlayers.get(player);
 			if (bungeePlayer == null)  return;
 			if (!bungeePlayer.getBungeeServerName().equalsIgnoreCase(otherServerName)) {
 				// Join/leave probably out of sync. Update instead of remove.
+				verbose("removePlayerOnOtherServer", "Added player=%s, otherServerName=%s",
+						player.getName(), bungeePlayer.getBungeeServerName());
 				this._allCurrentPlayers.put(player, bungeePlayer);
 			} else {
 				this._allCurrentPlayers.remove(player);
