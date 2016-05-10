@@ -41,7 +41,7 @@ class BungeeListener implements PluginMessageListener {
 			MessageIn body = new MessageIn(msgIn.readByteArray()); 
 			eithonLibraryForward(body);
 		} else {
-			this._eithonPlugin.getEithonLogger().error("Unknown subchannel: %s", subchannel);			
+			verbose("onPluginMessageReceived", "Unknown subchannel: %s", subchannel);			
 		}
 		
 		verbose("onPluginMessageReceived", "Leave");
