@@ -1,6 +1,6 @@
 name: EithonBungee
-main: net.eithon.plugin.bungee.Plugin
-version: 1.0
+main: net.eithon.plugin.bungee.EithonBungeePlugin
+version: ${project.version}
 author: vanbrayne
 description: A Minecraft plugin for bungee server support
 depend: [EithonLibrary]

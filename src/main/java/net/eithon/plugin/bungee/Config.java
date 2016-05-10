@@ -7,6 +7,7 @@ import net.eithon.library.mysql.Database;
 import net.eithon.library.mysql.MySql;
 import net.eithon.library.plugin.ConfigurableMessage;
 import net.eithon.library.plugin.Configuration;
+import net.eithon.plugin.bungee.logic.individualmessage.IndividualConfigurableMessage;
 
 public class Config {
 	public static void load(EithonPlugin plugin)
@@ -64,6 +65,10 @@ public class Config {
 		public static ConfigurableMessage alreadyConnectedToServer;
 		public static ConfigurableMessage couldNotConnectToServer;
 		public static ConfigurableMessage connectedToServer;
+		public static ConfigurableMessage joinedServerFirstTime;
+		public static ConfigurableMessage pleaseWelcomeNewPlayer;
+		public static IndividualConfigurableMessage joinMessage;
+		public static IndividualConfigurableMessage quitMessage;
 
 		static void load(Configuration config) {
 			requestTpTo = config.getConfigurableMessage(
@@ -93,6 +98,12 @@ public class Config {
 					"Could not connect to server %s: %s");
 			connectedToServer = config.getConfigurableMessage("messages.ConnectedToServer", 1,
 					"Connected to server %s.");
+			joinedServerFirstTime = config.getConfigurableMessage("messages.JoinedServerFirstTime", 1,
+					"%s joined for the first time!");
+			pleaseWelcomeNewPlayer = config.getConfigurableMessage("messages.PleaseWelcomeNewPlayer", 1,
+					"Welcome %s to the server!");
+			joinMessage = new IndividualConfigurableMessage(config, "messages.join");
+			quitMessage = new IndividualConfigurableMessage(config, "messages.quit");
 		}		
 	}
 

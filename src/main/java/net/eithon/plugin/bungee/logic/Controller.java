@@ -14,6 +14,7 @@ import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeQuitEvent;
+import net.eithon.plugin.bungee.logic.individualmessage.IndividualMessageController;
 import net.eithon.plugin.bungee.logic.players.BungeePlayer;
 import net.eithon.plugin.bungee.logic.players.BungeePlayers;
 import net.eithon.plugin.bungee.logic.teleport.TeleportController;
@@ -34,14 +35,44 @@ public class Controller {
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
 	private String _bungeeServerName;
 	private BungeeController _bungeeController;
+	private IndividualMessageController _individualMessageController;
 	
 	public Controller(EithonBungeePlugin plugin, BungeeController bungeeController) {
 		this._plugin = plugin;
 		this._bungeePlayers = new BungeePlayers(plugin, bungeeController);
 		this._bungeeController = bungeeController;
 		this._teleportController = new TeleportController(plugin, this._bungeePlayers, bungeeController);
+		this._individualMessageController = new IndividualMessageController(plugin);
 		this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
 		createEithonBungeeFixesListener();
+	}
+
+	public void broadcastPlayerJoined(String serverName, EithonPlayer player, String groupName) {
+		verbose("broadcastPlayerJoined", String.format("Enter: serverName=%s, player=%s, groupName=%s",
+				serverName, player.getName(), groupName));
+		this._individualMessageController.broadcastPlayerJoined(serverName, player, groupName);
+		verbose("broadcastPlayerJoined", "Leave");
+	}
+
+	public String getJoinMessage(Player player) {
+		String serverName = this._bungeeController.getBungeeServerName();
+		EithonPlayer eithonPlayer = new EithonPlayer(player);
+		String mainGroup = BungeeController.getHighestGroup(player);
+		return this._individualMessageController.getJoinMessage(serverName, eithonPlayer, mainGroup);
+	}
+
+	public String getQuitMessage(Player player) {
+		String serverName = this._bungeeController.getBungeeServerName();
+		EithonPlayer eithonPlayer = new EithonPlayer(player);
+		String mainGroup = BungeeController.getHighestGroup(player);
+		return this._individualMessageController.getQuitMessage(serverName, eithonPlayer, mainGroup);
+	}
+
+	public void broadcastPlayerQuitted(String serverName, EithonPlayer player, String groupName) {
+		verbose("broadcastPlayerQuitted", String.format("Enter: serverName=%s, player=%s, groupName=%s",
+				serverName, player.getName(), groupName));
+		this._individualMessageController.broadcastPlayerQuit(serverName, player, groupName);
+		verbose("broadcastPlayerQuitted", "Leave");
 	}
 
 	private void createEithonBungeeFixesListener() {
