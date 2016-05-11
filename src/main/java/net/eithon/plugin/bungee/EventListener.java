@@ -23,28 +23,20 @@ public class EventListener implements Listener {
 	}
 
 	// Handle teleport events
-	@EventHandler
+	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeEvent(EithonBungeeEvent event) {
 		if (event.getName().equalsIgnoreCase("TeleportToPlayer")) {
-			onBungeeTeleportToPlayer(event);
+			this._controller.handleTeleportEvent(event.getData());
 		}
 		if (event.getName().equalsIgnoreCase("MessageToPlayer")) {
-			onBungeeMessageToPlayer(event);
+			this._controller.handleMessageEvent(event.getData());
 		}
 		if (event.getName().equalsIgnoreCase(BungeePlayerController.BUNGEE_PLAYER)) {
 			this._controller.handleBungeePlayer(event.getData());
 		}
 	}
 
-	private void onBungeeTeleportToPlayer(EithonBungeeEvent event) {
-		this._controller.handleTeleportEvent(event.getData());
-	}
-
-	private void onBungeeMessageToPlayer(EithonBungeeEvent event) {
-		this._controller.handleMessageEvent(event.getData());
-	}
-
-	@EventHandler
+	@EventHandler(ignoreCancelled=true)
 	public void onPlayerJoinEvent(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
