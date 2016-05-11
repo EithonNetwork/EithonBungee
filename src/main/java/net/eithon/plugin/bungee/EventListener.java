@@ -6,6 +6,7 @@ import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeEvent;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeJoinEvent;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeQuitEvent;
+import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,6 +30,9 @@ public class EventListener implements Listener {
 		}
 		if (event.getName().equalsIgnoreCase("MessageToPlayer")) {
 			onBungeeMessageToPlayer(event);
+		}
+		if (event.getName().equalsIgnoreCase(BungeePlayerController.BUNGEE_PLAYER)) {
+			this._controller.handleBungeePlayer(event.getData());
 		}
 	}
 
@@ -76,20 +80,18 @@ public class EventListener implements Listener {
 	}
 
 	// Player joined on any bungee server
-	@EventHandler
+	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeJoinEvent(EithonBungeeJoinEvent event) {
 		EithonPlayer player = event.getPlayer();
 		if (player == null) return;
-		this._controller.bungeePlayerJoined(player, event.getThatServerName());
 		this._controller.broadcastPlayerJoined(event.getThatServerName(), player, event.getMainGroup());		
 	}
 
 	// Player quit on any bungee server
-	@EventHandler
+	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeQuitEvent(EithonBungeeQuitEvent event) {
 		EithonPlayer player = event.getPlayer();
 		if (player == null) return;
-		this._controller.bungeePlayerLeft(player, event.getThatServerName());
 		this._controller.broadcastPlayerQuitted(event.getThatServerName(), player, event.getMainGroup());
 	}
 	

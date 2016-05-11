@@ -41,14 +41,14 @@ public class BungeeController {
 
 	public String getBungeeServerName() { return this._serverName; }
 	public String getMinecraftServerName() { return this._eithonPlugin.getServer().getServerName(); }
-	
+
 
 	void setServerName(String serverName) { this._serverName = serverName; }
 
 	public boolean connectToServer(Player player, String serverName) { 
 		if (!playerHasPermissionToAccessServer(player, serverName)) return false;
 		return this._bungeeSender.connect(player, serverName);
-		}
+	}
 
 	public void joinEvent(Player player) {
 		joinQuitEvent(player, "JoinEvent");
@@ -65,6 +65,11 @@ public class BungeeController {
 		verbose("broadcastMessage", String.format("success=%s", success ? "TRUE" : "FALSE"));
 		verbose("broadcastMessage", "Leave");
 		return success;
+	}
+
+	public boolean sendDataToAll(String name,
+			IJsonObject<?> data, boolean rejectOld) {
+		return sendDataToServer("All", name, data, rejectOld);
 	}
 
 	public boolean sendDataToServer(String targetServerName, String name,

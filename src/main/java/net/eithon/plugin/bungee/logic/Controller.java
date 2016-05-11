@@ -16,7 +16,7 @@ import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeQuitEvent;
 import net.eithon.plugin.bungee.logic.individualmessage.IndividualMessageController;
 import net.eithon.plugin.bungee.logic.players.BungeePlayer;
-import net.eithon.plugin.bungee.logic.players.BungeePlayers;
+import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 import net.eithon.plugin.bungee.logic.teleport.TeleportController;
 
 import org.bukkit.Bukkit;
@@ -30,7 +30,7 @@ import org.json.simple.JSONObject;
 public class Controller {	
 
 	private TeleportController _teleportController;
-	private BungeePlayers _bungeePlayers;
+	private BungeePlayerController _bungeePlayers;
 	private EithonBungeePlugin _plugin;
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
 	private String _bungeeServerName;
@@ -39,7 +39,7 @@ public class Controller {
 	
 	public Controller(EithonBungeePlugin plugin, BungeeController bungeeController) {
 		this._plugin = plugin;
-		this._bungeePlayers = new BungeePlayers(plugin, bungeeController);
+		this._bungeePlayers = new BungeePlayerController(plugin, bungeeController);
 		this._bungeeController = bungeeController;
 		this._teleportController = new TeleportController(plugin, this._bungeePlayers, bungeeController);
 		this._individualMessageController = new IndividualMessageController(plugin);
@@ -160,14 +160,6 @@ public class Controller {
 	public void playerLeft(Player player) {
 		this._bungeePlayers.removePlayerOnThisServerAsync(player);
 	}
-
-	public void bungeePlayerJoined(EithonPlayer player, String otherServerName) {
-		this._bungeePlayers.addPlayerOnOtherServerAsync(player.getOfflinePlayer(), otherServerName);
-	}
-
-	public void bungeePlayerLeft(EithonPlayer player, String otherServerName) {
-		this._bungeePlayers.removePlayerOnOtherServerAsync(player.getOfflinePlayer(), otherServerName);
-	}
 	
 	public List<String> getBungeePlayerNames(EithonCommand ec) {
 		List<String> names = this._bungeePlayers.getNames();
@@ -246,5 +238,9 @@ public class Controller {
 	void verbose(String method, String format, Object... args) {
 		String message = CoreMisc.safeFormat(format, args);
 		this._plugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "Controller.%s: %s", method, message);
+	}
+
+	public void handleBungeePlayer(JSONObject data) {
+		this._bungeePlayers.handleBungeePlayerAsync(data);
 	}
 }

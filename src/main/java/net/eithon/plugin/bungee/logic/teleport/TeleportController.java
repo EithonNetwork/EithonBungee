@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
-import net.eithon.plugin.bungee.logic.players.BungeePlayers;
+import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -22,12 +22,12 @@ public class TeleportController {
 	private HashMap<UUID, TeleportPojo> _waitingForTeleport;
 	private HashMap<UUID, List<TeleportPojo>> _requestsForTeleport;
 	private String _bungeeServerName;
-	final private BungeePlayers _bungeePlayers;
+	final private BungeePlayerController _bungeePlayers;
 	private BungeeController _bungeeController;
 
 	public TeleportController(
 			final EithonPlugin eithonPlugin,
-			final BungeePlayers bungeePlayers, 
+			final BungeePlayerController bungeePlayers, 
 			final BungeeController bungeeController) {
 		this._bungeePlayers = bungeePlayers;
 		this._bungeeController = bungeeController;
