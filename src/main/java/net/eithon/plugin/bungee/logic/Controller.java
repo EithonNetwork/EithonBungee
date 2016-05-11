@@ -24,7 +24,7 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.json.simple.JSONObject;
 
 public class Controller {	
@@ -148,13 +148,17 @@ public class Controller {
 	}
 
 	private void delayedBungeeJoinEvent(final Player player) {
-		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-		final BungeeController controller = this._bungeeController;
-		scheduler.scheduleSyncDelayedTask(this._plugin, new Runnable() {
+		if (getBungeeServerName() != null) {
+			this._bungeeController.joinEvent(player);
+			return;
+		}		
+		final BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
 			public void run() {
-				controller.joinEvent(player);
+				delayedBungeeJoinEvent(player);
 			}
-		}, TimeMisc.secondsToTicks(2));
+		};
+		runnable.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1));
 	}
 
 	public void playerLeft(Player player) {

@@ -69,7 +69,7 @@ public class BungeeController {
 
 	public boolean sendDataToAll(String name,
 			IJsonObject<?> data, boolean rejectOld) {
-		return sendDataToServer("All", name, data, rejectOld);
+		return sendDataToServer("ALL", name, data, rejectOld);
 	}
 
 	public boolean sendDataToServer(String targetServerName, String name,

@@ -113,6 +113,7 @@ public class BungeePlayerController {
 	}
 
 	public void removePlayerOnThisServerAsync(final Player player) {
+		broadcastRemoveBungeePlayer(player);
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -132,7 +133,6 @@ public class BungeePlayerController {
 			this._allCurrentPlayers.remove(player);
 		}
 		bungeePlayer.maybeDelete(getBungeeServerName());
-		broadcastRemoveBungeePlayer(player);
 	}
 
 	public List<String> getNames() {
