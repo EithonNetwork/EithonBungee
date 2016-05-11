@@ -142,20 +142,16 @@ public class Controller {
 	}
 
 	public void playerJoined(Player player) {
-		this._teleportController.playerJoined(player);
-		this._bungeePlayers.addPlayerOnThisServerAsync(player);
-		delayedBungeeJoinEvent(player);
-	}
-
-	private void delayedBungeeJoinEvent(final Player player) {
 		if (getBungeeServerName() != null) {
+			this._teleportController.playerJoined(player);
+			this._bungeePlayers.addPlayerOnThisServerAsync(player);
 			this._bungeeController.joinEvent(player);
 			return;
 		}		
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
-				delayedBungeeJoinEvent(player);
+				playerJoined(player);
 			}
 		};
 		runnable.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1));

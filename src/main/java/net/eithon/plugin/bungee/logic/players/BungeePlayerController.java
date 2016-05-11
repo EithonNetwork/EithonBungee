@@ -74,32 +74,10 @@ public class BungeePlayerController {
 	}
 
 	private void addPlayerOnThisServer(final Player player) {
-		addPlayerOnThisServer(player, 0);
-	}
-
-	private void addPlayerOnThisServerAsync(final Player player,
-			final int retries) {
-		final BukkitRunnable runnable = new BukkitRunnable() {
-			@Override
-			public void run() {
-				addPlayerOnThisServer(player, retries+1);
-			}
-		};
-		runnable.runTaskLaterAsynchronously(this._eithonPlugin, TimeMisc.secondsToTicks(1));
-	}
-
-	private void addPlayerOnThisServer(final Player player, final int retries) {
-		verbose("addPlayerOnThisServer", "player=%s, retries=%d", player.getName(), retries);
-		if (retries >= 5) {
-			this._eithonPlugin.getEithonLogger().error("BungeePlayers.addPlayerOnThisServer: Could not find the bungee server name. Giving up after 5 retries.");
-			return;
-		}
+		verbose("addPlayerOnThisServer", "player=%s", player.getName());
 		String bungeeServerName = getBungeeServerName();
 		verbose("addPlayerOnThisServer", "Local bungeeServerName=%s", bungeeServerName);
-		if (bungeeServerName == null) {
-			addPlayerOnThisServerAsync(player, retries);
-			return;
-		}
+		if (bungeeServerName == null) return;
 		final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, bungeeServerName);
 		broadcastAddBungeePlayer(player);
 		if (this._localPlayers == 1) {
