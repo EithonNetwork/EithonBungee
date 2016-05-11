@@ -9,7 +9,7 @@ import net.eithon.plugin.bungee.Config;
 import org.bukkit.OfflinePlayer;
 import org.json.simple.JSONObject;
 
-public class MessageToPlayerPojo implements IJsonObject<MessageToPlayerPojo>{
+class MessageToPlayerPojo implements IJsonObject<MessageToPlayerPojo>{
 	private UUID sendingPlayerId;
 	private UUID receiverPlayerId;	// The player that we should teleport to
 	private LocalDateTime createdAt;

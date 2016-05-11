@@ -1,4 +1,4 @@
-package net.eithon.plugin.bungee.logic;
+package net.eithon.plugin.bungee.logic.teleport;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,26 +6,31 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.extensions.EithonPlugin;
-import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
+import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
+import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitScheduler;
+import org.json.simple.JSONObject;
 
 public class TeleportController {
-	private EithonPlugin _eithonPlugin;
 	private HashMap<UUID, TeleportPojo> _waitingForTeleport;
 	private HashMap<UUID, List<TeleportPojo>> _requestsForTeleport;
 	private String _bungeeServerName;
+	final private BungeePlayerController _bungeePlayers;
+	private BungeeController _bungeeController;
 
-	public TeleportController(EithonPlugin eithonPlugin) {
-		this._eithonPlugin = eithonPlugin;
+	public TeleportController(
+			final EithonPlugin eithonPlugin,
+			final BungeePlayerController bungeePlayers, 
+			final BungeeController bungeeController) {
+		this._bungeePlayers = bungeePlayers;
+		this._bungeeController = bungeeController;
 		this._waitingForTeleport = new HashMap<UUID, TeleportPojo>();
 		this._requestsForTeleport = new HashMap<UUID, List<TeleportPojo>>();
 		this._bungeeServerName = null;
@@ -33,8 +38,8 @@ public class TeleportController {
 	}
 
 	public boolean tpToPlayer(CommandSender sender, Player movingPlayer, OfflinePlayer anchorPlayer, boolean force) {
-		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayerOrInformSender(sender, anchorPlayer);
-		if (bungeePlayer == null) {
+		String bungeeServerName = this._bungeePlayers.getBungeeServerNameOrInformSender(sender, anchorPlayer);
+		if (bungeeServerName == null) {
 			sender.sendMessage(String.format("Player %s seems to be offline.", anchorPlayer.getName()));
 			return false;
 		}
@@ -43,10 +48,9 @@ public class TeleportController {
 		} else {
 			TeleportPojo info = new TeleportPojo(movingPlayer, anchorPlayer);
 			info.setAsRequestFromMovingPlayer(force);
-			String bungeeServerName = bungeePlayer.getBungeeServerName();
-			if (!this._eithonPlugin.getApi().playerHasPermissionToAccessServerOrInformSender(sender, movingPlayer, bungeeServerName)) return false;
+			if (!this._bungeeController.playerHasPermissionToAccessServerOrInformSender(sender, movingPlayer, bungeeServerName)) return false;
 			sendTeleportMessageToBungeeServer(bungeeServerName, info);
-			if (force) this._eithonPlugin.getApi().teleportPlayerToServer(movingPlayer, bungeeServerName);
+			if (force) this._bungeeController.connectToServer(movingPlayer, bungeeServerName);
 		}
 		return true;
 	}
@@ -58,27 +62,28 @@ public class TeleportController {
 		} else {
 			TeleportPojo info = new TeleportPojo(player, name);
 			String bungeeServerName = warpLocation.getBungeeServerName();
-			if (!this._eithonPlugin.getApi().playerHasPermissionToAccessServerOrInformSender(sender, player, bungeeServerName)) return false;
+			if (!this._bungeeController.playerHasPermissionToAccessServerOrInformSender(sender, player, bungeeServerName)) return false;
 			sendTeleportMessageToBungeeServer(bungeeServerName, info);
-			this._eithonPlugin.getApi().teleportPlayerToServer(player, bungeeServerName);
+			this._bungeeController.connectToServer(player, bungeeServerName);
 		}
 		return true;
 	}
 
 	public void tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) {
-		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayerOrInformSender(sender, movingPlayer);
-		if (bungeePlayer == null) return;
+		String bungeeServerName = this._bungeePlayers.getBungeeServerNameOrInformSender(sender, movingPlayer);
+		if (bungeeServerName == null) return;
 		
 		if (movingPlayer.isOnline() && force) {
 			movingPlayer.getPlayer().teleport(anchorPlayer);
 		} else {
 			TeleportPojo info = new TeleportPojo(movingPlayer, anchorPlayer);
 			info.setAsRequestFromAnchorPlayer(force);
-			sendTeleportMessageToBungeeServer(bungeePlayer.getBungeeServerName(), info);
+			sendTeleportMessageToBungeeServer(bungeeServerName, info);
 		}
 	}
 
-	public void handleTeleportEvent(TeleportPojo info) {
+	public void handleTeleportEvent(JSONObject jsonObject) {
+		TeleportPojo info = TeleportPojo.createFromJsonObject(jsonObject);
 		if (info.getMessageType() == TeleportPojo.WARP) {
 			// Prepare to teleport the moving player when he/she arrives
 			waitForPlayerToComeToServer(info);
@@ -176,30 +181,13 @@ public class TeleportController {
 
 		// The source player was unexpectedly not found on this server.
 		// Find the server that the player has moved to and forward the message there.
-		BungeePlayer bungeePlayer = BungeePlayer.getByPlayerId(info.getMovingPlayerId());
-		if (bungeePlayer == null) return null;
-		sendTeleportMessageToBungeeServer(bungeePlayer.getBungeeServerName(), info);
+		String bungeeServerName = this._bungeePlayers.getBungeeServerName(info.getMovingPlayerId());
+		if (bungeeServerName == null) return null;
+		sendTeleportMessageToBungeeServer(bungeeServerName, info);
 		return null;			
 	}
 
-	public void playerJoined(final Player player) {
-		String currentBungeeServerName = getBungeeServerName();
-		if (currentBungeeServerName != null) {
-			playerJoinedAndServerNameIsKnown(player, currentBungeeServerName);
-			return;
-		}
-		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-		scheduler.scheduleSyncDelayedTask(this._eithonPlugin, new Runnable() {
-			public void run() {
-				playerJoined(player);
-			}
-		}, TimeMisc.secondsToTicks(1));
-	}
-
-	private void playerJoinedAndServerNameIsKnown(final Player movingPlayer, final String currentBungeeServerName) {
-		final BungeePlayer bungeePlayer = BungeePlayer.getOrCreateByOfflinePlayer(movingPlayer, currentBungeeServerName);
-		if (bungeePlayer == null) return;
-		bungeePlayer.update(getBungeeServerName());
+	public void playerJoined(final Player movingPlayer) {
 		TeleportPojo info = this._waitingForTeleport.get(movingPlayer.getUniqueId());
 		if (info == null) return;
 		this._waitingForTeleport.remove(movingPlayer.getUniqueId());
@@ -224,9 +212,7 @@ public class TeleportController {
 
 	private void teleportToAnchorPlayer(final Player movingPlayer,
 			TeleportPojo info) {
-		final BungeePlayer anchorBungeePlayer = BungeePlayer.getByPlayerId(info.getAnchorPlayerId());
-		if (anchorBungeePlayer == null) return;
-		String anchorBungeeServerName = anchorBungeePlayer.getBungeeServerName();
+		final String anchorBungeeServerName = this._bungeePlayers.getBungeeServerName(info.getAnchorPlayerId());
 		if (anchorBungeeServerName == null) return;
 		if (!anchorBungeeServerName.equalsIgnoreCase(getBungeeServerName())) {
 			// The player has moved to another server, make another server switch
@@ -240,12 +226,6 @@ public class TeleportController {
 		forcedTpToOnlinePlayer(movingPlayer, anchorPlayer);
 	}
 
-	public void playerQuitted(Player player) {
-		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
-		if (bungeePlayer == null) return;
-		bungeePlayer.maybeDelete(getBungeeServerName());
-	}
-
 	private void sendTeleportMessageToBungeeServer(TeleportPojo info) {
 		UUID remotePlayerId = null;
 		if (info.getMessageDirectionIsFromMovingToAnchor()) {
@@ -253,19 +233,18 @@ public class TeleportController {
 		} else {
 			remotePlayerId = info.getMovingPlayerId();
 		}
-		BungeePlayer bungeePlayer = BungeePlayer.getByPlayerId(remotePlayerId);
-		if (bungeePlayer == null) return;
-		String bungeeServerName = bungeePlayer.getBungeeServerName();
-		this._eithonPlugin.getApi().bungeeSendDataToServer(bungeeServerName, "TeleportToPlayer", info, true);
+		String bungeeServerName = this._bungeePlayers.getBungeeServerName(remotePlayerId);
+		if (bungeeServerName == null) return;
+		this._bungeeController.sendDataToServer(bungeeServerName, "TeleportToPlayer", info, true);
 	}
 
 	private void sendTeleportMessageToBungeeServer(String bungeeServerName, TeleportPojo info) {
-		this._eithonPlugin.getApi().bungeeSendDataToServer(bungeeServerName, "TeleportToPlayer", info, true);
+		this._bungeeController.sendDataToServer(bungeeServerName, "TeleportToPlayer", info, true);
 	}
 
 	private String getBungeeServerName() {
 		if (this._bungeeServerName != null) return this._bungeeServerName;
-		this._bungeeServerName = this._eithonPlugin.getApi().getBungeeServerName();
+		this._bungeeServerName = this._bungeeController.getBungeeServerName();
 		return this._bungeeServerName;
 	}
 
@@ -306,7 +285,7 @@ public class TeleportController {
 	}
 
 	public boolean warpAdd(CommandSender sender, String name, Location location) {
-		String bungeeServerName = this._eithonPlugin.getApi().getBungeeServerName();
+		String bungeeServerName = this._bungeeController.getBungeeServerName();
 		if (bungeeServerName == null) {
 			sender.sendMessage("Could not find the bungee name for this server. Please try again.");
 			return false;
@@ -323,10 +302,5 @@ public class TeleportController {
 	private void tpPlayerHere(CommandSender sender, Player anchorPlayer, UUID movingPlayerId, boolean force) {
 		OfflinePlayer movingPlayer = Bukkit.getOfflinePlayer(movingPlayerId);
 		tpPlayerHere(sender, anchorPlayer, movingPlayer, force);
-	}
-
-	public void bungeePlayerJoined(EithonPlayer player, String thatServerName) {
-		// TODO Auto-generated method stub
-		
 	}
 }
