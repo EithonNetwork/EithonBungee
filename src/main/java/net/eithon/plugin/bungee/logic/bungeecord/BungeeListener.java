@@ -95,11 +95,10 @@ class BungeeListener implements PluginMessageListener {
 			verbose("joinEvent", "No user found, Leave");
 			return;				
 		}
-		String playerName = info.getPlayerName();
-		player.setNameIfHasNone(playerName);
 		String mainGroup = info.getMainGroup();
 		String thisServerName = this._controller.getBungeeServerName();
-		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(thisServerName, thatServerName, player, mainGroup);
+		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(thisServerName, thatServerName, 
+				info.getPlayerId(), info.getPlayerName(), mainGroup);
 		Bukkit.getServer().getPluginManager().callEvent(e);
 		verbose("joinEvent", "Leave");
 	}
@@ -107,16 +106,14 @@ class BungeeListener implements PluginMessageListener {
 	private void quitEvent(ForwardHeader forwardHeader, JoinQuitInfo info) {
 		verbose("quitEvent", "Enter");
 		String thatServerName = info.getServerName();
-		EithonPlayer player = new EithonPlayer(info.getPlayerId());
-		if (player.getOfflinePlayer() == null) {
+		if (info.getPlayerId() == null) {
 			verbose("quitEvent", "No user found, Leave");
 			return;				
 		}
-		String playerName = info.getPlayerName();
-		player.setNameIfHasNone(playerName);
 		String mainGroup = info.getMainGroup();
 		String thisServerName = this._controller.getBungeeServerName();
-		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, thatServerName, player, mainGroup);
+		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, thatServerName, 
+				info.getPlayerId(), info.getPlayerName(), mainGroup);
 		Bukkit.getServer().getPluginManager().callEvent(e);
 		verbose("quitEvent", "Leave");
 	}

@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import net.eithon.library.command.EithonCommand;
 import net.eithon.library.core.CoreMisc;
-import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
@@ -30,7 +29,7 @@ import org.json.simple.JSONObject;
 public class Controller {	
 
 	private TeleportController _teleportController;
-	private BungeePlayerController _bungeePlayers;
+	private BungeePlayerController _bungeePlayerController;
 	private EithonBungeePlugin _plugin;
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
 	private String _bungeeServerName;
@@ -39,39 +38,37 @@ public class Controller {
 	
 	public Controller(EithonBungeePlugin plugin, BungeeController bungeeController) {
 		this._plugin = plugin;
-		this._bungeePlayers = new BungeePlayerController(plugin, bungeeController);
+		this._bungeePlayerController = new BungeePlayerController(plugin, bungeeController);
 		this._bungeeController = bungeeController;
-		this._teleportController = new TeleportController(plugin, this._bungeePlayers, bungeeController);
+		this._teleportController = new TeleportController(plugin, this._bungeePlayerController, bungeeController);
 		this._individualMessageController = new IndividualMessageController(plugin);
 		this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
 		createEithonBungeeFixesListener();
 	}
 
-	public void broadcastPlayerJoined(String serverName, EithonPlayer player, String groupName) {
+	public void broadcastPlayerJoined(String serverName, UUID playerId, String playerName, String groupName) {
 		verbose("broadcastPlayerJoined", String.format("Enter: serverName=%s, player=%s, groupName=%s",
-				serverName, player.getName(), groupName));
-		this._individualMessageController.broadcastPlayerJoined(serverName, player, groupName);
+				serverName, playerName, groupName));
+		this._individualMessageController.broadcastPlayerJoined(serverName, playerName, groupName);
 		verbose("broadcastPlayerJoined", "Leave");
 	}
 
 	public String getJoinMessage(Player player) {
 		String serverName = this._bungeeController.getBungeeServerName();
-		EithonPlayer eithonPlayer = new EithonPlayer(player);
-		String mainGroup = BungeeController.getHighestGroup(player);
-		return this._individualMessageController.getJoinMessage(serverName, eithonPlayer, mainGroup);
+		String mainGroup = BungeeController.getHighestGroup(player.getUniqueId());
+		return this._individualMessageController.getJoinMessage(serverName, player.getName(), mainGroup);
 	}
 
 	public String getQuitMessage(Player player) {
 		String serverName = this._bungeeController.getBungeeServerName();
-		EithonPlayer eithonPlayer = new EithonPlayer(player);
-		String mainGroup = BungeeController.getHighestGroup(player);
-		return this._individualMessageController.getQuitMessage(serverName, eithonPlayer, mainGroup);
+		String mainGroup = BungeeController.getHighestGroup(player.getUniqueId());
+		return this._individualMessageController.getQuitMessage(serverName, player.getName(), mainGroup);
 	}
 
-	public void broadcastPlayerQuitted(String serverName, EithonPlayer player, String groupName) {
+	public void broadcastPlayerQuitted(String serverName, UUID playerId, String playerName, String groupName) {
 		verbose("broadcastPlayerQuitted", String.format("Enter: serverName=%s, player=%s, groupName=%s",
-				serverName, player.getName(), groupName));
-		this._individualMessageController.broadcastPlayerQuit(serverName, player, groupName);
+				serverName, playerName, groupName));
+		this._individualMessageController.broadcastPlayerQuit(serverName, playerName, groupName);
 		verbose("broadcastPlayerQuitted", "Leave");
 	}
 
@@ -81,11 +78,10 @@ public class Controller {
 		registerIncomingPluginChannel(this._plugin, BungeeListener.EITHON_BUNGEE_FIXES_CHANNEL, bungeeListener);
 	}
 
-	void playerDisconnected(String serverName, UUID playerUuid) {
+	void playerDisconnected(String serverName, UUID playerId, String playerName) {
 		String thisServerName = this._plugin.getApi().getBungeeServerName();
-		EithonPlayer player = new EithonPlayer(playerUuid);
-		String highestGroup = BungeeController.getHighestGroup(player.getOfflinePlayer());
-		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, serverName, player, highestGroup);
+		String highestGroup = BungeeController.getHighestGroup(playerId);
+		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, serverName, playerId, playerName, highestGroup);
 		Bukkit.getServer().getPluginManager().callEvent(e);	
 	}
 
@@ -144,7 +140,7 @@ public class Controller {
 	public void playerJoined(Player player) {
 		if (getBungeeServerName() != null) {
 			this._teleportController.playerJoined(player);
-			this._bungeePlayers.addPlayerOnThisServerAsync(player);
+			this._bungeePlayerController.addPlayerOnThisServerAsync(player);
 			this._bungeeController.joinEvent(player);
 			return;
 		}		
@@ -158,11 +154,12 @@ public class Controller {
 	}
 
 	public void playerLeft(Player player) {
-		this._bungeePlayers.removePlayerOnThisServerAsync(player);
+		this._bungeePlayerController.removePlayerOnThisServerAsync(player);
+		removeBungeePlayer(player.getUniqueId(), player.getName(), getBungeeServerName());
 	}
 	
 	public List<String> getBungeePlayerNames(EithonCommand ec) {
-		List<String> names = this._bungeePlayers.getNames();
+		List<String> names = this._bungeePlayerController.getNames();
 		Player currentPlayer = ec.getPlayer();
 		if (currentPlayer == null) return names;
 		String name = currentPlayer.getName();
@@ -174,7 +171,7 @@ public class Controller {
 
 	public boolean sendMessageToPlayer(Player sender, OfflinePlayer receiver,
 			String message) {
-		BungeePlayer bungeePlayer = this._bungeePlayers.getBungeePlayer(receiver);
+		BungeePlayer bungeePlayer = this._bungeePlayerController.getBungeePlayer(receiver);
 		if (bungeePlayer == null) {
 			sender.sendMessage(String.format("Player %s seems to be offline.", receiver.getName()));
 			return false;
@@ -240,7 +237,12 @@ public class Controller {
 		this._plugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "Controller.%s: %s", method, message);
 	}
 
-	public void handleBungeePlayer(JSONObject data) {
-		this._bungeePlayers.handleBungeePlayerAsync(data);
+	public void addBungeePlayer(JSONObject data) {
+		this._bungeePlayerController.addBungeePlayerAsync(data);
+	}
+
+	public void removeBungeePlayer(UUID playerId, String playerName, String otherServerName) {
+		this._bungeePlayerController.removePlayerAsync(playerId, playerName, otherServerName);
+		
 	}
 }

@@ -184,45 +184,51 @@ public class BungeePlayerController {
 		this._bungeeController.sendDataToAll(BUNGEE_PLAYER, info, true);
 	}
 
-	public void handleBungeePlayerAsync(final JSONObject data) {
+	public void addBungeePlayerAsync(final JSONObject data) {
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
-				handleBungeePlayer(data);
+				addBungeePlayer(BungeePlayerPojo.getFromJson(data));
 			}
 		};
 		runnable.runTaskAsynchronously(this._eithonPlugin);
 	}
 
-	private void handleBungeePlayer(JSONObject data) {
-		BungeePlayerPojo info = BungeePlayerPojo.getFromJson(data);
-		String otherServerName = info.getBungeeServerName();
-		if (otherServerName == null) {
-			removeBungeePlayer(info, otherServerName);
-		} else {
-			addBungeePlayer(info, otherServerName);
-		}
+	public void removePlayerAsync(
+			final UUID playerId,
+			final String playerName,
+			final String otherServerName) {
+		final BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				removeBungeePlayer(playerId, playerName, otherServerName);
+			}
+		};
+		runnable.runTaskAsynchronously(this._eithonPlugin);
 	}
 
-	private void removeBungeePlayer(BungeePlayerPojo info,
-			String otherServerName) {
+	private void removeBungeePlayer(
+			final UUID playerId,
+			final String playerName, 
+			final String otherServerName) {
 		synchronized(this._allCurrentPlayers) {
-			final BungeePlayer bungeePlayer = this._allCurrentPlayers.get(info.getPlayerId());
+			final BungeePlayer bungeePlayer = this._allCurrentPlayers.get(playerId);
 			if (bungeePlayer == null)  return;
 			if (!bungeePlayer.getBungeeServerName().equalsIgnoreCase(otherServerName)) {
 				// Join/leave probably out of sync. Update instead of remove.
 				this._eithonPlugin.getEithonLogger().warning(
 						"BungeePlayers.removeBungeePlayer(%s,%s): Server name in DB = %s. Will add/update instead of remove.",
-						info.getPlayerName(), otherServerName,
+						playerName, otherServerName,
 						bungeePlayer == null? "NULL" : bungeePlayer.getBungeeServerName());
-				this._allCurrentPlayers.put(info.getPlayerId(), bungeePlayer);
+				this._allCurrentPlayers.put(playerId, bungeePlayer);
 			} else {
-				this._allCurrentPlayers.remove(info.getPlayerId());
+				this._allCurrentPlayers.remove(playerId);
 			}
 		}
 	}
 
-	private void addBungeePlayer(BungeePlayerPojo info, String otherServerName) {
+	private void addBungeePlayer(BungeePlayerPojo info) {
+		final String otherServerName = info.getBungeeServerName();
 		final BungeePlayer bungeePlayer = BungeePlayer.getByPlayerId(info.getPlayerId());
 		if ((bungeePlayer == null) || !otherServerName.equalsIgnoreCase(bungeePlayer.getBungeeServerName())) {
 			this._eithonPlugin.getEithonLogger().error(

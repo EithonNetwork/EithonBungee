@@ -1,20 +1,23 @@
 package net.eithon.plugin.bungee.logic.bungeecord;
 
-import net.eithon.library.extensions.EithonPlayer;
+import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 
 public class EithonBungeeQuitEvent extends EithonBungeeJoinQuitEvent {
-	private static final HandlerList handlers = new HandlerList();
+	
+	public EithonBungeeQuitEvent(String thisServerName, String thatServerName,
+			UUID playerId, String playerName, String mainGroup) {
+		super(thisServerName, thatServerName, playerId, playerName, mainGroup);
+	}
 
-	public EithonBungeeQuitEvent(String thisServerName, String thatServerName, EithonPlayer player, String mainGroup) {
+	public EithonBungeeQuitEvent(String thisServerName, String thatServerName,
+			Player player, String mainGroup) {
 		super(thisServerName, thatServerName, player, mainGroup);
 	}
 
-	public EithonBungeeQuitEvent(String thisServerName, String thatServerName, Player player, String mainGroup) {
-		this(thisServerName, thatServerName, new EithonPlayer(player), mainGroup);
-	}
+	private static final HandlerList handlers = new HandlerList();
 
 	public static HandlerList getHandlerList() {
 		return handlers;

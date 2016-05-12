@@ -2,7 +2,6 @@ package net.eithon.plugin.bungee.logic.individualmessage;
 
 import java.util.HashMap;
 
-import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.ConfigurableMessage;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
@@ -16,29 +15,28 @@ public class IndividualMessageController {
 		this._eithonPlugin = eithonPlugin;
 	}
 	
-	public void broadcastPlayerJoined(String serverName, EithonPlayer player, String groupName) {
-		broadcastMessage(Config.M.joinMessage, serverName, player, groupName);
+	public void broadcastPlayerJoined(String serverName, String playerName, String groupName) {
+		broadcastMessage(Config.M.joinMessage, serverName, playerName, groupName);
 	}
 	
-	public void broadcastPlayerQuit(String serverName, EithonPlayer player, String groupName) {
-		broadcastMessage(Config.M.quitMessage, serverName, player, groupName);
+	public void broadcastPlayerQuit(String serverName, String playerName, String groupName) {
+		broadcastMessage(Config.M.quitMessage, serverName, playerName, groupName);
 	}
 	
-	public String getJoinMessage(String serverName, EithonPlayer player, String groupName) {
-		return getIndividualMessage(Config.M.joinMessage, serverName, player, groupName);
+	public String getJoinMessage(String serverName, String playerName, String groupName) {
+		return getIndividualMessage(Config.M.joinMessage, serverName, playerName, groupName);
 	}
 	
-	public String getQuitMessage(String serverName, EithonPlayer player, String groupName) {
-		return getIndividualMessage(Config.M.quitMessage, serverName, player, groupName);
+	public String getQuitMessage(String serverName, String playerName, String groupName) {
+		return getIndividualMessage(Config.M.quitMessage, serverName, playerName, groupName);
 	}
 	
-	private void broadcastMessage(IndividualConfigurableMessage message, String serverName, EithonPlayer player, String groupName) {
+	private void broadcastMessage(IndividualConfigurableMessage message, String serverName, String playerName, String groupName) {
 		verbose("broadCastMessage", "Enter, serverName =%s, Player = %s, group = %s", 
-				serverName, player == null ? "Unknown" : player.getName(), groupName);
-		String playerName = player == null ? "Unknown" : player.getName();
+				serverName, playerName, groupName);
 		ConfigurableMessage configurableMessage = message.getMessage(playerName, groupName);
 		if (configurableMessage == null) {
-			verbose("broadCastMessage", "Leave, No configurable message", player.getName());
+			verbose("broadCastMessage", "Leave, No configurable message", playerName);
 			return;
 		}
 		HashMap<String,String> namedArguments = new HashMap<String, String>();
@@ -48,13 +46,12 @@ public class IndividualMessageController {
 		verbose("broadCastMessage", "Leave");
 	}
 	
-	private String getIndividualMessage(IndividualConfigurableMessage message, String serverName, EithonPlayer player, String groupName) {
+	private String getIndividualMessage(IndividualConfigurableMessage message, String serverName, String playerName, String groupName) {
 		verbose("getIndividualMessage", "Enter, serverName =%s, Player = %s, group = %s", 
-				serverName, player == null ? "Unknown" : player.getName(), groupName);
-		String playerName = player == null ? "Unknown" : player.getName();
+				serverName, playerName, groupName);
 		ConfigurableMessage configurableMessage = message.getMessage(playerName, groupName);
 		if (configurableMessage == null) {
-			verbose("getIndividualMessage", "Leave, No configurable message", player.getName());
+			verbose("getIndividualMessage", "Leave, No configurable message", playerName);
 			return null;
 		}
 		HashMap<String,String> namedArguments = new HashMap<String, String>();
