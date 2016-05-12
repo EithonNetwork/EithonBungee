@@ -138,12 +138,15 @@ public class Controller {
 	}
 
 	public void playerJoined(Player player) {
+		verbose("playerJoined", "Player = %s", player.getName());
 		if (getBungeeServerName() != null) {
+			verbose("playerJoined", "BungeeServerName = %s", getBungeeServerName());
 			this._teleportController.playerJoined(player);
 			this._bungeePlayerController.addPlayerOnThisServerAsync(player);
 			this._bungeeController.joinEvent(player);
 			return;
 		}		
+		verbose("playerJoined", "Try again");
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
