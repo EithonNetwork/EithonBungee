@@ -16,7 +16,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.json.simple.JSONObject;
 
 public class BungeePlayerController {
@@ -25,25 +24,24 @@ public class BungeePlayerController {
 	private PlayerCollection<BungeePlayer> _allCurrentPlayers;
 	private EithonPlugin _eithonPlugin;
 	private String _bungeeServerName;
-	private int _localPlayers;
 	private BungeeController _bungeeController;
 
 	public BungeePlayerController(EithonPlugin eithonPlugin, BungeeController bungeeController) {
 		this._eithonPlugin = eithonPlugin;
 		this._bungeeController = bungeeController;
 		this._bungeeServerName = null;
-		this._localPlayers = 0;
 		this._allCurrentPlayers = new PlayerCollection<BungeePlayer>();
 		delayedRefresh();
 	}
 
-	void delayedRefresh() {
-		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-		scheduler.scheduleSyncDelayedTask(this._eithonPlugin, new Runnable() {
+	private void delayedRefresh() {
+		final BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
 			public void run() {
 				refresh();
 			}
-		}, TimeMisc.secondsToTicks(1));
+		};
+		runnable.runTaskLaterAsynchronously(this._eithonPlugin, TimeMisc.secondsToTicks(1));
 	}
 
 	public void refreshAsync() {
@@ -58,13 +56,15 @@ public class BungeePlayerController {
 
 	private void refresh() {
 		verbose("refresh", "Enter");
-		boolean refreshServers = false;
 		String thisBungeeServerName = getBungeeServerName();
+		if (thisBungeeServerName == null) {
+			delayedRefresh();
+			return;
+		}
+		boolean refreshServers = false;
 		synchronized(this._allCurrentPlayers) {
 			this._allCurrentPlayers.clear();
-			this._localPlayers = 0;
 			for (Player player : Bukkit.getOnlinePlayers()) {
-				this._localPlayers++;
 				BungeePlayer.createOrUpdate(player, getBungeeServerName());
 			}
 			for (BungeePlayer bungeePlayer : BungeePlayer.findAll()) {
@@ -106,15 +106,10 @@ public class BungeePlayerController {
 		String bungeeServerName = getBungeeServerName();
 		verbose("addPlayerOnThisServer", "Local bungeeServerName=%s", bungeeServerName);
 		if (bungeeServerName == null) return;
-		final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, bungeeServerName);
-		broadcastAddBungeePlayer(player);
-		if (this._localPlayers == 1) {
-			refresh();
-			return;
-		}
-		this._localPlayers++;
 		synchronized(this._allCurrentPlayers) {
+			final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, bungeeServerName);
 			this._allCurrentPlayers.put(player, bungeePlayer);
+			broadcastAddBungeePlayer(player);
 		}
 	}
 
@@ -130,7 +125,6 @@ public class BungeePlayerController {
 
 	private void removePlayerOnThisServer(final Player player) {
 		verbose("removePlayerOnThisServer", "player=%s", player.getName());
-		this._localPlayers--;
 		final BungeePlayer bungeePlayer;
 		synchronized(this._allCurrentPlayers) {
 			bungeePlayer = this._allCurrentPlayers.get(player);
