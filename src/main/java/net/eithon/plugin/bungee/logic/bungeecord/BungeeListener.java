@@ -10,6 +10,7 @@ import net.eithon.plugin.eithonlibrary.Config;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.json.simple.JSONObject;
 
 class BungeeListener implements PluginMessageListener {
 
@@ -67,7 +68,8 @@ class BungeeListener implements PluginMessageListener {
 			quitEvent(forwardHeader, info);
 		} else if (commandName.equals("CallEvent")) {
 			EithonBungeeEvent info = EithonBungeeEvent.getFromJsonString(body);
-			verbose("eithonLibraryForward", "Calling EithonBungeeEvent %s (%s)", info.getName(), info.getData().toJSONString());
+			JSONObject data = info.getData();
+			verbose("eithonLibraryForward", "Calling EithonBungeeEvent %s (%s)", info.getName(), data == null ? "NULL": data.toJSONString());
 			this._eithonPlugin.getServer().getPluginManager().callEvent(info);
 		} else if (commandName.equals("BroadcastMessage")) {
 			MessageInfo info = MessageInfo.getFromJsonString(body);
