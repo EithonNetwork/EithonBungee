@@ -23,28 +23,19 @@ class BungeeListener implements PluginMessageListener {
 
 	@Override
 	public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-		verbose("onPluginMessageReceived", "Enter: channel=%s, player=%s, message=%s",
-				channel, player == null ? "NULL" : player.getName(), message.toString());
-
 		if (!channel.equals("BungeeCord")) {
-			verbose("onPluginMessageReceived", String.format("Unknown channel: %s", channel));			
 			return;
 		}
 		
 		MessageIn msgIn = new MessageIn(message);
 		String subchannel = msgIn.readString();
-		verbose("onPluginMessageReceived", String.format("subchannel=%s", subchannel));
 		if (subchannel.equals("GetServer")) {
 			String serverName = msgIn.readString();
 			getServer(serverName);
 		} else if (subchannel.equals("EithonLibraryForward")) {
 			MessageIn body = new MessageIn(msgIn.readByteArray()); 
 			eithonLibraryForward(body);
-		} else {
-			verbose("onPluginMessageReceived", "Unknown subchannel: %s", subchannel);			
 		}
-		
-		verbose("onPluginMessageReceived", "Leave");
 	}
 
 	private void getServer(String serverName) {
