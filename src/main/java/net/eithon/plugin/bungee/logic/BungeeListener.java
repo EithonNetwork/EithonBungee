@@ -41,9 +41,9 @@ class BungeeListener implements PluginMessageListener {
 		String command = in.readUTF();
 		if (command.equals(PLAYER_DISCONNECTED)) {
 			String serverName = in.readUTF();
-			String Uuid = in.readUTF();
+			String playerId = in.readUTF();
 			String playerName = in.readUTF();
-			this._controller.playerDisconnected(serverName, UUID.fromString(Uuid), playerName);
+			this._controller.playerDisconnected(serverName, UUID.fromString(playerId), playerName);
 		} else {
 			verbose("onPluginMessageReceived", String.format("Unknown command: %s", command));			
 			return;			

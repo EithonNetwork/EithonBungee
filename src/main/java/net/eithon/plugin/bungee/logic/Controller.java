@@ -54,13 +54,13 @@ public class Controller {
 	}
 
 	public String getJoinMessage(Player player) {
-		String serverName = this._bungeeController.getBungeeServerName();
+		String serverName = getBungeeServerName();
 		String mainGroup = BungeeController.getHighestGroup(player.getUniqueId());
 		return this._individualMessageController.getJoinMessage(serverName, player.getName(), mainGroup);
 	}
 
 	public String getQuitMessage(Player player) {
-		String serverName = this._bungeeController.getBungeeServerName();
+		String serverName = getBungeeServerName();
 		String mainGroup = BungeeController.getHighestGroup(player.getUniqueId());
 		return this._individualMessageController.getQuitMessage(serverName, player.getName(), mainGroup);
 	}
@@ -239,6 +239,10 @@ public class Controller {
 
 	public void addBungeePlayer(JSONObject data) {
 		this._bungeePlayerController.addBungeePlayerAsync(data);
+	}
+
+	public void refreshBungeePlayer() {
+		this._bungeePlayerController.refreshAsync();
 	}
 
 	public void removeBungeePlayer(UUID playerId, String playerName, String otherServerName) {

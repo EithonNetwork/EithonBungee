@@ -33,6 +33,9 @@ public class EventListener implements Listener {
 		if (event.getName().equalsIgnoreCase(BungeePlayerController.BUNGEE_PLAYER)) {
 			this._controller.addBungeePlayer(event.getData());
 		}
+		if (event.getName().equalsIgnoreCase(BungeePlayerController.BUNGEE_PLAYER_REFRESH)) {
+			this._controller.refreshBungeePlayer();
+		}
 	}
 
 	@EventHandler(ignoreCancelled=true)
