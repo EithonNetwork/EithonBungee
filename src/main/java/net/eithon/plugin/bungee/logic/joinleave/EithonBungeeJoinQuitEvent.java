@@ -1,4 +1,4 @@
-package net.eithon.plugin.bungee.logic.bungeecord;
+package net.eithon.plugin.bungee.logic.joinleave;
 
 import java.util.UUID;
 

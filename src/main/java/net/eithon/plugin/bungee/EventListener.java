@@ -5,8 +5,8 @@ import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeEvent;
-import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeJoinEvent;
-import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeQuitEvent;
+import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeJoinEvent;
+import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeQuitEvent;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 
 import org.bukkit.entity.Player;

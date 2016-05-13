@@ -5,6 +5,8 @@ import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.library.title.Title;
+import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeJoinEvent;
+import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeQuitEvent;
 import net.eithon.plugin.eithonlibrary.Config;
 
 import org.bukkit.Bukkit;
