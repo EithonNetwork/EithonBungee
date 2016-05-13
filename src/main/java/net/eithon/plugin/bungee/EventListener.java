@@ -39,10 +39,10 @@ public class EventListener implements Listener {
 			this._controller.addBungeePlayer(event.getData());
 		}
 		if (event.getName().equalsIgnoreCase(JoinLeaveController.JOIN_EVENT)) {
-			this._controller.publishJoinEvent(event.getData());
+			this._controller.publishJoinEventOnThisServer(event.getData());
 		}
 		if (event.getName().equalsIgnoreCase(JoinLeaveController.LEAVE_EVENT)) {
-			this._controller.publishLeaveEvent(event.getData());
+			this._controller.publishLeaveEventOnThisServer(event.getData());
 		}
 		if (event.getName().equalsIgnoreCase(BungeePlayerController.BUNGEE_PLAYER_REFRESH)) {
 			this._controller.refreshBungeePlayer();

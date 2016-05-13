@@ -249,12 +249,12 @@ public class Controller {
 
 	}
 
-	public void publishJoinEvent(JSONObject data) {
+	public void publishJoinEventOnThisServer(JSONObject data) {
 		if (!controllersAreReady()) return;
 		this._joinLeaveController.publishJoinEventOnThisServer(data);
 	}
 
-	public void publishLeaveEvent(JSONObject data) {
+	public void publishLeaveEventOnThisServer(JSONObject data) {
 		this._joinLeaveController.publishLeaveEventOnThisServer(data);
 	}
 
