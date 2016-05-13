@@ -50,14 +50,6 @@ public class EithonBungeeApi {
 		return this._controller.connectToServer(player, serverName);
 	}
 
-	public void bungeeJoinEvent(Player player) {
-		this._controller.joinEvent(player);
-	}
-
-	public void bungeeQuitEvent(Player player) {
-		this._controller.quitEvent(player);
-	}
-
 	public boolean bungeeSendDataToServer(String serverName, String name, IJsonObject<?> data, boolean rejectOld) {
 		return this._controller.sendDataToServer(serverName, name, data, rejectOld);
 	}

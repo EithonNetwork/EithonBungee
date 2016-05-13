@@ -7,6 +7,7 @@ import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeJoinEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeLeaveEvent;
+import net.eithon.plugin.bungee.logic.joinleave.JoinLeaveController;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 
 import org.bukkit.entity.Player;
@@ -36,6 +37,12 @@ public class EventListener implements Listener {
 		}
 		if (event.getName().equalsIgnoreCase(BungeePlayerController.BUNGEE_PLAYER)) {
 			this._controller.addBungeePlayer(event.getData());
+		}
+		if (event.getName().equalsIgnoreCase(JoinLeaveController.JOIN_EVENT)) {
+			this._controller.publishJoinEvent(event.getData());
+		}
+		if (event.getName().equalsIgnoreCase(JoinLeaveController.LEAVE_EVENT)) {
+			this._controller.publishLeaveEvent(event.getData());
 		}
 		if (event.getName().equalsIgnoreCase(BungeePlayerController.BUNGEE_PLAYER_REFRESH)) {
 			this._controller.refreshBungeePlayer();
