@@ -3,19 +3,14 @@ package net.eithon.plugin.bungee.logic.joinleave;
 import java.util.UUID;
 
 import net.eithon.library.core.CoreMisc;
-import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.facades.PermissionsFacade;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
-import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
-import net.eithon.plugin.bungee.logic.bungeecord.ForwardHeader;
-import net.eithon.plugin.bungee.logic.bungeecord.JoinQuitInfo;
 import net.eithon.plugin.eithonlibrary.Config;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.json.simple.JSONObject;
 
 public class JoinLeaveController {
@@ -46,28 +41,6 @@ public class JoinLeaveController {
 		Bukkit.getServer().getPluginManager().callEvent(e);			
 	}
 
-	public void sendJoinEventToOtherServers(Player player) {
-		sendEventToOtherServers(player, JOIN_EVENT);
-	}
-
-	public void sendLeaveEventToOtherServers(Player player) {
-		sendEventToOtherServers(player, LEAVE_EVENT);
-	}
-
-	private void sendEventToOtherServers(Player player, String eventName) {
-		verbose("joinQuitEvent", "Enter, player = %s", player == null ? "NULL" : player.getName());
-		if (player == null) return;
-		String mainGroup = getHighestGroup(player.getUniqueId());
-		verbose("joinQuitEvent", String.format("mainGroup=%s", mainGroup));
-		JoinQuitInfo info = new JoinQuitInfo(_serverName, player.getUniqueId(), player.getName(), mainGroup);
-		this._bungeeController.sendDataToAll(eventName, info, true);
-	}
-
-	private void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "BungeeController.%s: %s", method, message);
-	}
-
 	public static String getHighestGroup(UUID playerId) {
 		String[] currentGroups = PermissionsFacade.getPlayerPermissionGroups(playerId);
 		for (String priorityGroup : Config.V.groupPriorities) {
@@ -78,5 +51,28 @@ public class JoinLeaveController {
 			}
 		}
 		return null;
+	}
+
+	public void sendJoinEventToOtherServers(Player player) {
+		sendEventToOtherServers(player, JOIN_EVENT);
+	}
+
+	public void sendLeaveEventToOtherServers(Player player) {
+		sendEventToOtherServers(player, LEAVE_EVENT);
+	}
+
+	private void sendEventToOtherServers(Player player, String eventName) {
+		verbose("sendEventToOtherServers", "Enter, player = %s", player == null ? "NULL" : player.getName());
+		if (player == null) return;
+		String mainGroup = getHighestGroup(player.getUniqueId());
+		verbose("sendEventToOtherServers", String.format("mainGroup=%s", mainGroup));
+		JoinQuitInfo info = new JoinQuitInfo(_serverName, player.getUniqueId(), player.getName(), mainGroup);
+		this._bungeeController.sendDataToAll(eventName, info, true);
+		verbose("sendEventToOtherServers", "Leave");
+	}
+
+	private void verbose(String method, String format, Object... args) {
+		String message = CoreMisc.safeFormat(format, args);
+		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "BungeeController.%s: %s", method, message);
 	}
 }

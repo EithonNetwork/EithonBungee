@@ -44,8 +44,12 @@ public class Controller {
 		this._individualMessageController = new IndividualMessageController(this._plugin);
 		waitForServerName();
 	}
-	
-	private boolean controllersAreReady() { return this._bungeeServerName != null; }
+
+	private boolean controllersAreReady() { 
+		boolean controllersAreReady = this._bungeeServerName != null;
+		verbose("controllersAreReady", controllersAreReady ? "TRUE" : "FALSE");
+		return controllersAreReady; 
+	}
 
 	private void waitForServerName() {
 		String bungeeServerName = this._bungeeController.getBungeeServerName();
@@ -260,9 +264,9 @@ public class Controller {
 
 	public void playerJoined(Player player) {	
 		if (!controllersAreReady()) return;
+		this._joinLeaveController.sendJoinEventToOtherServers(player);
 		this._teleportController.playerJoined(player);
 		this._bungeePlayerController.addPlayerOnThisServerAsync(player);
-		this._joinLeaveController.sendJoinEventToOtherServers(player);
 	}
 
 	public void playerLeft(Player player) {		

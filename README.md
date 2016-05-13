@@ -4,6 +4,10 @@ A Bot plugin for Minecraft
 
 ## Release history
 
+### 1.2 (2016-05-13)
+
+* NEW: Moved all join/leave code to a new package.
+
 ### 1.1 (2016-05-10)
 
 * NEW: Moved all Bungee related code from EithonLibrary to BungeePlugin.

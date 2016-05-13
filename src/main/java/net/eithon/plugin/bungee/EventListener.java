@@ -53,13 +53,14 @@ public class EventListener implements Listener {
 	public void onPlayerJoinEvent(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
-		this._controller.playerJoined(event.getPlayer());
-		maybeBroadcast(event, player);
+		verbose("onPlayerJoinEvent", "Player=%s", player.getName());
 		String joinMessage = this._controller.getJoinMessage(player);
 		if (joinMessage != null) event.setJoinMessage(joinMessage);
+		treatFirstTimeUsersSpecial(event, player);
+		this._controller.playerJoined(event.getPlayer());
 	}
 
-	private boolean maybeBroadcast(PlayerJoinEvent event, Player player) {
+	private boolean treatFirstTimeUsersSpecial(PlayerJoinEvent event, Player player) {
 		if (player.hasPlayedBefore()) {
 			return false;
 		}
@@ -72,9 +73,9 @@ public class EventListener implements Listener {
 	public void onPlayerQuitEvent(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
-		this._controller.playerLeft(player);
 		String quitMessage = this._controller.getQuitMessage(player);
 		if (quitMessage != null) event.setQuitMessage(quitMessage);
+		this._controller.playerLeft(player);
 	}
 
 	@EventHandler(ignoreCancelled=true)
@@ -95,6 +96,7 @@ public class EventListener implements Listener {
 	// Player quit on any bungee server
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeQuitEvent(EithonBungeeLeaveEvent event) {
+		verbose("onEithonBungeeQuitEvent", "Player=%s", event.getPlayerName());
 		if (event.getPlayerId() == null) return;
 		this._controller.broadcastPlayerQuitted(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
 		this._controller.removeBungeePlayer(event.getPlayerId(), event.getPlayerName(), event.getThatServerName());
