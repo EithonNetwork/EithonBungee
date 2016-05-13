@@ -13,7 +13,7 @@ import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 import net.eithon.plugin.bungee.logic.individualmessage.IndividualMessageController;
-import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeQuitEvent;
+import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeLeaveEvent;
 import net.eithon.plugin.bungee.logic.players.BungeePlayer;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 import net.eithon.plugin.bungee.logic.teleport.TeleportController;
@@ -81,7 +81,7 @@ public class Controller {
 	void playerDisconnected(String serverName, UUID playerId, String playerName) {
 		String thisServerName = this._plugin.getApi().getBungeeServerName();
 		String highestGroup = BungeeController.getHighestGroup(playerId);
-		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, serverName, playerId, playerName, highestGroup);
+		EithonBungeeLeaveEvent e = new EithonBungeeLeaveEvent(thisServerName, serverName, playerId, playerName, highestGroup);
 		Bukkit.getServer().getPluginManager().callEvent(e);	
 	}
 

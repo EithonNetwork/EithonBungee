@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 
-public class EithonBungeeJoinEvent extends EithonBungeeJoinQuitEvent {
+public class EithonBungeeJoinEvent extends EithonBungeeJoinLeaveEvent {
 	private static final HandlerList handlers = new HandlerList();
 
 	public EithonBungeeJoinEvent(String thisServerName, String thatServerName, UUID playerId, String playerName, String mainGroup) {

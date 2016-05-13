@@ -5,14 +5,14 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
-public abstract class EithonBungeeJoinQuitEvent extends Event {
+public abstract class EithonBungeeJoinLeaveEvent extends Event {
 	private UUID _playerId;
 	private String _playerName;
 	private String _mainGroup;
 	private String _thisServerName;
 	private String _thatServerName;
 
-	public EithonBungeeJoinQuitEvent(String thisServerName, String thatServerName, UUID playerId, String playerName, String mainGroup) {
+	public EithonBungeeJoinLeaveEvent(String thisServerName, String thatServerName, UUID playerId, String playerName, String mainGroup) {
 		this._thisServerName = thisServerName;
 		this._thatServerName = thatServerName;
 		this._playerId = playerId;
@@ -20,7 +20,7 @@ public abstract class EithonBungeeJoinQuitEvent extends Event {
 		this._mainGroup = mainGroup;
 	}
 	
-	public EithonBungeeJoinQuitEvent(String thisServerName, String thatServerName, Player player, String mainGroup) {
+	public EithonBungeeJoinLeaveEvent(String thisServerName, String thatServerName, Player player, String mainGroup) {
 		this(thisServerName, thatServerName, player.getUniqueId(), player.getName(), mainGroup);
 	}
 	

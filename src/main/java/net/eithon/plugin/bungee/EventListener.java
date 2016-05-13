@@ -6,7 +6,7 @@ import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeJoinEvent;
-import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeQuitEvent;
+import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeLeaveEvent;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 
 import org.bukkit.entity.Player;
@@ -87,7 +87,7 @@ public class EventListener implements Listener {
 
 	// Player quit on any bungee server
 	@EventHandler(ignoreCancelled=true)
-	public void onEithonBungeeQuitEvent(EithonBungeeQuitEvent event) {
+	public void onEithonBungeeQuitEvent(EithonBungeeLeaveEvent event) {
 		if (event.getPlayerId() == null) return;
 		this._controller.broadcastPlayerQuitted(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
 		this._controller.removeBungeePlayer(event.getPlayerId(), event.getPlayerName(), event.getThatServerName());

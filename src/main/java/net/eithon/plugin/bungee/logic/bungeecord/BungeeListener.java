@@ -6,7 +6,7 @@ import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.library.title.Title;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeJoinEvent;
-import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeQuitEvent;
+import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeLeaveEvent;
 import net.eithon.plugin.eithonlibrary.Config;
 
 import org.bukkit.Bukkit;
@@ -107,7 +107,7 @@ class BungeeListener implements PluginMessageListener {
 		}
 		String mainGroup = info.getMainGroup();
 		String thisServerName = this._controller.getBungeeServerName();
-		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, thatServerName, 
+		EithonBungeeLeaveEvent e = new EithonBungeeLeaveEvent(thisServerName, thatServerName, 
 				info.getPlayerId(), info.getPlayerName(), mainGroup);
 		Bukkit.getServer().getPluginManager().callEvent(e);
 		verbose("quitEvent", "Leave");
