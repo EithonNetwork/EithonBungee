@@ -28,12 +28,12 @@ public class TeleportController {
 	public TeleportController(
 			final EithonPlugin eithonPlugin,
 			final BungeePlayerController bungeePlayers, 
-			final BungeeController bungeeController) {
+			final BungeeController bungeeController, String bungeeServerName) {
 		this._bungeePlayers = bungeePlayers;
 		this._bungeeController = bungeeController;
 		this._waitingForTeleport = new HashMap<UUID, TeleportPojo>();
 		this._requestsForTeleport = new HashMap<UUID, List<TeleportPojo>>();
-		this._bungeeServerName = null;
+		this._bungeeServerName = bungeeServerName;
 		WarpLocation.initialize(eithonPlugin);
 	}
 
@@ -57,7 +57,7 @@ public class TeleportController {
 
 	public boolean warpTo(CommandSender sender, Player player, String name) {
 		WarpLocation warpLocation = WarpLocation.getByName(name);
-		if (warpLocation.getBungeeServerName().equalsIgnoreCase(getBungeeServerName())) {
+		if (warpLocation.getBungeeServerName().equalsIgnoreCase(this._bungeeServerName)) {
 			player.teleport(warpLocation.getLocation());
 		} else {
 			TeleportPojo info = new TeleportPojo(player, name);
@@ -214,7 +214,7 @@ public class TeleportController {
 			TeleportPojo info) {
 		final String anchorBungeeServerName = this._bungeePlayers.getBungeeServerName(info.getAnchorPlayerId());
 		if (anchorBungeeServerName == null) return;
-		if (!anchorBungeeServerName.equalsIgnoreCase(getBungeeServerName())) {
+		if (!anchorBungeeServerName.equalsIgnoreCase(this._bungeeServerName)) {
 			// The player has moved to another server, make another server switch
 			OfflinePlayer anchorPlayer = Bukkit.getOfflinePlayer(info.getAnchorPlayerId());
 			if (anchorPlayer == null) return;
@@ -240,12 +240,6 @@ public class TeleportController {
 
 	private void sendTeleportMessageToBungeeServer(String bungeeServerName, TeleportPojo info) {
 		this._bungeeController.sendDataToServer(bungeeServerName, "TeleportToPlayer", info, true);
-	}
-
-	private String getBungeeServerName() {
-		if (this._bungeeServerName != null) return this._bungeeServerName;
-		this._bungeeServerName = this._bungeeController.getBungeeServerName();
-		return this._bungeeServerName;
 	}
 
 	private void forcedTpToOnlinePlayer(Player movingPlayer, Player anchorPlayer) {

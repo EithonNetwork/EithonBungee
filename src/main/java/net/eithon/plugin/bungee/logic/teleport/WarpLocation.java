@@ -46,7 +46,7 @@ public class WarpLocation {
 			}
 
 		};
-		runnable.runTaskTimer(eithonPlugin, 0, TimeMisc.secondsToTicks(Config.V.reloadWarpLocationsAfterSeconds));
+		runnable.runTaskTimerAsynchronously(eithonPlugin, 0, TimeMisc.secondsToTicks(Config.V.reloadWarpLocationsAfterSeconds));
 	}
 
 	private static List<WarpLocation> readAllFromDb() {

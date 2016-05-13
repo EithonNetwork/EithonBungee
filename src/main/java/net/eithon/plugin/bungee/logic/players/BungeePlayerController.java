@@ -26,22 +26,12 @@ public class BungeePlayerController {
 	private String _bungeeServerName;
 	private BungeeController _bungeeController;
 
-	public BungeePlayerController(EithonPlugin eithonPlugin, BungeeController bungeeController) {
+	public BungeePlayerController(EithonPlugin eithonPlugin, BungeeController bungeeController, String bungeeServerName) {
 		this._eithonPlugin = eithonPlugin;
 		this._bungeeController = bungeeController;
-		this._bungeeServerName = null;
+		this._bungeeServerName = bungeeServerName;
 		this._allCurrentPlayers = new PlayerCollection<BungeePlayer>();
-		delayedRefresh();
-	}
-
-	private void delayedRefresh() {
-		final BukkitRunnable runnable = new BukkitRunnable() {
-			@Override
-			public void run() {
-				refresh();
-			}
-		};
-		runnable.runTaskLaterAsynchronously(this._eithonPlugin, TimeMisc.secondsToTicks(1));
+		refreshAsync();
 	}
 
 	public void refreshAsync() {
@@ -56,19 +46,14 @@ public class BungeePlayerController {
 
 	private void refresh() {
 		verbose("refresh", "Enter");
-		String thisBungeeServerName = getBungeeServerName();
-		if (thisBungeeServerName == null) {
-			delayedRefresh();
-			return;
-		}
 		boolean refreshServers = false;
 		synchronized(this._allCurrentPlayers) {
 			this._allCurrentPlayers.clear();
 			for (Player player : Bukkit.getOnlinePlayers()) {
-				BungeePlayer.createOrUpdate(player, getBungeeServerName());
+				BungeePlayer.createOrUpdate(player, this._bungeeServerName);
 			}
 			for (BungeePlayer bungeePlayer : BungeePlayer.findAll()) {
-				boolean wasDeleted = deleteIfOffline(thisBungeeServerName, bungeePlayer);
+				boolean wasDeleted = deleteIfOffline(this._bungeeServerName, bungeePlayer);
 				if (wasDeleted) {
 					refreshServers = true;
 					continue;
@@ -103,11 +88,9 @@ public class BungeePlayerController {
 
 	private void addPlayerOnThisServer(final Player player) {
 		verbose("addPlayerOnThisServer", "player=%s", player.getName());
-		String bungeeServerName = getBungeeServerName();
-		verbose("addPlayerOnThisServer", "Local bungeeServerName=%s", bungeeServerName);
-		if (bungeeServerName == null) return;
+		verbose("addPlayerOnThisServer", "Local bungeeServerName=%s", this._bungeeServerName);
 		synchronized(this._allCurrentPlayers) {
-			final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, bungeeServerName);
+			final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, this._bungeeServerName);
 			this._allCurrentPlayers.put(player, bungeePlayer);
 			broadcastAddBungeePlayer(player);
 		}
@@ -131,7 +114,7 @@ public class BungeePlayerController {
 			if (bungeePlayer == null) return;
 			this._allCurrentPlayers.remove(player);
 		}
-		bungeePlayer.deleteIfServerNameMatches(getBungeeServerName());
+		bungeePlayer.deleteIfServerNameMatches(this._bungeeServerName);
 	}
 
 	public List<String> getNames() {
@@ -188,12 +171,6 @@ public class BungeePlayerController {
 		return bungeePlayer.getBungeeServerName();		
 	}
 
-	private String getBungeeServerName() {
-		if (this._bungeeServerName != null) return this._bungeeServerName;
-		this._bungeeServerName = this._bungeeController.getBungeeServerName();
-		return this._bungeeServerName;
-	}
-
 	private void broadcastRefresh() {
 		verbose("broadcastRefresh", "Enter");
 		this._bungeeController.sendDataToAll(BUNGEE_PLAYER_REFRESH, null, true);
@@ -201,8 +178,7 @@ public class BungeePlayerController {
 	}
 
 	private void broadcastAddBungeePlayer(Player player) {
-		String bungeeServerName = getBungeeServerName();
-		BungeePlayerPojo info = new BungeePlayerPojo(player, bungeeServerName);
+		BungeePlayerPojo info = new BungeePlayerPojo(player, this._bungeeServerName);
 		this._bungeeController.sendDataToAll(BUNGEE_PLAYER, info, true);
 	}
 
