@@ -1,28 +1,31 @@
 package net.eithon.plugin.bungee.logic.bungeecord;
 
-import net.eithon.library.extensions.EithonPlayer;
+import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
 public abstract class EithonBungeeJoinQuitEvent extends Event {
-	private EithonPlayer _player;
+	private UUID _playerId;
+	private String _playerName;
 	private String _mainGroup;
 	private String _thisServerName;
 	private String _thatServerName;
 
-	public EithonBungeeJoinQuitEvent(String thisServerName, String thatServerName, EithonPlayer player, String mainGroup) {
+	public EithonBungeeJoinQuitEvent(String thisServerName, String thatServerName, UUID playerId, String playerName, String mainGroup) {
 		this._thisServerName = thisServerName;
 		this._thatServerName = thatServerName;
-		this._player = player;
+		this._playerId = playerId;
+		this._playerName = playerName;
 		this._mainGroup = mainGroup;
 	}
-
+	
 	public EithonBungeeJoinQuitEvent(String thisServerName, String thatServerName, Player player, String mainGroup) {
-		this(thisServerName, thatServerName, new EithonPlayer(player), mainGroup);
+		this(thisServerName, thatServerName, player.getUniqueId(), player.getName(), mainGroup);
 	}
-
-	public EithonPlayer getPlayer() { return this._player; }
+	
+	public UUID getPlayerId() { return this._playerId; }
+	public String getPlayerName() { return this._playerName; }
 
 	public String getMainGroup() { return this._mainGroup; }
 

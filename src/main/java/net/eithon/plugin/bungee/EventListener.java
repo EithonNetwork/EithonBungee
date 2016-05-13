@@ -1,7 +1,8 @@
 package net.eithon.plugin.bungee;
 
-import net.eithon.library.extensions.EithonPlayer;
+import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
+import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeEvent;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeJoinEvent;
@@ -17,8 +18,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class EventListener implements Listener {
 	private Controller _controller;
+	private EithonPlugin _eithonPlugin;
 	
 	public EventListener(EithonPlugin eithonPlugin, Controller controller) {
+		this._eithonPlugin = eithonPlugin;
 		this._controller = controller;
 	}
 
@@ -32,7 +35,10 @@ public class EventListener implements Listener {
 			this._controller.handleMessageEvent(event.getData());
 		}
 		if (event.getName().equalsIgnoreCase(BungeePlayerController.BUNGEE_PLAYER)) {
-			this._controller.handleBungeePlayer(event.getData());
+			this._controller.addBungeePlayer(event.getData());
+		}
+		if (event.getName().equalsIgnoreCase(BungeePlayerController.BUNGEE_PLAYER_REFRESH)) {
+			this._controller.refreshBungeePlayer();
 		}
 	}
 
@@ -74,18 +80,21 @@ public class EventListener implements Listener {
 	// Player joined on any bungee server
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeJoinEvent(EithonBungeeJoinEvent event) {
-		EithonPlayer player = event.getPlayer();
-		if (player == null) return;
-		this._controller.broadcastPlayerJoined(event.getThatServerName(), player, event.getMainGroup());		
+		verbose("onEithonBungeeJoinEvent", "Player=%s", event.getPlayerName());
+		if (event.getPlayerId() == null) return;
+		this._controller.broadcastPlayerJoined(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());		
 	}
 
 	// Player quit on any bungee server
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeQuitEvent(EithonBungeeQuitEvent event) {
-		EithonPlayer player = event.getPlayer();
-		if (player == null) return;
-		this._controller.broadcastPlayerQuitted(event.getThatServerName(), player, event.getMainGroup());
+		if (event.getPlayerId() == null) return;
+		this._controller.broadcastPlayerQuitted(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
+		this._controller.removeBungeePlayer(event.getPlayerId(), event.getPlayerName(), event.getThatServerName());
 	}
 	
-	
+	void verbose(String method, String format, Object... args) {
+		String message = CoreMisc.safeFormat(format, args);
+		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "EventListener.%s: %s", method, message);
+	}
 }

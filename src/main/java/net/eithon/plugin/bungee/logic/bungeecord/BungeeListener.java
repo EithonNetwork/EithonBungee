@@ -10,6 +10,7 @@ import net.eithon.plugin.eithonlibrary.Config;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.json.simple.JSONObject;
 
 class BungeeListener implements PluginMessageListener {
 
@@ -23,28 +24,19 @@ class BungeeListener implements PluginMessageListener {
 
 	@Override
 	public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-		verbose("onPluginMessageReceived", "Enter: channel=%s, player=%s, message=%s",
-				channel, player == null ? "NULL" : player.getName(), message.toString());
-
 		if (!channel.equals("BungeeCord")) {
-			verbose("onPluginMessageReceived", String.format("Unknown channel: %s", channel));			
 			return;
 		}
 		
 		MessageIn msgIn = new MessageIn(message);
 		String subchannel = msgIn.readString();
-		verbose("onPluginMessageReceived", String.format("subchannel=%s", subchannel));
 		if (subchannel.equals("GetServer")) {
 			String serverName = msgIn.readString();
 			getServer(serverName);
 		} else if (subchannel.equals("EithonLibraryForward")) {
 			MessageIn body = new MessageIn(msgIn.readByteArray()); 
 			eithonLibraryForward(body);
-		} else {
-			verbose("onPluginMessageReceived", "Unknown subchannel: %s", subchannel);			
 		}
-		
-		verbose("onPluginMessageReceived", "Leave");
 	}
 
 	private void getServer(String serverName) {
@@ -76,7 +68,8 @@ class BungeeListener implements PluginMessageListener {
 			quitEvent(forwardHeader, info);
 		} else if (commandName.equals("CallEvent")) {
 			EithonBungeeEvent info = EithonBungeeEvent.getFromJsonString(body);
-			verbose("eithonLibraryForward", "Calling EithonBungeeEvent %s (%s)", info.getName(), info.getData().toJSONString());
+			JSONObject data = info.getData();
+			verbose("eithonLibraryForward", "Calling EithonBungeeEvent %s (%s)", info.getName(), data == null ? "NULL": data.toJSONString());
 			this._eithonPlugin.getServer().getPluginManager().callEvent(info);
 		} else if (commandName.equals("BroadcastMessage")) {
 			MessageInfo info = MessageInfo.getFromJsonString(body);
@@ -95,11 +88,10 @@ class BungeeListener implements PluginMessageListener {
 			verbose("joinEvent", "No user found, Leave");
 			return;				
 		}
-		String playerName = info.getPlayerName();
-		player.setNameIfHasNone(playerName);
 		String mainGroup = info.getMainGroup();
 		String thisServerName = this._controller.getBungeeServerName();
-		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(thisServerName, thatServerName, player, mainGroup);
+		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(thisServerName, thatServerName, 
+				info.getPlayerId(), info.getPlayerName(), mainGroup);
 		Bukkit.getServer().getPluginManager().callEvent(e);
 		verbose("joinEvent", "Leave");
 	}
@@ -107,16 +99,14 @@ class BungeeListener implements PluginMessageListener {
 	private void quitEvent(ForwardHeader forwardHeader, JoinQuitInfo info) {
 		verbose("quitEvent", "Enter");
 		String thatServerName = info.getServerName();
-		EithonPlayer player = new EithonPlayer(info.getPlayerId());
-		if (player.getOfflinePlayer() == null) {
+		if (info.getPlayerId() == null) {
 			verbose("quitEvent", "No user found, Leave");
 			return;				
 		}
-		String playerName = info.getPlayerName();
-		player.setNameIfHasNone(playerName);
 		String mainGroup = info.getMainGroup();
 		String thisServerName = this._controller.getBungeeServerName();
-		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, thatServerName, player, mainGroup);
+		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, thatServerName, 
+				info.getPlayerId(), info.getPlayerName(), mainGroup);
 		Bukkit.getServer().getPluginManager().callEvent(e);
 		verbose("quitEvent", "Leave");
 	}

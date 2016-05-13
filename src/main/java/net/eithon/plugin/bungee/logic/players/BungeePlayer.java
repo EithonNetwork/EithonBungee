@@ -65,14 +65,18 @@ public class BungeePlayer {
 		this.dbPlayer.updateBungeeServerName(bungeeServerName);
 	}
 
-	public void maybeDelete(String bungeeServerName) {
+	public boolean deleteIfServerNameMatches(String bungeeServerName) {
 		this.dbPlayer.refresh();
 		String currentBungeeServerName = getBungeeServerName();
-		if (currentBungeeServerName == null) return;
-		if (!currentBungeeServerName.equalsIgnoreCase(bungeeServerName)) return;
+		if (currentBungeeServerName == null) return false;
+		if (!currentBungeeServerName.equalsIgnoreCase(bungeeServerName)) return false;
 		this.dbPlayer.delete();
+		return true;
 	}
 
 	public String getBungeeServerName() { return this.dbPlayer.getBungeeServerName(); }
-	public OfflinePlayer getOfflinePlayer() { return this.offlinePlayer; }
+	private OfflinePlayer getOfflinePlayer() { return this.offlinePlayer; }
+	public String getPlayerName() { return this.dbPlayer.getPlayerName(); }
+	public UUID getPlayerId() { return this.dbPlayer.getPlayerId(); }
+	public boolean isOnline() { return getOfflinePlayer().isOnline(); }
 }

@@ -1,5 +1,7 @@
 package net.eithon.plugin.bungee.logic.bungeecord;
 
+import java.util.UUID;
+
 import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.facades.PermissionsFacade;
@@ -7,7 +9,6 @@ import net.eithon.library.json.IJsonObject;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.eithonlibrary.Config;
 
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONObject;
@@ -95,7 +96,7 @@ public class BungeeController {
 			verbose("joinQuitEvent", "Player NULL, Leave");
 			return false;
 		}
-		String mainGroup = getHighestGroup(player);
+		String mainGroup = getHighestGroup(player.getUniqueId());
 		verbose("joinQuitEvent", String.format("mainGroup=%s", mainGroup));
 		String serverName = getBungeeServerName();
 		verbose("joinQuitEvent", String.format("serverName=%s", serverName));
@@ -106,8 +107,8 @@ public class BungeeController {
 		return success;
 	}
 
-	public static String getHighestGroup(OfflinePlayer offlinePlayer) {
-		String[] currentGroups = PermissionsFacade.getPlayerPermissionGroups(offlinePlayer);
+	public static String getHighestGroup(UUID playerId) {
+		String[] currentGroups = PermissionsFacade.getPlayerPermissionGroups(playerId);
 		for (String priorityGroup : Config.V.groupPriorities) {
 			for (String playerGroup : currentGroups) {
 				if (playerGroup.equalsIgnoreCase(priorityGroup)) {
