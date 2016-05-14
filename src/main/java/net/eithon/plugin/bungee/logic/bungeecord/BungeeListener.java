@@ -1,13 +1,11 @@
 package net.eithon.plugin.bungee.logic.bungeecord;
 
 import net.eithon.library.core.CoreMisc;
-import net.eithon.library.extensions.EithonPlayer;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.library.title.Title;
 import net.eithon.plugin.eithonlibrary.Config;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.json.simple.JSONObject;
@@ -60,13 +58,7 @@ class BungeeListener implements PluginMessageListener {
 
 		String commandName = forwardHeader.getCommandName();
 		verbose("eithonLibraryForward", String.format("commandName=%s", commandName));
-		if (commandName.equals("JoinEvent")) {
-			JoinQuitInfo info = JoinQuitInfo.getFromJsonString(body);
-			joinEvent(forwardHeader, info);
-		} else if (commandName.equals("QuitEvent")) {
-			JoinQuitInfo info = JoinQuitInfo.getFromJsonString(body);
-			quitEvent(forwardHeader, info);
-		} else if (commandName.equals("CallEvent")) {
+		if (commandName.equals("CallEvent")) {
 			EithonBungeeEvent info = EithonBungeeEvent.getFromJsonString(body);
 			JSONObject data = info.getData();
 			verbose("eithonLibraryForward", "Calling EithonBungeeEvent %s (%s)", info.getName(), data == null ? "NULL": data.toJSONString());
@@ -78,37 +70,6 @@ class BungeeListener implements PluginMessageListener {
 			this._eithonPlugin.getEithonLogger().error("Unknown commandName: %s", commandName);			
 		}
 		verbose("onPluginMessageReceived", "Leave");
-	}
-
-	private void joinEvent(ForwardHeader forwardHeader, JoinQuitInfo info) {
-		verbose("joinEvent", "Enter");
-		String thatServerName = info.getServerName();
-		EithonPlayer player = new EithonPlayer(info.getPlayerId());
-		if (player.getOfflinePlayer() == null) {
-			verbose("joinEvent", "No user found, Leave");
-			return;				
-		}
-		String mainGroup = info.getMainGroup();
-		String thisServerName = this._controller.getBungeeServerName();
-		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(thisServerName, thatServerName, 
-				info.getPlayerId(), info.getPlayerName(), mainGroup);
-		Bukkit.getServer().getPluginManager().callEvent(e);
-		verbose("joinEvent", "Leave");
-	}
-
-	private void quitEvent(ForwardHeader forwardHeader, JoinQuitInfo info) {
-		verbose("quitEvent", "Enter");
-		String thatServerName = info.getServerName();
-		if (info.getPlayerId() == null) {
-			verbose("quitEvent", "No user found, Leave");
-			return;				
-		}
-		String mainGroup = info.getMainGroup();
-		String thisServerName = this._controller.getBungeeServerName();
-		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, thatServerName, 
-				info.getPlayerId(), info.getPlayerName(), mainGroup);
-		Bukkit.getServer().getPluginManager().callEvent(e);
-		verbose("quitEvent", "Leave");
 	}
 
 	private void broadcastMessage(ForwardHeader forwardHeader, MessageInfo info) {

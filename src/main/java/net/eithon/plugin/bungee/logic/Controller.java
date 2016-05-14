@@ -1,5 +1,6 @@
 package net.eithon.plugin.bungee.logic;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -12,8 +13,8 @@ import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
-import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeQuitEvent;
 import net.eithon.plugin.bungee.logic.individualmessage.IndividualMessageController;
+import net.eithon.plugin.bungee.logic.joinleave.JoinLeaveController;
 import net.eithon.plugin.bungee.logic.players.BungeePlayer;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 import net.eithon.plugin.bungee.logic.teleport.TeleportController;
@@ -28,22 +29,46 @@ import org.json.simple.JSONObject;
 
 public class Controller {	
 
-	private TeleportController _teleportController;
-	private BungeePlayerController _bungeePlayerController;
 	private EithonBungeePlugin _plugin;
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
 	private String _bungeeServerName;
-	private BungeeController _bungeeController;
 	private IndividualMessageController _individualMessageController;
-	
+	private JoinLeaveController _joinLeaveController;
+	private TeleportController _teleportController;
+	private BungeePlayerController _bungeePlayerController;
+	private BungeeController _bungeeController;
+
 	public Controller(EithonBungeePlugin plugin, BungeeController bungeeController) {
 		this._plugin = plugin;
-		this._bungeePlayerController = new BungeePlayerController(plugin, bungeeController);
 		this._bungeeController = bungeeController;
-		this._teleportController = new TeleportController(plugin, this._bungeePlayerController, bungeeController);
-		this._individualMessageController = new IndividualMessageController(plugin);
-		this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
-		createEithonBungeeFixesListener();
+		this._individualMessageController = new IndividualMessageController(this._plugin);
+		waitForServerName();
+	}
+
+	private boolean controllersAreReady() { 
+		boolean controllersAreReady = this._bungeeServerName != null;
+		verbose("controllersAreReady", controllersAreReady ? "TRUE" : "FALSE");
+		return controllersAreReady; 
+	}
+
+	private void waitForServerName() {
+		String bungeeServerName = this._bungeeController.getBungeeServerName();
+		if (this._bungeeServerName != null) {
+			this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController, bungeeServerName);
+			this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController, bungeeServerName);
+			this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController, bungeeServerName);
+			this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
+			createEithonBungeeFixesListener();
+			this._bungeeServerName = bungeeServerName;
+			return;
+		}
+		final BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				waitForServerName();
+			}
+		};
+		runnable.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1));
 	}
 
 	public void broadcastPlayerJoined(String serverName, UUID playerId, String playerName, String groupName) {
@@ -54,15 +79,13 @@ public class Controller {
 	}
 
 	public String getJoinMessage(Player player) {
-		String serverName = getBungeeServerName();
-		String mainGroup = BungeeController.getHighestGroup(player.getUniqueId());
-		return this._individualMessageController.getJoinMessage(serverName, player.getName(), mainGroup);
+		String mainGroup = JoinLeaveController.getHighestGroup(player.getUniqueId());
+		return this._individualMessageController.getJoinMessage(this._bungeeServerName, player.getName(), mainGroup);
 	}
 
 	public String getQuitMessage(Player player) {
-		String serverName = getBungeeServerName();
-		String mainGroup = BungeeController.getHighestGroup(player.getUniqueId());
-		return this._individualMessageController.getQuitMessage(serverName, player.getName(), mainGroup);
+		String mainGroup = JoinLeaveController.getHighestGroup(player.getUniqueId());
+		return this._individualMessageController.getQuitMessage(this._bungeeServerName, player.getName(), mainGroup);
 	}
 
 	public void broadcastPlayerQuitted(String serverName, UUID playerId, String playerName, String groupName) {
@@ -79,40 +102,44 @@ public class Controller {
 	}
 
 	void playerDisconnected(String serverName, UUID playerId, String playerName) {
-		String thisServerName = this._plugin.getApi().getBungeeServerName();
-		String highestGroup = BungeeController.getHighestGroup(playerId);
-		EithonBungeeQuitEvent e = new EithonBungeeQuitEvent(thisServerName, serverName, playerId, playerName, highestGroup);
-		Bukkit.getServer().getPluginManager().callEvent(e);	
+		// this._joinLeaveController.playerDisconnected(serverName, playerId, playerName);
 	}
 
 	public boolean requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
+		if (!controllersAreReady()) return false;
 		return this._teleportController.tpToPlayer(movingPlayer, movingPlayer, anchorPlayer, false);
 	}
 
 	public void forcedTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
+		if (!controllersAreReady()) return;
 		this._teleportController.tpToPlayer(movingPlayer, movingPlayer, anchorPlayer, true);
 	}
 
 	public void requestTpPlayerHere(Player movingPlayer, OfflinePlayer anchorPlayer) {
+		if (!controllersAreReady()) return;
 		this._teleportController.tpPlayerHere(movingPlayer, movingPlayer, anchorPlayer, false);
 	}
 
 	public void forcedTpPlayerHere(Player movingPlayer, OfflinePlayer anchorPlayer) {
+		if (!controllersAreReady()) return;
 		this._teleportController.tpPlayerHere(movingPlayer, movingPlayer, anchorPlayer, true);
 	}
 
 	public void tpDeny(Player localPlayer) {
+		if (!controllersAreReady()) return;
 		this._teleportController.deny(localPlayer, localPlayer);
 	}
 
 	public void tpAccept(Player localPlayer) {
+		if (!controllersAreReady()) return;
 		this._teleportController.accept(localPlayer, localPlayer);
 	}
-	
+
 	public void handleTeleportEvent(JSONObject jsonObject) {
+		if (!controllersAreReady()) return;
 		this._teleportController.handleTeleportEvent(jsonObject);
 	}
-	
+
 	public void handleMessageEvent(JSONObject jsonObject) {
 		MessageToPlayerPojo info = MessageToPlayerPojo.createFromJsonObject(jsonObject);
 		handleMessageEvent(info);
@@ -137,31 +164,8 @@ public class Controller {
 		verbose("handleMessageEvent", "Message was sent");
 	}
 
-	public void playerJoined(Player player) {
-		verbose("playerJoined", "Player = %s", player.getName());
-		if (getBungeeServerName() != null) {
-			verbose("playerJoined", "BungeeServerName = %s", getBungeeServerName());
-			this._teleportController.playerJoined(player);
-			this._bungeePlayerController.addPlayerOnThisServerAsync(player);
-			this._bungeeController.joinEvent(player);
-			return;
-		}		
-		verbose("playerJoined", "Try again");
-		final BukkitRunnable runnable = new BukkitRunnable() {
-			@Override
-			public void run() {
-				playerJoined(player);
-			}
-		};
-		runnable.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1));
-	}
-
-	public void playerLeft(Player player) {
-		this._bungeePlayerController.removePlayerOnThisServerAsync(player);
-		removeBungeePlayer(player.getUniqueId(), player.getName(), getBungeeServerName());
-	}
-	
 	public List<String> getBungeePlayerNames(EithonCommand ec) {
+		if (!controllersAreReady()) return new ArrayList<String>();
 		List<String> names = this._bungeePlayerController.getNames();
 		Player currentPlayer = ec.getPlayer();
 		if (currentPlayer == null) return names;
@@ -174,6 +178,7 @@ public class Controller {
 
 	public boolean sendMessageToPlayer(Player sender, OfflinePlayer receiver,
 			String message) {
+		if (!controllersAreReady()) return false;
 		BungeePlayer bungeePlayer = this._bungeePlayerController.getBungeePlayer(receiver);
 		if (bungeePlayer == null) {
 			sender.sendMessage(String.format("Player %s seems to be offline.", receiver.getName()));
@@ -197,19 +202,22 @@ public class Controller {
 	}
 
 	public List<String> getWarpNames() {
+		if (!controllersAreReady()) return new ArrayList<String>();
 		return this._teleportController.getWarpNames();
 	}
 
 	public boolean warpAdd(CommandSender sender, String name, Location location) {
+		if (!controllersAreReady()) return false;
 		return this._teleportController.warpAdd(sender, name, location);
 	}
 
 	public boolean warpTo(CommandSender sender, Player player, String name) {
+		if (!controllersAreReady()) return false;
 		return this._teleportController.warpTo(sender, player, name);
 	}
 
 	public boolean connectPlayerToServer(Player player, String serverName) {
-		if (serverName.equalsIgnoreCase(getBungeeServerName())) {
+		if (serverName.equalsIgnoreCase(this._bungeeServerName)) {
 			Config.M.alreadyConnectedToServer.sendMessage(player, serverName);
 			return false;
 		}
@@ -229,27 +237,46 @@ public class Controller {
 		return this._plugin.getApi().playerHasPermissionToAccessServerOrInformSender(player, player, serverName);
 	}
 
-	private String getBungeeServerName() {
-		if (this._bungeeServerName != null) return this._bungeeServerName;
-		this._bungeeServerName = this._plugin.getApi().getBungeeServerName();
-		return this._bungeeServerName;
+	public void addBungeePlayer(JSONObject data) {
+		if (!controllersAreReady()) return;
+		this._bungeePlayerController.addBungeePlayerAsync(data);
+	}
+
+	public void refreshBungeePlayer() {
+		if (!controllersAreReady()) return;
+		this._bungeePlayerController.refreshAsync();
+	}
+
+	public void removeBungeePlayer(UUID playerId, String playerName, String otherServerName) {
+		if (!controllersAreReady()) return;
+		this._bungeePlayerController.removePlayerAsync(playerId, playerName, otherServerName);
+
+	}
+
+	public void publishJoinEventOnThisServer(JSONObject data) {
+		if (!controllersAreReady()) return;
+		this._joinLeaveController.publishJoinEventOnThisServer(data);
+	}
+
+	public void publishLeaveEventOnThisServer(JSONObject data) {
+		this._joinLeaveController.publishLeaveEventOnThisServer(data);
+	}
+
+	public void playerJoined(Player player) {	
+		if (!controllersAreReady()) return;
+		this._joinLeaveController.sendJoinEventToOtherServers(player);
+		this._teleportController.playerJoined(player);
+		this._bungeePlayerController.addPlayerOnThisServerAsync(player);
+	}
+
+	public void playerLeft(Player player) {		
+		if (!controllersAreReady()) return;
+		this._bungeePlayerController.removePlayerOnThisServerAsync(player);
+		removeBungeePlayer(player.getUniqueId(), player.getName(), this._bungeeServerName);
 	}
 
 	void verbose(String method, String format, Object... args) {
 		String message = CoreMisc.safeFormat(format, args);
 		this._plugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "Controller.%s: %s", method, message);
-	}
-
-	public void addBungeePlayer(JSONObject data) {
-		this._bungeePlayerController.addBungeePlayerAsync(data);
-	}
-
-	public void refreshBungeePlayer() {
-		this._bungeePlayerController.refreshAsync();
-	}
-
-	public void removeBungeePlayer(UUID playerId, String playerName, String otherServerName) {
-		this._bungeePlayerController.removePlayerAsync(playerId, playerName, otherServerName);
-		
 	}
 }

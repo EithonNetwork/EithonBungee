@@ -51,14 +51,6 @@ public class BungeeController {
 		return this._bungeeSender.connect(player, serverName);
 	}
 
-	public void joinEvent(Player player) {
-		joinQuitEvent(player, "JoinEvent");
-	}
-
-	public void quitEvent(Player player) {
-		joinQuitEvent(player, "QuitEvent");
-	}
-
 	public boolean broadcastMessage(String message, boolean useTitle) {
 		verbose("broadcastMessage", "Enter, message = %s", message);
 		MessageInfo info = new MessageInfo(message, useTitle);
@@ -88,35 +80,6 @@ public class BungeeController {
 		boolean success = this._bungeeSender.forward(targetServerName, "CallEvent", info, rejectOld);
 		verbose("sendEventToServer", String.format("Leave, success=%s", success ? "TRUE" : "FALSE"));
 		return success;
-	}
-
-	private boolean joinQuitEvent(Player player, String eventName) {
-		verbose("joinQuitEvent", "Enter, player = %s", player == null ? "NULL" : player.getName());
-		if (player == null) {
-			verbose("joinQuitEvent", "Player NULL, Leave");
-			return false;
-		}
-		String mainGroup = getHighestGroup(player.getUniqueId());
-		verbose("joinQuitEvent", String.format("mainGroup=%s", mainGroup));
-		String serverName = getBungeeServerName();
-		verbose("joinQuitEvent", String.format("serverName=%s", serverName));
-		JoinQuitInfo info = new JoinQuitInfo(serverName, player.getUniqueId(), player.getName(), mainGroup);
-		boolean success = this._bungeeSender.forwardToAll(eventName, info, true, player);
-		verbose("joinQuitEvent", String.format("success=%s", success ? "TRUE" : "FALSE"));
-		verbose("joinQuitEvent", "Leave");
-		return success;
-	}
-
-	public static String getHighestGroup(UUID playerId) {
-		String[] currentGroups = PermissionsFacade.getPlayerPermissionGroups(playerId);
-		for (String priorityGroup : Config.V.groupPriorities) {
-			for (String playerGroup : currentGroups) {
-				if (playerGroup.equalsIgnoreCase(priorityGroup)) {
-					return priorityGroup;
-				}
-			}
-		}
-		return null;
 	}
 
 	public void simulateSendPluginMessage(BungeeController receiverServer, Player player, byte[] message) {

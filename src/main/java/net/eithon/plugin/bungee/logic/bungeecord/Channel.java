@@ -5,6 +5,8 @@ import net.eithon.library.time.TimeMisc;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import com.google.common.collect.Iterables;
@@ -61,7 +63,17 @@ class Channel {
 		messageOut.add(subChannel);
 		messageOut.add(arguments);
 		if (message != null) messageOut.add(message.toByteArray());
-		player.sendPluginMessage(this._eithonPlugin, "BungeeCord", messageOut.toByteArray());
+		sendSync(this._eithonPlugin, player, messageOut);
 		return true;
+	}
+
+	private void sendSync(Plugin plugin, Player player, MessageOut messageOut) {
+		final BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				player.sendPluginMessage(plugin, "BungeeCord", messageOut.toByteArray());
+			}
+		};
+		runnable.runTask(this._eithonPlugin);
 	}
 }
