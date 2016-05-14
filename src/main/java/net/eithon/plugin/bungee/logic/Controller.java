@@ -53,7 +53,7 @@ public class Controller {
 
 	private void waitForServerName() {
 		String bungeeServerName = this._bungeeController.getBungeeServerName();
-		if (this._bungeeServerName != null) {
+		if (bungeeServerName != null) {
 			this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController, bungeeServerName);
 			this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController, bungeeServerName);
 			this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController, bungeeServerName);
@@ -101,8 +101,8 @@ public class Controller {
 		registerIncomingPluginChannel(this._plugin, BungeeListener.EITHON_BUNGEE_FIXES_CHANNEL, bungeeListener);
 	}
 
-	void playerDisconnected(String serverName, UUID playerId, String playerName) {
-		// this._joinLeaveController.playerDisconnected(serverName, playerId, playerName);
+	void playerLeftOnAnotherServer(String serverName, UUID playerId, String playerName) {
+		this._joinLeaveController.playerLeftOnAnotherServer(serverName, playerId, playerName);
 	}
 
 	public boolean requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
