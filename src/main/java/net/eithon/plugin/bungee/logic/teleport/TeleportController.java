@@ -16,25 +16,30 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.json.simple.JSONObject;
 
 public class TeleportController {
+	public static final String TELEPORT_TO_PLAYER = "TeleportToPlayer";
+	public static final String WARP_LOCATION_REFRESH = "WarpLocationRefresh";
 	private HashMap<UUID, TeleportPojo> _waitingForTeleport;
 	private HashMap<UUID, List<TeleportPojo>> _requestsForTeleport;
 	private String _bungeeServerName;
 	final private BungeePlayerController _bungeePlayers;
 	private BungeeController _bungeeController;
+	private EithonPlugin _eithonPlugin;
 
 	public TeleportController(
 			final EithonPlugin eithonPlugin,
 			final BungeePlayerController bungeePlayers, 
 			final BungeeController bungeeController, String bungeeServerName) {
+		this._eithonPlugin = eithonPlugin;
 		this._bungeePlayers = bungeePlayers;
 		this._bungeeController = bungeeController;
 		this._waitingForTeleport = new HashMap<UUID, TeleportPojo>();
 		this._requestsForTeleport = new HashMap<UUID, List<TeleportPojo>>();
 		this._bungeeServerName = bungeeServerName;
-		WarpLocation.initialize(eithonPlugin);
+		this.refreshWarpLocationsAsync();
 	}
 
 	public boolean tpToPlayer(CommandSender sender, Player movingPlayer, OfflinePlayer anchorPlayer, boolean force) {
@@ -235,11 +240,11 @@ public class TeleportController {
 		}
 		String bungeeServerName = this._bungeePlayers.getBungeeServerName(remotePlayerId);
 		if (bungeeServerName == null) return;
-		this._bungeeController.sendDataToServer(bungeeServerName, "TeleportToPlayer", info, true);
+		this._bungeeController.sendDataToServer(bungeeServerName, TELEPORT_TO_PLAYER, info, true);
 	}
 
 	private void sendTeleportMessageToBungeeServer(String bungeeServerName, TeleportPojo info) {
-		this._bungeeController.sendDataToServer(bungeeServerName, "TeleportToPlayer", info, true);
+		this._bungeeController.sendDataToServer(bungeeServerName, TELEPORT_TO_PLAYER, info, true);
 	}
 
 	private void forcedTpToOnlinePlayer(Player movingPlayer, Player anchorPlayer) {
@@ -285,7 +290,20 @@ public class TeleportController {
 			return false;
 		}
 		WarpLocation.getOrCreateByName(name, bungeeServerName, location);
+		broadcastRefresh();
 		return true;
+	}
+
+	public void refreshWarpLocationsAsync() {
+		// End if a new initialize() has been issued.
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				WarpLocation.refresh();
+			}
+
+		}
+		.runTaskAsynchronously(this._eithonPlugin);
 	}
 
 	private void tpToPlayer(CommandSender sender, Player movingPlayer, UUID anchorPlayerId, boolean force) {
@@ -296,5 +314,9 @@ public class TeleportController {
 	private void tpPlayerHere(CommandSender sender, Player anchorPlayer, UUID movingPlayerId, boolean force) {
 		OfflinePlayer movingPlayer = Bukkit.getOfflinePlayer(movingPlayerId);
 		tpPlayerHere(sender, anchorPlayer, movingPlayer, force);
+	}
+
+	private void broadcastRefresh() {
+		this._bungeeController.sendDataToAll(WARP_LOCATION_REFRESH, null, true);
 	}
 }

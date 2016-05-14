@@ -28,7 +28,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.json.simple.JSONObject;
 
 public class Controller {	
-
+	public static final String MESSAGE_TO_PLAYER = "MessageToPlayer";
 	private EithonBungeePlugin _plugin;
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
 	private String _bungeeServerName;
@@ -186,7 +186,7 @@ public class Controller {
 		}
 		MessageToPlayerPojo info = new MessageToPlayerPojo(sender, receiver, message);
 		String bungeeServerName = bungeePlayer.getBungeeServerName();
-		this._plugin.getApi().bungeeSendDataToServer(bungeeServerName, "MessageToPlayer", info, true);
+		this._plugin.getApi().bungeeSendDataToServer(bungeeServerName, MESSAGE_TO_PLAYER, info, true);
 		return true;
 	}
 
@@ -245,6 +245,11 @@ public class Controller {
 	public void refreshBungeePlayer() {
 		if (!controllersAreReady()) return;
 		this._bungeePlayerController.refreshAsync();
+	}
+
+	public void refreshWarpLocations() {
+		if (!controllersAreReady()) return;
+		this._teleportController.refreshWarpLocationsAsync();	
 	}
 
 	public void removeBungeePlayer(UUID playerId, String playerName, String otherServerName) {
