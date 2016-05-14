@@ -7,6 +7,7 @@ A Bot plugin for Minecraft
 ### 1.2.1 (2016-05-14)
 
 * BUG: Leave messages did not show on other servers.
+* BUG: First person to join a server did not result in a join message on other servers.
 
 ### 1.2 (2016-05-13)
 

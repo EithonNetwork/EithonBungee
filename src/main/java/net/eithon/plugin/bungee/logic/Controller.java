@@ -262,8 +262,17 @@ public class Controller {
 		this._joinLeaveController.publishLeaveEventOnThisServer(data);
 	}
 
-	public void playerJoined(Player player) {	
-		if (!controllersAreReady()) return;
+	public void playerJoined(final Player player) {	
+		if (!controllersAreReady()) {
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					playerJoined(player);
+				}
+			}
+			.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1.0));
+			return;
+		};
 		this._joinLeaveController.sendJoinEventToOtherServers(player);
 		this._teleportController.playerJoined(player);
 		this._bungeePlayerController.addPlayerOnThisServerAsync(player);
