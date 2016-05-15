@@ -93,6 +93,7 @@ public class Controller {
 	public void broadcastPlayerQuitted(String serverName, UUID playerId, String playerName, String groupName) {
 		verbose("broadcastPlayerQuitted", String.format("Enter: serverName=%s, player=%s, groupName=%s",
 				serverName, playerName, groupName));
+		if (serverName.equalsIgnoreCase(_bungeeServerName)) return;
 		this._individualMessageController.broadcastPlayerQuit(serverName, playerName, groupName);
 		verbose("broadcastPlayerQuitted", "Leave");
 	}

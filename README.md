@@ -4,9 +4,13 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.3.2 (2016-05-15)
+
+* BUG: There were double quit messages on the server you quit from.
+
 ### 1.3.1 (2016-05-15)
 
-* BUG: There were double join messages on the server you join.
+* BUG: There were double join messages on the server you joined.
 * BUG: When you left the current server for another server, the original server lost track of you. 
 
 ### 1.3 (2016-05-14)
