@@ -39,8 +39,8 @@ public class EventListener implements Listener {
 		case Controller.MESSAGE_TO_PLAYER:
 			this._controller.handleMessageEvent(data);
 			break;
-		case BungeePlayerController.BUNGEE_PLAYER:
-			this._controller.addBungeePlayer(data);
+		case BungeePlayerController.BUNGEE_PLAYER_ADDED:
+			this._controller.bungeePlayerAddedOnOtherServer(data);
 			break;
 		case JoinLeaveController.JOIN_EVENT:
 			this._controller.publishJoinEventOnThisServer(data);
@@ -83,14 +83,14 @@ public class EventListener implements Listener {
 		if (player == null) return;
 		String quitMessage = this._controller.getQuitMessage(player);
 		if (quitMessage != null) event.setQuitMessage(quitMessage);
-		this._controller.playerLeft(player);
+		this._controller.playerLeftThisServer(player);
 	}
 
 	@EventHandler(ignoreCancelled=true)
 	public void onPlayerKickEvent(PlayerKickEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
-		this._controller.playerLeft(player);
+		this._controller.playerLeftThisServer(player);
 	}
 
 	// Player joined on any bungee server

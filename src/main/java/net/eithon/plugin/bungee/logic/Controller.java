@@ -226,9 +226,9 @@ public class Controller {
 		return this._teleportController.changeServer(player, serverName);
 	}
 
-	public void addBungeePlayer(JSONObject data) {
+	public void bungeePlayerAddedOnOtherServer(JSONObject data) {
 		if (!controllersAreReady()) return;
-		this._bungeePlayerController.addBungeePlayerAsync(data);
+		this._bungeePlayerController.bungeePlayerAddedOnOtherServerAsync(data);
 	}
 
 	public void refreshBungeePlayer() {
@@ -239,12 +239,6 @@ public class Controller {
 	public void refreshWarpLocations() {
 		if (!controllersAreReady()) return;
 		this._teleportController.refreshWarpLocationsAsync();	
-	}
-
-	public void removeBungeePlayer(UUID playerId, String playerName, String otherServerName) {
-		if (!controllersAreReady()) return;
-		this._bungeePlayerController.removePlayerAsync(playerId, playerName, otherServerName);
-
 	}
 
 	public void publishJoinEventOnThisServer(JSONObject data) {
@@ -272,10 +266,15 @@ public class Controller {
 		this._bungeePlayerController.addPlayerOnThisServerAsync(player);
 	}
 
-	public void playerLeft(Player player) {		
-		if (!controllersAreReady()) return;
-		this._bungeePlayerController.removePlayerOnThisServerAsync(player);
+	public void playerLeftThisServer(Player player) {		
 		removeBungeePlayer(player.getUniqueId(), player.getName(), this._bungeeServerName);
+	}
+
+	public void removeBungeePlayer(UUID playerId, String playerName, String otherServerName) {
+		if (!controllersAreReady()) return;
+		if (_bungeeServerName.equalsIgnoreCase(otherServerName)) return;
+		this._bungeePlayerController.removePlayerAsync(playerId, playerName, otherServerName);
+
 	}
 
 	void verbose(String method, String format, Object... args) {

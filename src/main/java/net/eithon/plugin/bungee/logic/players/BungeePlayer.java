@@ -79,4 +79,5 @@ public class BungeePlayer {
 	public String getPlayerName() { return this.dbPlayer.getPlayerName(); }
 	public UUID getPlayerId() { return this.dbPlayer.getPlayerId(); }
 	public boolean isOnline() { return getOfflinePlayer().isOnline(); }
+	public void refresh() { this.dbPlayer.refresh(); }
 }

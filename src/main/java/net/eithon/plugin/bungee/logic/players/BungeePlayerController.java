@@ -18,7 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.json.simple.JSONObject;
 
 public class BungeePlayerController {
-	public static final String BUNGEE_PLAYER = "BungeePlayer";
+	public static final String BUNGEE_PLAYER_ADDED = "BungeePlayerAdded";
 	public static final String BUNGEE_PLAYER_REFRESH = "BungeePlayerRefresh";
 	private PlayerCollection<BungeePlayer> _allCurrentPlayers;
 	private EithonPlugin _eithonPlugin;
@@ -91,29 +91,70 @@ public class BungeePlayerController {
 		synchronized(this._allCurrentPlayers) {
 			final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, this._bungeeServerName);
 			this._allCurrentPlayers.put(player, bungeePlayer);
-			broadcastAddBungeePlayer(player);
+			publishBungeePlayerAdded(player);
 		}
 	}
 
-	public void removePlayerOnThisServerAsync(final Player player) {
+	public void bungeePlayerAddedOnOtherServerAsync(final JSONObject data) {
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
-				removePlayerOnThisServer(player);
+				bungeePlayerAddedOnOtherServer(BungeePlayerPojo.getFromJson(data));
 			}
 		};
 		runnable.runTaskAsynchronously(this._eithonPlugin);
 	}
 
-	private void removePlayerOnThisServer(final Player player) {
-		verbose("removePlayerOnThisServer", "player=%s", player.getName());
-		final BungeePlayer bungeePlayer;
+	private void bungeePlayerAddedOnOtherServer(BungeePlayerPojo info) {
 		synchronized(this._allCurrentPlayers) {
-			bungeePlayer = this._allCurrentPlayers.get(player);
-			if (bungeePlayer == null) return;
-			this._allCurrentPlayers.remove(player);
+			final String otherServerName = info.getBungeeServerName();
+			final BungeePlayer bungeePlayer = BungeePlayer.getByPlayerId(info.getPlayerId());
+			if ((bungeePlayer == null) || !otherServerName.equalsIgnoreCase(bungeePlayer.getBungeeServerName())) {
+				this._eithonPlugin.getEithonLogger().error(
+						"BungeePlayers.addBungeePlayer(%s,%s): Server name in DB = %s. Will use DB value.",
+						info.getPlayerName(), otherServerName,
+						bungeePlayer == null? "NULL" : bungeePlayer.getBungeeServerName());
+			}
+			this._allCurrentPlayers.put(info.getPlayerId(), bungeePlayer);
 		}
-		bungeePlayer.deleteIfServerNameMatches(this._bungeeServerName);
+	}
+
+	public void removePlayerAsync(
+			final UUID playerId,
+			final String playerName,
+			final String otherServerName) {
+		final BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				removeBungeePlayer(playerId, playerName, otherServerName);
+			}
+		};
+		runnable.runTaskAsynchronously(this._eithonPlugin);
+	}
+
+	private void removeBungeePlayer(
+			final UUID playerId,
+			final String playerName, 
+			final String otherServerName) {
+		synchronized(this._allCurrentPlayers) {
+			BungeePlayer bungeePlayer = this._allCurrentPlayers.get(playerId);
+			boolean found = bungeePlayer != null;
+			if (!found) {
+				bungeePlayer = BungeePlayer.getByPlayerId(playerId);
+				if (bungeePlayer == null) return;
+			} else bungeePlayer.refresh();
+			if (!bungeePlayer.getBungeeServerName().equalsIgnoreCase(otherServerName)) {
+				// Join/leave probably out of sync. Update instead of remove.
+				this._eithonPlugin.getEithonLogger().warning(
+						"BungeePlayers.removeBungeePlayer(%s,%s): Server name in DB = %s. Will add/update instead of remove.",
+						playerName, otherServerName,
+						bungeePlayer == null? "NULL" : bungeePlayer.getBungeeServerName());
+				this._allCurrentPlayers.put(playerId, bungeePlayer);
+			} else {
+				if (found) this._allCurrentPlayers.remove(playerId);
+				bungeePlayer.deleteIfServerNameMatches(this._bungeeServerName);
+			}
+		}
 	}
 
 	public List<String> getNames() {
@@ -176,66 +217,9 @@ public class BungeePlayerController {
 		verbose("broadcastRefresh", "Leave");
 	}
 
-	private void broadcastAddBungeePlayer(Player player) {
+	private void publishBungeePlayerAdded(Player player) {
 		BungeePlayerPojo info = new BungeePlayerPojo(player, this._bungeeServerName);
-		this._bungeeController.sendDataToAll(BUNGEE_PLAYER, info, true);
-	}
-
-	public void addBungeePlayerAsync(final JSONObject data) {
-		final BukkitRunnable runnable = new BukkitRunnable() {
-			@Override
-			public void run() {
-				addBungeePlayer(BungeePlayerPojo.getFromJson(data));
-			}
-		};
-		runnable.runTaskAsynchronously(this._eithonPlugin);
-	}
-
-	public void removePlayerAsync(
-			final UUID playerId,
-			final String playerName,
-			final String otherServerName) {
-		final BukkitRunnable runnable = new BukkitRunnable() {
-			@Override
-			public void run() {
-				removeBungeePlayer(playerId, playerName, otherServerName);
-			}
-		};
-		runnable.runTaskAsynchronously(this._eithonPlugin);
-	}
-
-	private void removeBungeePlayer(
-			final UUID playerId,
-			final String playerName, 
-			final String otherServerName) {
-		synchronized(this._allCurrentPlayers) {
-			final BungeePlayer bungeePlayer = this._allCurrentPlayers.get(playerId);
-			if (bungeePlayer == null)  return;
-			if (!bungeePlayer.getBungeeServerName().equalsIgnoreCase(otherServerName)) {
-				// Join/leave probably out of sync. Update instead of remove.
-				this._eithonPlugin.getEithonLogger().warning(
-						"BungeePlayers.removeBungeePlayer(%s,%s): Server name in DB = %s. Will add/update instead of remove.",
-						playerName, otherServerName,
-						bungeePlayer == null? "NULL" : bungeePlayer.getBungeeServerName());
-				this._allCurrentPlayers.put(playerId, bungeePlayer);
-			} else {
-				this._allCurrentPlayers.remove(playerId);
-			}
-		}
-	}
-
-	private void addBungeePlayer(BungeePlayerPojo info) {
-		final String otherServerName = info.getBungeeServerName();
-		final BungeePlayer bungeePlayer = BungeePlayer.getByPlayerId(info.getPlayerId());
-		if ((bungeePlayer == null) || !otherServerName.equalsIgnoreCase(bungeePlayer.getBungeeServerName())) {
-			this._eithonPlugin.getEithonLogger().error(
-					"BungeePlayers.addBungeePlayer(%s,%s): Server name in DB = %s. Will use DB value.",
-					info.getPlayerName(), otherServerName,
-					bungeePlayer == null? "NULL" : bungeePlayer.getBungeeServerName());
-		}
-		synchronized(this._allCurrentPlayers) {
-			this._allCurrentPlayers.put(info.getPlayerId(), bungeePlayer);
-		}
+		this._bungeeController.sendDataToAll(BUNGEE_PLAYER_ADDED, info, true);
 	}
 
 	void verbose(String method, String format, Object... args) {
