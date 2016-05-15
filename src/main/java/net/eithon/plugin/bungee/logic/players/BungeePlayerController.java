@@ -46,11 +46,11 @@ public class BungeePlayerController {
 	private void refresh() {
 		verbose("refresh", "Enter");
 		boolean refreshServers = false;
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			BungeePlayer.createOrUpdate(player, this._bungeeServerName);
+		}
 		synchronized(this._allCurrentPlayers) {
 			this._allCurrentPlayers.clear();
-			for (Player player : Bukkit.getOnlinePlayers()) {
-				BungeePlayer.createOrUpdate(player, this._bungeeServerName);
-			}
 			for (BungeePlayer bungeePlayer : BungeePlayer.findAll()) {
 				boolean wasDeleted = deleteIfOffline(this._bungeeServerName, bungeePlayer);
 				if (wasDeleted) {
@@ -86,10 +86,15 @@ public class BungeePlayerController {
 	}
 
 	private void addPlayerOnThisServer(final Player player) {
-		verbose("addPlayerOnThisServer", "player=%s", player.getName());
-		verbose("addPlayerOnThisServer", "Local bungeeServerName=%s", this._bungeeServerName);
+		verbose("addPlayerOnThisServer", "player=%s, Local bungeeServerName=%s",
+				player.getName(), this._bungeeServerName);
 		synchronized(this._allCurrentPlayers) {
 			final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, this._bungeeServerName);
+			if (bungeePlayer == null) {
+				this._eithonPlugin.getEithonLogger().error("BungePlayerController.addPlayerOnThisServer: " +
+						String.format("Could not create a bungee player record for player %s.", player.getName()));
+				return;
+			}
 			this._allCurrentPlayers.put(player, bungeePlayer);
 			publishBungeePlayerAdded(player);
 		}
@@ -106,10 +111,11 @@ public class BungeePlayerController {
 	}
 
 	private void bungeePlayerAddedOnOtherServer(BungeePlayerPojo info) {
+		final String otherServerName = info.getBungeeServerName();
 		synchronized(this._allCurrentPlayers) {
-			final String otherServerName = info.getBungeeServerName();
 			final BungeePlayer bungeePlayer = BungeePlayer.getByPlayerId(info.getPlayerId());
-			if ((bungeePlayer == null) || !otherServerName.equalsIgnoreCase(bungeePlayer.getBungeeServerName())) {
+			if (bungeePlayer == null) return;
+			if (!otherServerName.equalsIgnoreCase(bungeePlayer.getBungeeServerName())) {
 				this._eithonPlugin.getEithonLogger().error(
 						"BungeePlayers.addBungeePlayer(%s,%s): Server name in DB = %s. Will use DB value.",
 						info.getPlayerName(), otherServerName,
@@ -183,12 +189,12 @@ public class BungeePlayerController {
 				verbose("getBungeePlayer", "Found on server %s", cachedBungeePlayer.getBungeeServerName());
 				return cachedBungeePlayer;
 			}
+			BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
+			if (bungeePlayer == null) return null;
+			this._allCurrentPlayers.put(player, bungeePlayer);
+			verbose("getBungeePlayer", "Found on server %s", bungeePlayer.getBungeeServerName());
+			return bungeePlayer;
 		}
-		BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
-		if (bungeePlayer == null) return null;
-		this._allCurrentPlayers.put(player, bungeePlayer);
-		verbose("getBungeePlayer", "Found on server %s", bungeePlayer.getBungeeServerName());
-		return bungeePlayer;
 	}
 
 	public String getBungeeServerNameOrInformSender(CommandSender sender, OfflinePlayer player) {
