@@ -7,6 +7,7 @@ A plugin to handle BungeeCord stuff.
 ### 1.3.1 (2016-05-15)
 
 * BUG: There were double join messages on the server you join.
+* BUG: When you left the current server for another server, the original server lost track of you. 
 
 ### 1.3 (2016-05-14)
 
