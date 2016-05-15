@@ -188,7 +188,7 @@ public class Controller {
 		}
 		MessageToPlayerPojo info = new MessageToPlayerPojo(sender, receiver, message);
 		String bungeeServerName = bungeePlayer.getBungeeServerName();
-		this._plugin.getApi().bungeeSendDataToServer(bungeeServerName, MESSAGE_TO_PLAYER, info, true);
+		this._bungeeController.sendDataToServer(bungeeServerName, MESSAGE_TO_PLAYER, info, true);
 		return true;
 	}
 
