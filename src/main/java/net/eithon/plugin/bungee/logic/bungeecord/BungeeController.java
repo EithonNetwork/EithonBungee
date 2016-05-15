@@ -1,13 +1,9 @@
 package net.eithon.plugin.bungee.logic.bungeecord;
 
-import java.util.UUID;
-
 import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
-import net.eithon.library.facades.PermissionsFacade;
 import net.eithon.library.json.IJsonObject;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
-import net.eithon.plugin.eithonlibrary.Config;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

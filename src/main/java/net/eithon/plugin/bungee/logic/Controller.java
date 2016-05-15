@@ -28,7 +28,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.json.simple.JSONObject;
 
 public class Controller {	
-
+	public static final String MESSAGE_TO_PLAYER = "MessageToPlayer";
 	private EithonBungeePlugin _plugin;
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
 	private String _bungeeServerName;
@@ -53,7 +53,7 @@ public class Controller {
 
 	private void waitForServerName() {
 		String bungeeServerName = this._bungeeController.getBungeeServerName();
-		if (this._bungeeServerName != null) {
+		if (bungeeServerName != null) {
 			this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController, bungeeServerName);
 			this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController, bungeeServerName);
 			this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController, bungeeServerName);
@@ -101,8 +101,8 @@ public class Controller {
 		registerIncomingPluginChannel(this._plugin, BungeeListener.EITHON_BUNGEE_FIXES_CHANNEL, bungeeListener);
 	}
 
-	void playerDisconnected(String serverName, UUID playerId, String playerName) {
-		// this._joinLeaveController.playerDisconnected(serverName, playerId, playerName);
+	void playerLeftOnAnotherServer(String serverName, UUID playerId, String playerName) {
+		this._joinLeaveController.playerLeftOnAnotherServer(serverName, playerId, playerName);
 	}
 
 	public boolean requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
@@ -186,7 +186,7 @@ public class Controller {
 		}
 		MessageToPlayerPojo info = new MessageToPlayerPojo(sender, receiver, message);
 		String bungeeServerName = bungeePlayer.getBungeeServerName();
-		this._plugin.getApi().bungeeSendDataToServer(bungeeServerName, "MessageToPlayer", info, true);
+		this._plugin.getApi().bungeeSendDataToServer(bungeeServerName, MESSAGE_TO_PLAYER, info, true);
 		return true;
 	}
 
@@ -247,6 +247,11 @@ public class Controller {
 		this._bungeePlayerController.refreshAsync();
 	}
 
+	public void refreshWarpLocations() {
+		if (!controllersAreReady()) return;
+		this._teleportController.refreshWarpLocationsAsync();	
+	}
+
 	public void removeBungeePlayer(UUID playerId, String playerName, String otherServerName) {
 		if (!controllersAreReady()) return;
 		this._bungeePlayerController.removePlayerAsync(playerId, playerName, otherServerName);
@@ -262,8 +267,17 @@ public class Controller {
 		this._joinLeaveController.publishLeaveEventOnThisServer(data);
 	}
 
-	public void playerJoined(Player player) {	
-		if (!controllersAreReady()) return;
+	public void playerJoined(final Player player) {	
+		if (!controllersAreReady()) {
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					playerJoined(player);
+				}
+			}
+			.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1.0));
+			return;
+		};
 		this._joinLeaveController.sendJoinEventToOtherServers(player);
 		this._teleportController.playerJoined(player);
 		this._bungeePlayerController.addPlayerOnThisServerAsync(player);

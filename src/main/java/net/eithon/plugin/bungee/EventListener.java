@@ -9,6 +9,7 @@ import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeJoinEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeLeaveEvent;
 import net.eithon.plugin.bungee.logic.joinleave.JoinLeaveController;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
+import net.eithon.plugin.bungee.logic.teleport.TeleportController;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,11 +17,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.json.simple.JSONObject;
 
 public class EventListener implements Listener {
 	private Controller _controller;
 	private EithonPlugin _eithonPlugin;
-	
+
 	public EventListener(EithonPlugin eithonPlugin, Controller controller) {
 		this._eithonPlugin = eithonPlugin;
 		this._controller = controller;
@@ -29,23 +31,29 @@ public class EventListener implements Listener {
 	// Handle teleport events
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeEvent(EithonBungeeEvent event) {
-		if (event.getName().equalsIgnoreCase("TeleportToPlayer")) {
-			this._controller.handleTeleportEvent(event.getData());
-		}
-		if (event.getName().equalsIgnoreCase("MessageToPlayer")) {
-			this._controller.handleMessageEvent(event.getData());
-		}
-		if (event.getName().equalsIgnoreCase(BungeePlayerController.BUNGEE_PLAYER)) {
-			this._controller.addBungeePlayer(event.getData());
-		}
-		if (event.getName().equalsIgnoreCase(JoinLeaveController.JOIN_EVENT)) {
-			this._controller.publishJoinEventOnThisServer(event.getData());
-		}
-		if (event.getName().equalsIgnoreCase(JoinLeaveController.LEAVE_EVENT)) {
-			this._controller.publishLeaveEventOnThisServer(event.getData());
-		}
-		if (event.getName().equalsIgnoreCase(BungeePlayerController.BUNGEE_PLAYER_REFRESH)) {
+		JSONObject data = event.getData();
+		switch(event.getName()) {
+		case TeleportController.TELEPORT_TO_PLAYER:
+			this._controller.handleTeleportEvent(data);
+			break;
+		case Controller.MESSAGE_TO_PLAYER:
+			this._controller.handleMessageEvent(data);
+			break;
+		case BungeePlayerController.BUNGEE_PLAYER:
+			this._controller.addBungeePlayer(data);
+			break;
+		case JoinLeaveController.JOIN_EVENT:
+			this._controller.publishJoinEventOnThisServer(data);
+			break;
+		case JoinLeaveController.LEAVE_EVENT:
+			this._controller.publishLeaveEventOnThisServer(data);
+			break;
+		case BungeePlayerController.BUNGEE_PLAYER_REFRESH:
 			this._controller.refreshBungeePlayer();
+			break;
+		case TeleportController.WARP_LOCATION_REFRESH:
+			this._controller.refreshWarpLocations();
+			break;
 		}
 	}
 
@@ -101,7 +109,7 @@ public class EventListener implements Listener {
 		this._controller.broadcastPlayerQuitted(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
 		this._controller.removeBungeePlayer(event.getPlayerId(), event.getPlayerName(), event.getThatServerName());
 	}
-	
+
 	void verbose(String method, String format, Object... args) {
 		String message = CoreMisc.safeFormat(format, args);
 		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "EventListener.%s: %s", method, message);
