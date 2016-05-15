@@ -67,6 +67,7 @@ public class Config {
 		public static ConfigurableMessage connectedToServer;
 		public static ConfigurableMessage joinedServerFirstTime;
 		public static ConfigurableMessage pleaseWelcomeNewPlayer;
+		public static ConfigurableMessage tryAgain;
 		public static IndividualConfigurableMessage joinMessage;
 		public static IndividualConfigurableMessage quitMessage;
 
@@ -91,7 +92,10 @@ public class Config {
 					"From %s: %s");
 			warpAdded = config.getConfigurableMessage(
 					"messages.WarpAdded", 1, 
-					"Warp locaiton %s has been added.");
+					"Warp location %s has been added.");
+			tryAgain = config.getConfigurableMessage(
+					"messages.TryAgain", 0, 
+					"Could not execute the command properly now. Please try again.");
 			alreadyConnectedToServer = config.getConfigurableMessage("messages.AlreadyConnectedToServer", 1,
 					"You are already connected to server %s.");
 			couldNotConnectToServer = config.getConfigurableMessage("messages.CouldNotConnectToServer", 2,

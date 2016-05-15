@@ -1,8 +1,12 @@
 # EithonBungee
 
-A Bot plugin for Minecraft
+A plugin to handle BungeeCord stuff.
 
 ## Release history
+
+### 1.3.1 (2016-05-15)
+
+* BUG: There were double join messages on the server you join.
 
 ### 1.3 (2016-05-14)
 

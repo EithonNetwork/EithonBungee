@@ -14,6 +14,7 @@ class TeleportPojo implements IJsonObject<TeleportPojo>{
 	public static final short PLAYER_FORCE = 2;
 	public static final short PLAYER_REQUEST = 3;
 	public static final short PLAYER_DENY_RESPONSE = 4;
+	public static final short CHANGE_SERVER = 5;
 	
 	private UUID movingPlayerId;	// The player that should be teleported
 	private UUID anchorPlayerId;	// The player that we should teleport to
@@ -35,8 +36,19 @@ class TeleportPojo implements IJsonObject<TeleportPojo>{
 		setAsWarp();
 	}
 	
+	public TeleportPojo(OfflinePlayer movingPlayer) {
+		this.movingPlayerId = movingPlayer.getUniqueId();
+		this.createdAt = LocalDateTime.now();
+		setAsChangeServer();
+	}
+	
 	public void setAsWarp() {
 		this.messageType = WARP;
+		this.messageDirectionIsFromPlayerMoving = true;
+	}
+	
+	public void setAsChangeServer() {
+		this.messageType = CHANGE_SERVER;
 		this.messageDirectionIsFromPlayerMoving = true;
 	}
 	

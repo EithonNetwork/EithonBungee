@@ -74,6 +74,8 @@ public class Controller {
 	public void broadcastPlayerJoined(String serverName, UUID playerId, String playerName, String groupName) {
 		verbose("broadcastPlayerJoined", String.format("Enter: serverName=%s, player=%s, groupName=%s",
 				serverName, playerName, groupName));
+		// Avoid double join messages
+		if (serverName.equalsIgnoreCase(_bungeeServerName)) return;
 		this._individualMessageController.broadcastPlayerJoined(serverName, playerName, groupName);
 		verbose("broadcastPlayerJoined", "Leave");
 	}
@@ -217,24 +219,11 @@ public class Controller {
 	}
 
 	public boolean connectPlayerToServer(Player player, String serverName) {
-		if (serverName.equalsIgnoreCase(this._bungeeServerName)) {
-			Config.M.alreadyConnectedToServer.sendMessage(player, serverName);
+		if (!controllersAreReady()) {
+			Config.M.tryAgain.sendMessage(player);
 			return false;
 		}
-
-		if (!playerCanConnectToServer(player, serverName)) return false;
-
-		boolean success = this._plugin.getApi().teleportPlayerToServer(player, serverName);
-
-		if (!success) {
-			Config.M.couldNotConnectToServer.sendMessage(player, serverName, "Unspecified fail reason");
-			return false;
-		}
-		return true;
-	}
-
-	private boolean playerCanConnectToServer(Player player, String serverName) {
-		return this._plugin.getApi().playerHasPermissionToAccessServerOrInformSender(player, player, serverName);
+		return this._teleportController.changeServer(player, serverName);
 	}
 
 	public void addBungeePlayer(JSONObject data) {
