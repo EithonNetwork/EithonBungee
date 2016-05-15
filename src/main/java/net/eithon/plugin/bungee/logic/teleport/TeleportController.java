@@ -60,6 +60,19 @@ public class TeleportController {
 		return true;
 	}
 
+	public void tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) {
+		String bungeeServerName = this._bungeePlayers.getBungeeServerNameOrInformSender(sender, movingPlayer);
+		if (bungeeServerName == null) return;
+		
+		if (movingPlayer.isOnline() && force) {
+			movingPlayer.getPlayer().teleport(anchorPlayer);
+		} else {
+			TeleportPojo info = new TeleportPojo(movingPlayer, anchorPlayer);
+			info.setAsRequestFromAnchorPlayer(force);
+			sendTeleportMessageToBungeeServer(bungeeServerName, info);
+		}
+	}
+
 	public boolean warpTo(CommandSender sender, Player player, String name) {
 		WarpLocation warpLocation = WarpLocation.getByName(name);
 		if (warpLocation.getBungeeServerName().equalsIgnoreCase(this._bungeeServerName)) {
@@ -74,22 +87,25 @@ public class TeleportController {
 		return true;
 	}
 
-	public void tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) {
-		String bungeeServerName = this._bungeePlayers.getBungeeServerNameOrInformSender(sender, movingPlayer);
-		if (bungeeServerName == null) return;
-		
-		if (movingPlayer.isOnline() && force) {
-			movingPlayer.getPlayer().teleport(anchorPlayer);
-		} else {
-			TeleportPojo info = new TeleportPojo(movingPlayer, anchorPlayer);
-			info.setAsRequestFromAnchorPlayer(force);
-			sendTeleportMessageToBungeeServer(bungeeServerName, info);
+	public boolean changeServer(Player player, String serverName) {
+		if (!this._bungeeController.playerHasPermissionToAccessServerOrInformSender(player, player, serverName)) return false;
+
+		TeleportPojo info = new TeleportPojo(player);
+		sendTeleportMessageToBungeeServer(serverName, info);
+
+		boolean success = this._bungeeController.connectToServer(player, serverName);
+
+		if (!success) {
+			Config.M.couldNotConnectToServer.sendMessage(player, serverName, "Unspecified fail reason");
+			return false;
 		}
+		return true;
 	}
+
 
 	public void handleTeleportEvent(JSONObject jsonObject) {
 		TeleportPojo info = TeleportPojo.createFromJsonObject(jsonObject);
-		if (info.getMessageType() == TeleportPojo.WARP) {
+		if ((info.getMessageType() == TeleportPojo.WARP) || (info.getMessageType() == TeleportPojo.CHANGE_SERVER)) {
 			// Prepare to teleport the moving player when he/she arrives
 			waitForPlayerToComeToServer(info);
 			return;
@@ -201,7 +217,9 @@ public class TeleportController {
 	}
 
 	private void teleportPlayerAccordingToInfo(final Player movingPlayer, TeleportPojo info) {
-		if (info.getMessageType() == TeleportPojo.WARP) {
+		short messageType = info.getMessageType();
+		if (messageType == TeleportPojo.CHANGE_SERVER) return;
+		if (messageType == TeleportPojo.WARP) {
 			teleportToWarpLocation(movingPlayer, info);
 			return;
 		}

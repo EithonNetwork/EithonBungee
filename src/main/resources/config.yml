@@ -96,6 +96,10 @@ messages:
   #
   # Parameters: <server name> (%s)
   ConnectedToServer: Connected to server %s.
+
+  #
+  # Parameters: -
+  TryAgain: Could not execute the command properly now. Please try again.
   
   #
   # This message is broadcasted when someone logs in to the server for the first time
