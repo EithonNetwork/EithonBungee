@@ -139,7 +139,16 @@ public class Controller {
 	}
 
 	public void handleTeleportEvent(JSONObject jsonObject) {
-		if (!controllersAreReady()) return;
+		if (!controllersAreReady()) {
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					handleTeleportEvent(jsonObject);
+				}
+			}
+			.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1));
+			return;
+		}
 		this._teleportController.handleTeleportEvent(jsonObject);
 	}
 

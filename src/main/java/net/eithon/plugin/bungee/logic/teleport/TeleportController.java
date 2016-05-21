@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
+import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
@@ -78,11 +80,11 @@ public class TeleportController {
 		if (warpLocation.getBungeeServerName().equalsIgnoreCase(this._bungeeServerName)) {
 			player.teleport(warpLocation.getLocation());
 		} else {
-			TeleportPojo info = new TeleportPojo(player, name);
 			String bungeeServerName = warpLocation.getBungeeServerName();
 			if (!this._bungeeController.playerHasPermissionToAccessServerOrInformSender(sender, player, bungeeServerName)) return false;
+			TeleportPojo info = new TeleportPojo(player, name);
 			sendTeleportMessageToBungeeServer(bungeeServerName, info);
-			this._bungeeController.connectToServer(player, bungeeServerName);
+			return this._bungeeController.connectToServer(player, bungeeServerName);
 		}
 		return true;
 	}
@@ -105,7 +107,9 @@ public class TeleportController {
 
 	public void handleTeleportEvent(JSONObject jsonObject) {
 		TeleportPojo info = TeleportPojo.createFromJsonObject(jsonObject);
-		if ((info.getMessageType() == TeleportPojo.WARP) || (info.getMessageType() == TeleportPojo.CHANGE_SERVER)) {
+		short messageType = info.getMessageType();
+		verbose("handleTeleportEvent", "info.messageType=%d", messageType);
+		if ((messageType == TeleportPojo.WARP) || (messageType == TeleportPojo.CHANGE_SERVER)) {
 			// Prepare to teleport the moving player when he/she arrives
 			waitForPlayerToComeToServer(info);
 			return;
@@ -114,7 +118,7 @@ public class TeleportController {
 		OfflinePlayer remotePlayer = getRemotePlayer(info);
 		if (remotePlayer == null) return;
 
-		switch (info.getMessageType()) {
+		switch (messageType) {
 		case TeleportPojo.PLAYER_FORCE:
 			if (info.getMessageDirectionIsFromMovingToAnchor()) {
 				waitForPlayerToComeToServer(info);
@@ -144,14 +148,17 @@ public class TeleportController {
 	}
 
 	private void waitForPlayerToComeToServer(TeleportPojo info) {
+		verbose("waitForPlayerToComeToServer", "info.messageType=%d", info.getMessageType());
 		UUID playerId = info.getMovingPlayerId();
 		// Maybe player is already on server?
 		Player player = Bukkit.getPlayer(playerId);
 		if (player != null) {
 			teleportPlayerAccordingToInfo(player, info);
+			verbose("waitForPlayerToComeToServer", "Leave. Teleporting player %s according to info",player.getName());
 			return;
 		}
 		this._waitingForTeleport.put(playerId, info);
+		verbose("waitForPlayerToComeToServer", "Leave. Added to _waitingForTeleport");
 	}
 
 	private void saveRequest(Player localPlayer, TeleportPojo info) {
@@ -209,11 +216,20 @@ public class TeleportController {
 	}
 
 	public void playerJoined(final Player movingPlayer) {
+		verbose("playerJoined", "movingPlayer=%s", movingPlayer.getName());
 		TeleportPojo info = this._waitingForTeleport.get(movingPlayer.getUniqueId());
-		if (info == null) return;
+		if (info == null) {
+			verbose("playerJoined", "Not waiting for player %s", movingPlayer.getName());
+			return;
+		}
 		this._waitingForTeleport.remove(movingPlayer.getUniqueId());
-		if (info.isTooOld()) return;
-		teleportPlayerAccordingToInfo(movingPlayer, info);
+		if (info.isTooOld()) {
+			verbose("playerJoined", "Teleport info was too old for player %s", movingPlayer.getName());
+			return;
+		}
+		teleportPlayerAccordingToInfo(movingPlayer, info);	
+		verbose("playerJoined", "Leave after teleporting player %s", movingPlayer.getName());
+
 	}
 
 	private void teleportPlayerAccordingToInfo(final Player movingPlayer, TeleportPojo info) {
@@ -319,7 +335,6 @@ public class TeleportController {
 			public void run() {
 				WarpLocation.refresh();
 			}
-
 		}
 		.runTaskAsynchronously(this._eithonPlugin);
 	}
@@ -336,5 +351,10 @@ public class TeleportController {
 
 	private void broadcastRefresh() {
 		this._bungeeController.sendDataToAll(WARP_LOCATION_REFRESH, null, true);
+	}
+
+	void verbose(String method, String format, Object... args) {
+		String message = CoreMisc.safeFormat(format, args);
+		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "Controller.%s: %s", method, message);
 	}
 }

@@ -31,6 +31,7 @@ public class EventListener implements Listener {
 	// Handle teleport events
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeEvent(EithonBungeeEvent event) {
+		verbose("onEithonBungeeEvent", "event name=%s", event.getName());
 		JSONObject data = event.getData();
 		switch(event.getName()) {
 		case TeleportController.TELEPORT_TO_PLAYER:
