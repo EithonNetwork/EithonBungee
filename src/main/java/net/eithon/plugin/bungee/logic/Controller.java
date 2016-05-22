@@ -294,6 +294,11 @@ public class Controller {
 		}.runTask(this._plugin);
 	}
 
+	public void takeActionIfPlayerIsBannedOnThisServer(Player player) {
+		if (!controllersAreReady()) return;
+		this._banController.takeActionIfPlayerIsBannedOnThisServerAsync(player);
+	}
+
 	private void playerJoinedStageThree(final Player player) {
 		this._joinLeaveController.sendJoinEventToOtherServers(player);
 		this._teleportController.playerJoined(player);
@@ -316,19 +321,14 @@ public class Controller {
 		this._banController.banPlayerOnThisServerAsync(player, seconds);
 	}
 
-	public void takeActionIfPlayerIsBannedOnThisServer(Player player) {
-		if (!controllersAreReady()) return;
-		this._banController.takeActionIfPlayerIsBannedOnThisServerAsync(player);
+	public void eithonBungeeLeaveReceived(String serverName, UUID playerId, String playerName, String mainGroup) {
+		broadcastPlayerQuitted(serverName, playerId, playerName, mainGroup);
+		removeBungeePlayer(playerId, playerName, serverName);
 	}
 
 	void verbose(String method, String format, Object... args) {
 		String message = CoreMisc.safeFormat(format, args);
 		this._plugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "Controller.%s: %s", method, message);
-	}
-
-	public void eithonBungeeLeaveReceived(String serverName, UUID playerId, String playerName, String mainGroup) {
-		broadcastPlayerQuitted(serverName, playerId, playerName, mainGroup);
-		removeBungeePlayer(playerId, playerName, serverName);
 	}
 
 }

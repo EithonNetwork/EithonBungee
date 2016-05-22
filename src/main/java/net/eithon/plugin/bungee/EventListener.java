@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.json.simple.JSONObject;
 
 public class EventListener implements Listener {
@@ -67,6 +68,13 @@ public class EventListener implements Listener {
 		if (joinMessage != null) event.setJoinMessage(joinMessage);
 		treatFirstTimeUsersSpecial(event, player);
 		this._controller.playerJoined(event.getPlayer());
+	}
+
+	@EventHandler
+	public void onPlayerRespawnEvent(PlayerRespawnEvent event) {
+		Player player = event.getPlayer();
+		verbose("onPlayerRespawnEvent", "Player=%s", player.getName());
+		this._controller.takeActionIfPlayerIsBannedOnThisServer(player);
 	}
 
 	private boolean treatFirstTimeUsersSpecial(PlayerJoinEvent event, Player player) {

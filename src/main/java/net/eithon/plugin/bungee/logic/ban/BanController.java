@@ -3,8 +3,10 @@ package net.eithon.plugin.bungee.logic.ban;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.facades.PermissionsFacade;
+import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.db.DbServerBan;
 import net.eithon.plugin.bungee.logic.Controller;
@@ -36,9 +38,11 @@ public class BanController {
 	}
 	
 	private void banPlayerOnThisServer(final OfflinePlayer player, final LocalDateTime unbanAt) {
+		verbose("banPlayerOnThisServer", "Player %s, unban at %s", player.getName(), unbanAt.toString());
 		final UUID playerId = player.getUniqueId();
 		DbServerBan dbServerBan = DbServerBan.get(Config.V.database, playerId, this._serverName);
 		if (dbServerBan == null) {
+			verbose("banPlayerOnThisServer", "Create record");
 			dbServerBan = DbServerBan.create(Config.V.database, playerId, player.getName(), this._serverName, unbanAt);
 		} else {
 			if ((unbanAt != null)
@@ -50,6 +54,7 @@ public class BanController {
 
 	public void banPlayerOnThisServerAsync(final Player player, final long seconds) {
 		String permission = String.format("-eithonbungee.access.server.%s", this._serverName);
+		verbose("banPlayerOnThisServerAsync", "Player %s, add permission %s", player.getName(), permission);
 		PermissionsFacade.addPlayerPermissionAsync(player, permission);
 		banPlayerOnThisServerAsync(player, LocalDateTime.now().plusSeconds(seconds));
 	}
@@ -78,13 +83,20 @@ public class BanController {
 	}
 
 	public boolean isPlayerBannedOnThisServer(final Player player) {
+		verbose("isPlayerBannedOnThisServer", "Player %s", player.getName());
 		final DbServerBan dbServerBan = DbServerBan.get(Config.V.database, player.getUniqueId(), this._serverName);
 		if (dbServerBan == null) return false;
-		if (dbServerBan.getUnbanAt().isBefore(LocalDateTime.now())) return true;
+		if (dbServerBan.getUnbanAt().isAfter(LocalDateTime.now())) return true;
 		dbServerBan.delete();
 		String permission = String.format("-eithonbungee.access.server.%s", this._serverName);
+		verbose("banPlayerOnThisServerAsync", "Player %s, remove permission %s", player.getName(), permission);
 		PermissionsFacade.removePlayerPermissionAsync(player, permission);
 		return false;
+	}
+
+	private void verbose(String method, String format, Object... args) {
+		String message = CoreMisc.safeFormat(format, args);
+		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "BanController.%s: %s", method, message);
 	}
 
 }
