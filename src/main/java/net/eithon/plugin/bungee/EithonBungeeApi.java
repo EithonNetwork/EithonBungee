@@ -1,13 +1,20 @@
 package net.eithon.plugin.bungee;
 
+import java.time.LocalDateTime;
+
+import org.bukkit.entity.Player;
+
 import net.eithon.library.plugin.ConfigurableMessage;
+import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 
 public class EithonBungeeApi {
-	private BungeeController _controller;
+	private BungeeController _bungeeController;
+	private Controller _controller;
 
-	EithonBungeeApi(BungeeController _bungeeController) {
-		this._controller = _bungeeController;
+	EithonBungeeApi(BungeeController bungeeController, Controller controller) {
+		this._bungeeController = bungeeController;
+		this._controller = controller;
 	}
 
 	public boolean broadcastMessage(ConfigurableMessage configurableMessage, Object... args) {
@@ -18,6 +25,12 @@ public class EithonBungeeApi {
 	}
 
 	public boolean bungeeBroadcastMessage(String message, boolean useTitle) {
-		return this._controller.broadcastMessage(message, useTitle);
+		return this._bungeeController.broadcastMessage(message, useTitle);
+	}
+	
+	public void banPlayerOnThisServer(
+			final Player player,
+			final long seconds) {
+		this._controller.banPlayerOnThisServer(player, seconds);
 	}
 }

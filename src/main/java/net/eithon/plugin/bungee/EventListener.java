@@ -107,8 +107,7 @@ public class EventListener implements Listener {
 	public void onEithonBungeeQuitEvent(EithonBungeeLeaveEvent event) {
 		verbose("onEithonBungeeQuitEvent", "Player=%s", event.getPlayerName());
 		if (event.getPlayerId() == null) return;
-		this._controller.broadcastPlayerQuitted(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
-		this._controller.removeBungeePlayer(event.getPlayerId(), event.getPlayerName(), event.getThatServerName());
+		this._controller.eithonBungeeLeaveReceived(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
 	}
 
 	void verbose(String method, String format, Object... args) {

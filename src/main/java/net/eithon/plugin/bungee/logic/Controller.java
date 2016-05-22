@@ -12,6 +12,7 @@ import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
+import net.eithon.plugin.bungee.logic.ban.BanController;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 import net.eithon.plugin.bungee.logic.individualmessage.IndividualMessageController;
 import net.eithon.plugin.bungee.logic.joinleave.JoinLeaveController;
@@ -37,6 +38,7 @@ public class Controller {
 	private TeleportController _teleportController;
 	private BungeePlayerController _bungeePlayerController;
 	private BungeeController _bungeeController;
+	private BanController _banController;
 
 	public Controller(EithonBungeePlugin plugin, BungeeController bungeeController) {
 		this._plugin = plugin;
@@ -58,6 +60,7 @@ public class Controller {
 			this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController, bungeeServerName);
 			this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController, bungeeServerName);
 			this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
+			this._banController = new BanController(this._plugin, bungeeServerName, this);
 			createEithonBungeeFixesListener();
 			this._bungeeServerName = bungeeServerName;
 			return;
@@ -268,9 +271,30 @@ public class Controller {
 					playerJoined(player);
 				}
 			}
-			.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1.0));
+			.runTaskLaterAsynchronously(this._plugin, TimeMisc.secondsToTicks(1.0));
 			return;
 		};
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				playerJoinedStageTwo(player);
+			}
+		}
+		.runTaskAsynchronously(this._plugin);
+	}
+
+	private void playerJoinedStageTwo(final Player player) {
+        if (this._banController.takeActionIfPlayerIsBannedOnThisServer(player)) return;
+        new BukkitRunnable() {
+			@Override
+			public void run() {
+				playerJoinedStageThree(player);
+				
+			}
+		}.runTask(this._plugin);
+	}
+
+	private void playerJoinedStageThree(final Player player) {
 		this._joinLeaveController.sendJoinEventToOtherServers(player);
 		this._teleportController.playerJoined(player);
 		this._bungeePlayerController.addPlayerOnThisServerAsync(player);
@@ -286,9 +310,25 @@ public class Controller {
 		this._bungeePlayerController.removePlayerAsync(playerId, playerName, otherServerName);
 
 	}
+	public void banPlayerOnThisServer(
+			final Player player,
+			final long seconds) {
+		this._banController.banPlayerOnThisServerAsync(player, seconds);
+	}
+
+	public void takeActionIfPlayerIsBannedOnThisServer(Player player) {
+		if (!controllersAreReady()) return;
+		this._banController.takeActionIfPlayerIsBannedOnThisServerAsync(player);
+	}
 
 	void verbose(String method, String format, Object... args) {
 		String message = CoreMisc.safeFormat(format, args);
 		this._plugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "Controller.%s: %s", method, message);
 	}
+
+	public void eithonBungeeLeaveReceived(String serverName, UUID playerId, String playerName, String mainGroup) {
+		broadcastPlayerQuitted(serverName, playerId, playerName, mainGroup);
+		removeBungeePlayer(playerId, playerName, serverName);
+	}
+
 }
