@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.3.3 (2016-05-22)
+
+* BUG: When adding a warp location, the current server was not updated - only all other servers.
+
 ### 1.3.2 (2016-05-15)
 
 * BUG: There were double quit messages on the server you quit from.

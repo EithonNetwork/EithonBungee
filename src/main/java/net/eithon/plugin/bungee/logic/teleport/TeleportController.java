@@ -324,6 +324,7 @@ public class TeleportController {
 			return false;
 		}
 		WarpLocation.getOrCreateByName(name, bungeeServerName, location);
+		refreshWarpLocationsAsync();
 		broadcastRefresh();
 		return true;
 	}
