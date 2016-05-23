@@ -20,7 +20,7 @@ public final class EithonBungeePlugin extends EithonPlugin {
 		CommandHandler commandHandler = new CommandHandler(this, this._controller);
 		Listener eventListener = new EventListener(this, this._controller);
 		this._bungeeController.initialize();
-		this._api = new EithonBungeeApi(this._bungeeController);
+		this._api = new EithonBungeeApi(this._bungeeController, this._controller);
 		super.activate(commandHandler.getCommandSyntax(), eventListener);
 	}
 

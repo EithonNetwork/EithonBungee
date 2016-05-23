@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.json.simple.JSONObject;
 
 public class EventListener implements Listener {
@@ -69,6 +70,13 @@ public class EventListener implements Listener {
 		this._controller.playerJoined(event.getPlayer());
 	}
 
+	@EventHandler
+	public void onPlayerRespawnEvent(PlayerRespawnEvent event) {
+		Player player = event.getPlayer();
+		verbose("onPlayerRespawnEvent", "Player=%s", player.getName());
+		this._controller.takeActionIfPlayerIsBannedOnThisServer(player);
+	}
+
 	private boolean treatFirstTimeUsersSpecial(PlayerJoinEvent event, Player player) {
 		if (player.hasPlayedBefore()) {
 			return false;
@@ -107,8 +115,7 @@ public class EventListener implements Listener {
 	public void onEithonBungeeQuitEvent(EithonBungeeLeaveEvent event) {
 		verbose("onEithonBungeeQuitEvent", "Player=%s", event.getPlayerName());
 		if (event.getPlayerId() == null) return;
-		this._controller.broadcastPlayerQuitted(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
-		this._controller.removeBungeePlayer(event.getPlayerId(), event.getPlayerName(), event.getThatServerName());
+		this._controller.eithonBungeeLeaveReceived(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
 	}
 
 	void verbose(String method, String format, Object... args) {

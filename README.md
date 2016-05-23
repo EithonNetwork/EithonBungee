@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.4 (2016-05-22)
+
+* NEW: Support for temporarily banning players from servers. (Needed in from EithonHardcore plugin).
+
 ### 1.3.3 (2016-05-22)
 
 * BUG: When adding a warp location, the current server was not updated - only all other servers.
