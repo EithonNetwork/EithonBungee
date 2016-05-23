@@ -68,6 +68,9 @@ public class Config {
 		public static ConfigurableMessage joinedServerFirstTime;
 		public static ConfigurableMessage pleaseWelcomeNewPlayer;
 		public static ConfigurableMessage tryAgain;
+		public static ConfigurableMessage bannedPlayer;
+		public static ConfigurableMessage unbannedPlayer;
+		public static ConfigurableMessage playerNotBanned;
 		public static IndividualConfigurableMessage joinMessage;
 		public static IndividualConfigurableMessage quitMessage;
 
@@ -106,6 +109,12 @@ public class Config {
 					"%s joined for the first time!");
 			pleaseWelcomeNewPlayer = config.getConfigurableMessage("messages.PleaseWelcomeNewPlayer", 1,
 					"Welcome %s to the server!");
+			bannedPlayer = config.getConfigurableMessage("messages.BannedPlayer", 3,
+					"Player %s is now banned on server %s until %s.");
+			unbannedPlayer = config.getConfigurableMessage("messages.UnbannedPlayer", 2,
+					"Player %s has been unbanned on server %s.");
+			playerNotBanned = config.getConfigurableMessage("messages.PlayerNotBanned", 2,
+					"Player %s is not banned on server %s?");
 			joinMessage = new IndividualConfigurableMessage(config, "messages.join");
 			quitMessage = new IndividualConfigurableMessage(config, "messages.quit");
 		}		

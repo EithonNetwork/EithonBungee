@@ -318,7 +318,7 @@ public class Controller {
 	public void banPlayerOnThisServer(
 			final Player player,
 			final long seconds) {
-		this._banController.banPlayerOnThisServerAsync(player, seconds);
+		this._banController.banPlayerOnThisServerAsync(null, player, seconds);
 	}
 
 	public void eithonBungeeLeaveReceived(String serverName, UUID playerId, String playerName, String mainGroup) {
@@ -326,9 +326,27 @@ public class Controller {
 		removeBungeePlayer(playerId, playerName, serverName);
 	}
 
+	public void banAddAsync(
+			final CommandSender sender, 
+			final OfflinePlayer player, 
+			final String serverName,
+			final long seconds) {
+		this._banController.banPlayerAsync(sender, player, serverName, seconds);
+	}
+
+	public void banRemoveAsync(
+			final CommandSender sender, 
+			final OfflinePlayer player, 
+			final String serverName) {
+		this._banController.unbanPlayerAsync(sender, player, serverName);
+	}
+
+	public void banListAsync(final CommandSender sender) {
+		this._banController.listBannedPlayersAsync(sender);
+	}
+
 	void verbose(String method, String format, Object... args) {
 		String message = CoreMisc.safeFormat(format, args);
 		this._plugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "Controller.%s: %s", method, message);
 	}
-
 }

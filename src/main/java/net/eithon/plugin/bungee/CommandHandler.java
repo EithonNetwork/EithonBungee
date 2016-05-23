@@ -7,6 +7,7 @@ import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.plugin.bungee.logic.Controller;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -28,6 +29,7 @@ public class CommandHandler {
 			setupTpCommand(commandSyntax);
 			setupMessageCommand(commandSyntax);
 			setupWarpCommand(commandSyntax);
+			setupBanCommand(commandSyntax);
 			this._commandSyntax = commandSyntax;
 		} catch (CommandSyntaxException e) {
 			e.printStackTrace();
@@ -41,22 +43,22 @@ public class CommandHandler {
 		// tpto request <player>
 		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("tpto request <player>")
 				.setCommandExecutor(eithonCommand -> requestTpToPlayer(eithonCommand));
-		setPlayerValues(cmd);
+		acceptAllBungeePlayerNames(cmd);
 		
 		// tpto force <player>
 		cmd = commandSyntax.parseCommandSyntax("tpto force <player>")
 				.setCommandExecutor(eithonCommand -> forcedTpToPlayer(eithonCommand));
-		setPlayerValues(cmd);
+		acceptAllBungeePlayerNames(cmd);
 
 		// tphere request <player>
 		cmd = commandSyntax.parseCommandSyntax("tphere request <player>")
 				.setCommandExecutor(eithonCommand -> requestTpPlayerHere(eithonCommand));
-		setPlayerValues(cmd);
+		acceptAllBungeePlayerNames(cmd);
 
 		// tphere force <player>
 		cmd = commandSyntax.parseCommandSyntax("tphere force <player>")
 				.setCommandExecutor(eithonCommand -> forcedTpPlayerHere(eithonCommand));
-		setPlayerValues(cmd);
+		acceptAllBungeePlayerNames(cmd);
 
 		// deny
 		cmd = commandSyntax.parseCommandSyntax("tp deny")
@@ -72,7 +74,7 @@ public class CommandHandler {
 		// message <player> <message>
 		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("message <player> <message:REST>")
 				.setCommandExecutor(eithonCommand -> sendMessageToPlayer(eithonCommand));
-		setPlayerValues(cmd);
+		acceptAllBungeePlayerNames(cmd);
 		
 		// message reply <message>
 		cmd = commandSyntax.parseCommandSyntax("reply <message:REST>")
@@ -93,7 +95,23 @@ public class CommandHandler {
 		.setMandatoryValues(ec -> this._controller.getWarpNames());
 	}
 
-	private void setPlayerValues(ICommandSyntax cmd) {
+	private void setupBanCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
+		
+		// message <player> <message>
+		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("ban add <player> <server> <time-span : TIME_SPAN  {24h, 48h, 72h, ...}>")
+				.setCommandExecutor(eithonCommand -> banAdd(eithonCommand));
+		acceptAllBungeePlayerNames(cmd);
+		
+		// message reply <message>
+		cmd = commandSyntax.parseCommandSyntax("ban remove <player> <server>")
+				.setCommandExecutor(eithonCommand -> banRemove(eithonCommand));
+		
+		// message reply <message>
+		cmd = commandSyntax.parseCommandSyntax("ban list")
+				.setCommandExecutor(eithonCommand -> banList(eithonCommand));
+	}
+
+	private void acceptAllBungeePlayerNames(ICommandSyntax cmd) {
 		cmd
 		.getParameterSyntax("player")
 		.setMandatoryValues(ec -> this._controller.getBungeePlayerNames(ec));
@@ -197,6 +215,26 @@ public class CommandHandler {
 		if (player == null) return;
 		String name = eithonCommand.getArgument("name").asString();
 		this._controller.warpTo(player, player, name);
+	}
+
+	private void banAdd(EithonCommand eithonCommand) {
+		final CommandSender sender = eithonCommand.getSender();
+		final OfflinePlayer player = eithonCommand.getArgument("player").asOfflinePlayer();
+		final String serverName = eithonCommand.getArgument("server").asString();
+		final long seconds = eithonCommand.getArgument("time-span").asSeconds();
+		this._controller.banAddAsync(sender, player, serverName, seconds);
+	}
+
+	private void banRemove(EithonCommand eithonCommand) {
+		CommandSender sender = eithonCommand.getSender();
+		OfflinePlayer player = eithonCommand.getArgument("player").asOfflinePlayer();
+		final String serverName = eithonCommand.getArgument("server").asString();
+		this._controller.banRemoveAsync(sender, player, serverName);
+	}
+
+	private void banList(EithonCommand eithonCommand) {
+		CommandSender sender = eithonCommand.getSender();
+		this._controller.banListAsync(sender);
 	}
 
 	private void serverCommand(EithonCommand command)
