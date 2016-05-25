@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.5 (2016-05-23)
+
+* NEW: Added commands "ban add", "ban remove" and "ban list".
+
 ### 1.4 (2016-05-22)
 
 * NEW: Support for temporarily banning players from servers. (Needed in from EithonHardcore plugin).

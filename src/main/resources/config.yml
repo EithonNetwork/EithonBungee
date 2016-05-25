@@ -114,6 +114,24 @@ messages:
   PleaseWelcomeNewPlayer: "[subtitle/]Welcome [color=lightpurple]%s[/color] [color=white]to the server![/color]"
   
   #
+  # Confirmation message when banning a player
+  # Parameters: <player name> (%s), <server name> (%s), <time> (%s)
+  #
+  BannedPlayer: "Player %s is now banned on server %s until %s."
+  
+  #
+  # Confirmation message when removing the ban for a player
+  # Parameters: <player name> (%s), <server name> (%s) 
+  #
+  UnbannedPlayer: "Player %s has been unbanned on server %s."
+  
+  #
+  # Trying to unban a player that wasn't banned
+  # Parameters: <player name> (%s), <server name> (%s) 
+  #
+  PlayerNotBanned: "Player %s is not banned on server %s?"
+  
+  #
   # %PLAYER_NAME%, %SERVER_NAME%
   #
   join:

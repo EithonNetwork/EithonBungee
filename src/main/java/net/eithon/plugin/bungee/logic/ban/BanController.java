@@ -7,11 +7,13 @@ import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.facades.PermissionsFacade;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
+import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.db.DbServerBan;
 import net.eithon.plugin.bungee.logic.Controller;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -26,37 +28,58 @@ public class BanController {
 		this._controller = controller;
 		this._serverName = serverName;
 	}
+
+	public void banPlayerOnThisServerAsync(
+			final CommandSender sender, 
+			final OfflinePlayer player, 
+			final long seconds) {
+		banPlayerAsync(sender, player, this._serverName, seconds);
+	}
+
+	public void banPlayerAsync(
+			final CommandSender sender, 
+			final OfflinePlayer player, 
+			final String serverName,
+			final long seconds) {
+		String permission = String.format("-eithonbungee.access.server.%s", serverName);
+		verbose("banPlayerOnThisServerAsync", "Player %s, add permission %s", player.getName(), permission);
+		PermissionsFacade.addPlayerPermissionAsync(player, permission);
+		banPlayerAsync(sender, player, serverName, LocalDateTime.now().plusSeconds(seconds));
+	}
 	
-	public void banPlayerOnThisServerAsync(final OfflinePlayer player, LocalDateTime unbanAt) {
+	public void banPlayerAsync(
+			final CommandSender sender, 
+			final OfflinePlayer player, 
+			final String serverName,
+			LocalDateTime unbanAt) {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				banPlayerOnThisServer(player, unbanAt);
+				banPlayer(sender, player, serverName, unbanAt);
 			}
 		}
 		.runTaskAsynchronously(this._eithonPlugin);	
 	}
 	
-	private void banPlayerOnThisServer(final OfflinePlayer player, final LocalDateTime unbanAt) {
+	private void banPlayer(
+			final CommandSender sender, 
+			final OfflinePlayer player, 
+			final String serverName, 
+			LocalDateTime unbanAt) {
 		verbose("banPlayerOnThisServer", "Player %s, unban at %s", player.getName(), unbanAt.toString());
 		final UUID playerId = player.getUniqueId();
-		DbServerBan dbServerBan = DbServerBan.get(Config.V.database, playerId, this._serverName);
+		DbServerBan dbServerBan = DbServerBan.get(Config.V.database, playerId, serverName);
 		if (dbServerBan == null) {
 			verbose("banPlayerOnThisServer", "Create record");
-			dbServerBan = DbServerBan.create(Config.V.database, playerId, player.getName(), this._serverName, unbanAt);
+			dbServerBan = DbServerBan.create(Config.V.database, playerId, player.getName(), serverName, unbanAt);
 		} else {
 			if ((unbanAt != null)
 					&& !unbanAt.isAfter(dbServerBan.getUnbanAt())) {
 				dbServerBan.updateUnbanAt(unbanAt);
-			}
+			} else unbanAt = dbServerBan.getUnbanAt();
 		}
-	}
-
-	public void banPlayerOnThisServerAsync(final Player player, final long seconds) {
-		String permission = String.format("-eithonbungee.access.server.%s", this._serverName);
-		verbose("banPlayerOnThisServerAsync", "Player %s, add permission %s", player.getName(), permission);
-		PermissionsFacade.addPlayerPermissionAsync(player, permission);
-		banPlayerOnThisServerAsync(player, LocalDateTime.now().plusSeconds(seconds));
+		if (sender == null) return;
+		Config.M.bannedPlayer.sendMessage(sender, player.getName(), TimeMisc.fromLocalDateTime(unbanAt));
 	}
 
 	public void takeActionIfPlayerIsBannedOnThisServerAsync(final Player player) {
@@ -87,11 +110,40 @@ public class BanController {
 		final DbServerBan dbServerBan = DbServerBan.get(Config.V.database, player.getUniqueId(), this._serverName);
 		if (dbServerBan == null) return false;
 		if (dbServerBan.getUnbanAt().isAfter(LocalDateTime.now())) return true;
+		unbanPlayer(null, player, this._serverName);
+		return false;
+	}
+
+	public void unbanPlayerAsync(final CommandSender sender, final OfflinePlayer player, String serverName) {
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				unbanPlayer(sender, player, serverName);
+			}
+		}
+		.runTaskAsynchronously(this._eithonPlugin);
+	}
+
+	public void unbanPlayer(final CommandSender sender, final OfflinePlayer player, String serverName) {
+		final DbServerBan dbServerBan = DbServerBan.get(Config.V.database, player.getUniqueId(), serverName);
+		if (dbServerBan == null) {
+			if (sender == null) return;
+			Config.M.playerNotBanned.sendMessage(sender, player.getName(), serverName);
+			return;
+		}
 		dbServerBan.delete();
-		String permission = String.format("-eithonbungee.access.server.%s", this._serverName);
+		String permission = String.format("-eithonbungee.access.server.%s", serverName);
 		verbose("banPlayerOnThisServerAsync", "Player %s, remove permission %s", player.getName(), permission);
 		PermissionsFacade.removePlayerPermissionAsync(player, permission);
-		return false;
+		Config.M.unbannedPlayer.sendMessage(sender, player.getName(), serverName);
+	}
+
+	public void listBannedPlayersAsync(CommandSender sender) {
+		for (DbServerBan dbServerBan : DbServerBan.findAll(Config.V.database)) {
+			sender.sendMessage(String.format("%s: %s (%s)",
+					dbServerBan.getPlayerName(), dbServerBan.getBungeeServerName(), 
+					TimeMisc.fromLocalDateTime(dbServerBan.getUnbanAt())));
+		}
 	}
 
 	private void verbose(String method, String format, Object... args) {
