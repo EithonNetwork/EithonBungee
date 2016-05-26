@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.6 (2016-05-26)
+
+* CHANGE: Welcome new player message now sent to all servers, but only if player joined Hub for the first time.
+
 ### 1.5 (2016-05-23)
 
 * NEW: Added commands "ban add", "ban remove" and "ban list".

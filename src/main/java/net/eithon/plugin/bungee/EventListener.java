@@ -78,11 +78,11 @@ public class EventListener implements Listener {
 	}
 
 	private boolean treatFirstTimeUsersSpecial(PlayerJoinEvent event, Player player) {
-		if (player.hasPlayedBefore()) {
-			return false;
-		}
-		event.setJoinMessage(Config.M.joinedServerFirstTime.getMessageWithColorCoding(player.getName()));
-		Config.M.pleaseWelcomeNewPlayer.broadcastMessage(player.getName());
+		if (player.hasPlayedBefore()) return false;
+		if (!this._controller.thisServerIsThePrimaryBungeeServer()) return false;
+		final String playerName = player.getName();
+		event.setJoinMessage(Config.M.joinedServerFirstTime.getMessageWithColorCoding(playerName));
+		Config.M.pleaseWelcomeNewPlayer.broadcastMessage(playerName);
 		return true;
 	}
 
@@ -102,12 +102,18 @@ public class EventListener implements Listener {
 		this._controller.playerLeftThisServer(player);
 	}
 
-	// Player joined on any bungee server
+	// Player joined on any other bungee server
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeJoinEvent(EithonBungeeJoinEvent event) {
-		verbose("onEithonBungeeJoinEvent", "Player=%s", event.getPlayerName());
+		final String playerName = event.getPlayerName();
+		verbose("onEithonBungeeJoinEvent", "Player=%s", playerName);
 		if (event.getPlayerId() == null) return;
-		this._controller.broadcastPlayerJoined(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());		
+		if (event.getIsNewOnServer() && this._controller.serverIsThePrimaryBungeeServer(event.getThatServerName())) {
+			Config.M.joinedServerFirstTime.broadcastMessage(playerName);
+			Config.M.pleaseWelcomeNewPlayer.broadcastMessage(playerName);			
+		} else {
+			this._controller.broadcastPlayerJoined(event.getThatServerName(), event.getPlayerId(), playerName, event.getMainGroup());
+		}
 	}
 
 	// Player quit on any bungee server
