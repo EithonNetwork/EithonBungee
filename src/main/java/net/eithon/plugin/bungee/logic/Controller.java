@@ -52,6 +52,15 @@ public class Controller {
 		verbose("controllersAreReady", controllersAreReady ? "TRUE" : "FALSE");
 		return controllersAreReady; 
 	}
+	
+	public boolean thisServerIsThePrimaryBungeeServer() {
+		return serverIsThePrimaryBungeeServer(this._bungeeServerName);
+	}
+	
+	public boolean serverIsThePrimaryBungeeServer(String serverName) {
+		if (serverName == null) return false;
+		return serverName.equalsIgnoreCase(Config.V.primaryBungeeServer);
+	}
 
 	private void waitForServerName() {
 		String bungeeServerName = this._bungeeController.getBungeeServerName();
