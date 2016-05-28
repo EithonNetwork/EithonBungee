@@ -45,7 +45,7 @@ public class TeleportController {
 	}
 
 	public boolean tpToPlayer(CommandSender sender, Player movingPlayer, OfflinePlayer anchorPlayer, boolean force) {
-		String bungeeServerName = this._bungeePlayers.getBungeeServerNameOrInformSender(sender, anchorPlayer);
+		String bungeeServerName = this._bungeePlayers.getCurrentBungeeServerNameOrInformSender(sender, anchorPlayer);
 		if (bungeeServerName == null) {
 			sender.sendMessage(String.format("Player %s seems to be offline.", anchorPlayer.getName()));
 			return false;
@@ -63,7 +63,7 @@ public class TeleportController {
 	}
 
 	public void tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) {
-		String bungeeServerName = this._bungeePlayers.getBungeeServerNameOrInformSender(sender, movingPlayer);
+		String bungeeServerName = this._bungeePlayers.getCurrentBungeeServerNameOrInformSender(sender, movingPlayer);
 		if (bungeeServerName == null) return;
 		
 		if (movingPlayer.isOnline() && force) {
@@ -209,7 +209,7 @@ public class TeleportController {
 
 		// The source player was unexpectedly not found on this server.
 		// Find the server that the player has moved to and forward the message there.
-		String bungeeServerName = this._bungeePlayers.getBungeeServerName(info.getMovingPlayerId());
+		String bungeeServerName = this._bungeePlayers.getCurrentBungeeServerName(info.getMovingPlayerId());
 		if (bungeeServerName == null) return null;
 		sendTeleportMessageToBungeeServer(bungeeServerName, info);
 		return null;			
@@ -251,7 +251,7 @@ public class TeleportController {
 
 	private void teleportToAnchorPlayer(final Player movingPlayer,
 			TeleportPojo info) {
-		final String anchorBungeeServerName = this._bungeePlayers.getBungeeServerName(info.getAnchorPlayerId());
+		final String anchorBungeeServerName = this._bungeePlayers.getCurrentBungeeServerName(info.getAnchorPlayerId());
 		if (anchorBungeeServerName == null) return;
 		if (!anchorBungeeServerName.equalsIgnoreCase(this._bungeeServerName)) {
 			// The player has moved to another server, make another server switch
@@ -272,7 +272,7 @@ public class TeleportController {
 		} else {
 			remotePlayerId = info.getMovingPlayerId();
 		}
-		String bungeeServerName = this._bungeePlayers.getBungeeServerName(remotePlayerId);
+		String bungeeServerName = this._bungeePlayers.getCurrentBungeeServerName(remotePlayerId);
 		if (bungeeServerName == null) return;
 		this._bungeeController.sendDataToServer(bungeeServerName, TELEPORT_TO_PLAYER, info, true);
 	}

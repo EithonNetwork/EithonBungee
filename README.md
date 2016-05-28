@@ -9,6 +9,8 @@ A plugin to handle BungeeCord stuff.
 * NEW: Now has switch server messages.
 * NEW: Added the EithonBungeeSwitchEvent.
 * CHANGE: EithonBungee events are now distributed to local server too.
+* CHANGE: Player table can now handle that a player left a server.
+* BUG: Players that left was not removed from the Player table.
 
 ### 1.6 (2016-05-26)
 

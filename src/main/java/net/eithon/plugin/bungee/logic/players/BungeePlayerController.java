@@ -52,26 +52,26 @@ public class BungeePlayerController {
 		synchronized(this._allCurrentPlayers) {
 			this._allCurrentPlayers.clear();
 			for (BungeePlayer bungeePlayer : BungeePlayer.findAll()) {
-				boolean wasDeleted = deleteIfOffline(this._bungeeServerName, bungeePlayer);
+				boolean wasDeleted = maybeLeft(this._bungeeServerName, bungeePlayer);
 				if (wasDeleted) {
 					refreshServers = true;
 					continue;
 				}
 				this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
 				verbose("refresh", "Added player %s, server %s", 
-						bungeePlayer.getPlayerName(), bungeePlayer.getBungeeServerName());
+						bungeePlayer.getPlayerName(), bungeePlayer.getCurrentBungeeServerName());
 			}
 		}
 		if (refreshServers) broadcastRefresh();
 		verbose("refresh", "Leave");
 	}
 
-	private boolean deleteIfOffline(String thisBungeeServerName, BungeePlayer bungeePlayer) {
-		if (thisBungeeServerName == null || bungeePlayer.isOnline()) return false;
-		boolean wasDeleted = bungeePlayer.deleteIfServerNameMatches(thisBungeeServerName);
-		if (!wasDeleted) return false;
+	private boolean maybeLeft(String thisBungeeServerName, BungeePlayer bungeePlayer) {
+		if (thisBungeeServerName == null || bungeePlayer.isOnlineOnThisServer()) return false;
+		boolean wasUpdated = bungeePlayer.maybeLeft(thisBungeeServerName);
+		if (!wasUpdated) return false;
 		verbose("refresh", "Removed player %s, server %s", 
-				bungeePlayer.getPlayerName(), bungeePlayer.getBungeeServerName());
+				bungeePlayer.getPlayerName(), bungeePlayer.getPreviousBungeeServerName());
 		return true;
 	}
 
@@ -115,11 +115,12 @@ public class BungeePlayerController {
 		synchronized(this._allCurrentPlayers) {
 			final BungeePlayer bungeePlayer = BungeePlayer.getByPlayerId(info.getPlayerId());
 			if (bungeePlayer == null) return;
-			if (!otherServerName.equalsIgnoreCase(bungeePlayer.getBungeeServerName())) {
+			final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
+			if (!otherServerName.equalsIgnoreCase(currentBungeeServerName)) {
 				this._eithonPlugin.getEithonLogger().error(
 						"BungeePlayers.addBungeePlayer(%s,%s): Server name in DB = %s. Will use DB value.",
 						info.getPlayerName(), otherServerName,
-						bungeePlayer == null? "NULL" : bungeePlayer.getBungeeServerName());
+						bungeePlayer == null? "NULL" : currentBungeeServerName);
 			}
 			this._allCurrentPlayers.put(info.getPlayerId(), bungeePlayer);
 		}
@@ -149,16 +150,17 @@ public class BungeePlayerController {
 				bungeePlayer = BungeePlayer.getByPlayerId(playerId);
 				if (bungeePlayer == null) return;
 			} else bungeePlayer.refresh();
-			if (!bungeePlayer.getBungeeServerName().equalsIgnoreCase(otherServerName)) {
+			final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
+			if (!otherServerName.equalsIgnoreCase(currentBungeeServerName)) {
 				// Join/leave probably out of sync. Update instead of remove.
 				this._eithonPlugin.getEithonLogger().warning(
 						"BungeePlayers.removeBungeePlayer(%s,%s): Server name in DB = %s. Will add/update instead of remove.",
 						playerName, otherServerName,
-						bungeePlayer == null? "NULL" : bungeePlayer.getBungeeServerName());
+						bungeePlayer == null? "NULL" : currentBungeeServerName);
 				this._allCurrentPlayers.put(playerId, bungeePlayer);
 			} else {
 				if (found) this._allCurrentPlayers.remove(playerId);
-				bungeePlayer.deleteIfServerNameMatches(this._bungeeServerName);
+				bungeePlayer.maybeLeft(this._bungeeServerName);
 			}
 		}
 	}
@@ -186,35 +188,58 @@ public class BungeePlayerController {
 		synchronized(this._allCurrentPlayers) {
 			cachedBungeePlayer = this._allCurrentPlayers.get(player);
 			if (cachedBungeePlayer != null) {
-				verbose("getBungeePlayer", "Found on server %s", cachedBungeePlayer.getBungeeServerName());
+				verbose("getBungeePlayer", cachedBungeePlayer.toString());
 				return cachedBungeePlayer;
 			}
 			BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
 			if (bungeePlayer == null) return null;
 			this._allCurrentPlayers.put(player, bungeePlayer);
-			verbose("getBungeePlayer", "Found on server %s", bungeePlayer.getBungeeServerName());
+			verbose("getBungeePlayer", bungeePlayer.toString());
 			return bungeePlayer;
 		}
 	}
 
-	public String getBungeeServerNameOrInformSender(CommandSender sender, OfflinePlayer player) {
+	public String getCurrentBungeeServerNameOrInformSender(CommandSender sender, OfflinePlayer player) {
 		BungeePlayer bungeePlayer = getBungeePlayerOrInformSender(sender, player);
 		if (bungeePlayer == null) return null;
-		return bungeePlayer.getBungeeServerName();
+		final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
+		if (currentBungeeServerName == null) {
+			if (sender != null) sender.sendMessage(String.format("Could not find player %s on any server.", player.getName()));
+			return null;
+		}
+		return currentBungeeServerName;
 	}
 
-	public String getBungeeServerName(OfflinePlayer player) {
+	public String getCurrentBungeeServerName(OfflinePlayer player) {
 		BungeePlayer bungeePlayer = getBungeePlayer(player);
 		if (bungeePlayer == null) return null;
-		return bungeePlayer.getBungeeServerName();		
+		return bungeePlayer.getCurrentBungeeServerName();		
 	}
 
-	public String getBungeeServerName(UUID playerId) {
+	public String getCurrentBungeeServerName(UUID playerId) {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
+		if (player == null) return null;
+		return getCurrentBungeeServerName(player);		
+	}
+
+	public String getPreviousBungeeServerName(OfflinePlayer player) {
 		if (player == null) return null;
 		BungeePlayer bungeePlayer = getBungeePlayer(player);
 		if (bungeePlayer == null) return null;
-		return bungeePlayer.getBungeeServerName();		
+		return bungeePlayer.getPreviousBungeeServerName();		
+	}
+
+	public String getAnyBungeeServerName(OfflinePlayer player) {
+		if (player == null) return null;
+		BungeePlayer bungeePlayer = getBungeePlayer(player);
+		if (bungeePlayer == null) return null;
+		return bungeePlayer.getAnyBungeeServerName();		
+	}
+
+	public String getPreviousBungeeServerName(UUID playerId) {
+		OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
+		if (player == null) return null;
+		return getPreviousBungeeServerName(player);		
 	}
 
 	private void broadcastRefresh() {

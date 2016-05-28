@@ -7,6 +7,7 @@ import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeJoinEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeLeaveEvent;
+import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeSwitchEvent;
 import net.eithon.plugin.bungee.logic.joinleave.JoinLeaveController;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 import net.eithon.plugin.bungee.logic.teleport.TeleportController;
@@ -106,6 +107,15 @@ public class EventListener implements Listener {
 		} else {
 			this._controller.broadcastPlayerJoined(event.getThatServerName(), event.getPlayerId(), playerName, event.getMainGroup());
 		}
+	}
+
+	// Player joined a bungee server
+	@EventHandler(ignoreCancelled=true)
+	public void onEithonBungeeSwitchEvent(EithonBungeeSwitchEvent event) {
+		final String playerName = event.getPlayerName();
+		verbose("onEithonBungeeSwitchEvent", "Player=%s", playerName);
+		if (event.getPlayerId() == null) return;
+		this._controller.broadcastPlayerSwitched(event.getPreviousServerName(), event.getThatServerName(), event.getPlayerId(), playerName, event.getMainGroup());
 	}
 
 	// Player quit on any bungee server

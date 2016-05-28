@@ -86,17 +86,23 @@ public class Controller {
 		verbose("broadcastPlayerJoined", String.format("Enter: serverName=%s, player=%s, groupName=%s",
 				serverName, playerName, groupName));
 		// Avoid double join messages
-		if (serverName.equalsIgnoreCase(_bungeeServerName)) return;
-		String fromServerName = this._bungeePlayerController.getBungeeServerName(playerId);
-		verbose("broadcastPlayerJoined", "From server=%s", fromServerName);
-		this._individualMessageController.broadcastPlayerJoined(serverName, fromServerName, playerName, groupName);
+		this._individualMessageController.broadcastPlayerJoined(serverName, playerName, groupName);
 		verbose("broadcastPlayerJoined", "Leave");
+	}
+
+	public void broadcastPlayerSwitched(String fromServerName, String toServerName, UUID playerId, String playerName, String groupName) {
+		verbose("broadcastPlayerSwitched", String.format("Enter: fromServerName=%s, toServerName=%s, player=%s, groupName=%s",
+				fromServerName, toServerName, playerName, groupName));
+		// Avoid double join messages
+		this._individualMessageController.broadcastPlayerSwitched(fromServerName, toServerName, playerName, groupName);
+		verbose("broadcastPlayerSwitched", "Leave");
 	}
 
 	public String getJoinMessage(Player player) {
 		final UUID playerId = player.getUniqueId();
 		String mainGroup = JoinLeaveController.getHighestGroup(playerId);
-		String fromServerName = this._bungeePlayerController.getBungeeServerName(playerId);
+		String fromServerName = this._bungeePlayerController.getPreviousBungeeServerName(playerId);
+		if (fromServerName == null) return null;
 		return this._individualMessageController.getJoinMessage(this._bungeeServerName, fromServerName, player.getName(), mainGroup);
 	}
 
@@ -206,7 +212,7 @@ public class Controller {
 	public boolean sendMessageToPlayer(Player sender, OfflinePlayer receiver,
 			String message) {
 		if (!controllersAreReady()) return false;
-		String bungeeServerName = this._bungeePlayerController.getBungeeServerName(receiver);
+		String bungeeServerName = this._bungeePlayerController.getCurrentBungeeServerName(receiver);
 		if (bungeeServerName == null) {
 			sender.sendMessage(String.format("Player %s seems to be offline.", receiver.getName()));
 			return false;
@@ -311,8 +317,8 @@ public class Controller {
 	}
 
 	private void playerJoinedStageThree(final Player player) {
-		String previousServerName = this._bungeePlayerController.getBungeeServerName(player);
-		if ((previousServerName==null) || (!previousServerName.equalsIgnoreCase(this._bungeeServerName))) {
+		String previousServerName = this._bungeePlayerController.getAnyBungeeServerName(player);
+		if ((previousServerName==null) || (previousServerName.equalsIgnoreCase(this._bungeeServerName))) {
 			this._joinLeaveController.playerJoinedThisServer(player);
 		} else {
 			this._joinLeaveController.playerSwitchedToThisServer(player, previousServerName);			
@@ -326,14 +332,13 @@ public class Controller {
 		this._banController.takeActionIfPlayerIsBannedOnThisServerAsync(player);
 	}
 
-	public void playerLeftThisServer(Player player) {		
-		removeBungeePlayer(player.getUniqueId(), player.getName(), this._bungeeServerName);
+	public void playerLeftThisServer(Player player) {
+		this._bungeePlayerController.removePlayerAsync(player.getUniqueId(), player.getName(), this._bungeeServerName);
 	}
 
 	public void removeBungeePlayer(UUID playerId, String playerName, String otherServerName) {
 		if (!controllersAreReady()) return;
-		if (_bungeeServerName.equalsIgnoreCase(otherServerName)) return;
-		this._bungeePlayerController.removePlayerAsync(playerId, playerName, otherServerName);
+		if (this._bungeeServerName.equalsIgnoreCase(otherServerName)) return;
 
 	}
 	public void banPlayerOnThisServer(

@@ -15,12 +15,12 @@ public class IndividualMessageController {
 		this._eithonPlugin = eithonPlugin;
 	}
 
-	public void broadcastPlayerJoined(String serverName, String fromServerName, String playerName, String groupName) {
-		if (fromServerName == null) {
-			broadcastMessage(Config.M.joinMessage, serverName, null, playerName, groupName);
-		} else {
-			broadcastMessage(Config.M.switchMessage, serverName, fromServerName, playerName, groupName);
-		}
+	public void broadcastPlayerJoined(String serverName, String playerName, String groupName) {
+		broadcastMessage(Config.M.joinMessage, serverName, null, playerName, groupName);
+	}
+
+	public void broadcastPlayerSwitched(String fromServerName, String toServerName, String playerName, String groupName) {
+		broadcastMessage(Config.M.switchMessage, toServerName, fromServerName, playerName, groupName);
 	}
 
 	public void broadcastPlayerQuit(String serverName, String playerName, String groupName) {
