@@ -28,8 +28,8 @@ public class IndividualMessageController {
 	}
 
 	public String getJoinMessage(String serverName, String fromServerName, String playerName, String groupName) {
-		if (fromServerName == null) {
-			return getIndividualMessage(Config.M.joinMessage, null, serverName, playerName, groupName);
+		if ((fromServerName == null) || (fromServerName.equalsIgnoreCase(serverName))) {
+			return getIndividualMessage(Config.M.joinMessage, serverName, serverName, playerName, groupName);
 		} else {
 			return getIndividualMessage(Config.M.switchMessage, serverName, fromServerName, playerName, groupName);
 		}

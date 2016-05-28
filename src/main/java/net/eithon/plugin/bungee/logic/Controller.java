@@ -51,11 +51,11 @@ public class Controller {
 		verbose("controllersAreReady", controllersAreReady ? "TRUE" : "FALSE");
 		return controllersAreReady; 
 	}
-	
+
 	public boolean thisServerIsThePrimaryBungeeServer() {
 		return serverIsThePrimaryBungeeServer(this._bungeeServerName);
 	}
-	
+
 	public boolean serverIsThePrimaryBungeeServer(String serverName) {
 		if (serverName == null) return false;
 		return serverName.equalsIgnoreCase(Config.V.primaryBungeeServer);
@@ -97,7 +97,6 @@ public class Controller {
 		final UUID playerId = player.getUniqueId();
 		String mainGroup = JoinLeaveController.getHighestGroup(playerId);
 		String fromServerName = this._bungeePlayerController.getBungeeServerName(playerId);
-		verbose("broadcastPlayerJoined", "From server=%s", fromServerName);
 		return this._individualMessageController.getJoinMessage(this._bungeeServerName, fromServerName, player.getName(), mainGroup);
 	}
 
@@ -271,6 +270,11 @@ public class Controller {
 		this._joinLeaveController.publishJoinEventOnThisServer(data);
 	}
 
+	public void publishSwitchEventOnThisServer(JSONObject data) {
+		if (!controllersAreReady()) return;
+		this._joinLeaveController.publishSwitchEventOnThisServer(data);
+	}
+
 	public void publishLeaveEventOnThisServer(JSONObject data) {
 		this._joinLeaveController.publishLeaveEventOnThisServer(data);
 	}
@@ -296,25 +300,30 @@ public class Controller {
 	}
 
 	private void playerJoinedStageTwo(final Player player) {
-        if (this._banController.takeActionIfPlayerIsBannedOnThisServer(player)) return;
-        new BukkitRunnable() {
+		if (this._banController.takeActionIfPlayerIsBannedOnThisServer(player)) return;
+		new BukkitRunnable() {
 			@Override
 			public void run() {
 				playerJoinedStageThree(player);
-				
+
 			}
 		}.runTask(this._plugin);
+	}
+
+	private void playerJoinedStageThree(final Player player) {
+		String previousServerName = this._bungeePlayerController.getBungeeServerName(player);
+		if ((previousServerName==null) || (!previousServerName.equalsIgnoreCase(this._bungeeServerName))) {
+			this._joinLeaveController.playerJoinedThisServer(player);
+		} else {
+			this._joinLeaveController.playerSwitchedToThisServer(player, previousServerName);			
+		}
+		this._teleportController.playerJoined(player);
+		this._bungeePlayerController.addPlayerOnThisServerAsync(player);
 	}
 
 	public void takeActionIfPlayerIsBannedOnThisServer(Player player) {
 		if (!controllersAreReady()) return;
 		this._banController.takeActionIfPlayerIsBannedOnThisServerAsync(player);
-	}
-
-	private void playerJoinedStageThree(final Player player) {
-		this._joinLeaveController.sendJoinEventToOtherServers(player);
-		this._teleportController.playerJoined(player);
-		this._bungeePlayerController.addPlayerOnThisServerAsync(player);
 	}
 
 	public void playerLeftThisServer(Player player) {		

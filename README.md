@@ -7,6 +7,8 @@ A plugin to handle BungeeCord stuff.
 ### 1.7 (2016-05-28)
 
 * NEW: Now has switch server messages.
+* NEW: Added the EithonBungeeSwitchEvent.
+* CHANGE: EithonBungee events are now distributed to local server too.
 
 ### 1.6 (2016-05-26)
 

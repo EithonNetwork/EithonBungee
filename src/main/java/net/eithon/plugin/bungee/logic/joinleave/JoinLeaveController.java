@@ -13,6 +13,7 @@ import org.json.simple.JSONObject;
 
 public class JoinLeaveController {
 
+	public static final String SWITCH_EVENT = "SwitchEvent";
 	public static final String JOIN_EVENT = "JoinEvent";
 	public static final String LEAVE_EVENT = "LeaveEvent";
 	private String _serverName;
@@ -22,18 +23,49 @@ public class JoinLeaveController {
 		this._bungeeController = bungeeController;
 		this._serverName = serverName;
 	}
+
+	public void playerJoinedThisServer(Player player) {
+		sendJoinEventToOtherServers(player);
+		publishJoinEventOnThisServer(player);	
+	}
+
+	public void playerSwitchedToThisServer(Player player, String previousServername) {
+		sendSwitchEventToOtherServers(player, previousServername);
+		publishSwitchEventOnThisServer(player, previousServername);	
+	}
 	
 	public void publishJoinEventOnThisServer(JSONObject data) {
 		JoinLeaveInfo info = JoinLeaveInfo.getFromJson(data);
-		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(_serverName, info.getServerName(), 
+		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(this._serverName, info.getToServerName(), 
 				info.getPlayerId(), info.getPlayerName(), info.getMainGroup(), info.getIsNewOnServer());
+		Bukkit.getServer().getPluginManager().callEvent(e);			
+	}
+	
+	public void publishSwitchEventOnThisServer(JSONObject data) {
+		JoinLeaveInfo info = JoinLeaveInfo.getFromJson(data);
+		EithonBungeeSwitchEvent e = new EithonBungeeSwitchEvent(this._serverName, info.getFromServerName(), info.getToServerName(), 
+				info.getPlayerId(), info.getPlayerName(), info.getMainGroup());
+		Bukkit.getServer().getPluginManager().callEvent(e);			
+	}
+	
+	private void publishJoinEventOnThisServer(Player player) {
+		String mainGroup = getHighestGroup(player.getUniqueId());
+		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(this._serverName, this._serverName, 
+				player.getUniqueId(), player.getName(), mainGroup, !player.hasPlayedBefore());
+		Bukkit.getServer().getPluginManager().callEvent(e);			
+	}
+	
+	private void publishSwitchEventOnThisServer(Player player, String previousServer) {
+		String mainGroup = getHighestGroup(player.getUniqueId());
+		EithonBungeeSwitchEvent e = new EithonBungeeSwitchEvent(this._serverName, previousServer, this._serverName, 
+				player.getUniqueId(), player.getName(), mainGroup);
 		Bukkit.getServer().getPluginManager().callEvent(e);			
 	}
 
 	public void publishLeaveEventOnThisServer(JSONObject data) {
 		JoinLeaveInfo info = JoinLeaveInfo.getFromJson(data);
 		publishLeaveEventOnThisServer(
-				info.getServerName(), 
+				info.getFromServerName(),
 				info.getPlayerId(), 
 				info.getPlayerName(), 
 				info.getMainGroup());			
@@ -63,18 +95,22 @@ public class JoinLeaveController {
 		return null;
 	}
 
-	public void sendJoinEventToOtherServers(Player player) {
-		sendEventToOtherServers(player, JOIN_EVENT);
+	private void sendSwitchEventToOtherServers(Player player, String fromServer) {
+		sendEventToOtherServers(SWITCH_EVENT, player, fromServer, this._serverName);
+	}
+
+	private void sendJoinEventToOtherServers(Player player) {
+		sendEventToOtherServers(JOIN_EVENT, player, null, this._serverName);
 	}
 
 	public void sendLeaveEventToOtherServers(Player player) {
-		sendEventToOtherServers(player, LEAVE_EVENT);
+		sendEventToOtherServers(LEAVE_EVENT, player, this._serverName, null);
 	}
 
-	private void sendEventToOtherServers(Player player, String eventName) {
+	private void sendEventToOtherServers(String eventName, Player player, String fromServerName, String toServerName) {
 		if (player == null) return;
 		String mainGroup = getHighestGroup(player.getUniqueId());
-		JoinLeaveInfo info = new JoinLeaveInfo(_serverName, player.getUniqueId(), player.getName(), mainGroup);
+		JoinLeaveInfo info = new JoinLeaveInfo(fromServerName, toServerName, player.getUniqueId(), player.getName(), mainGroup);
 		if (!player.hasPlayedBefore()) info.setIsNewOnServer();
 		this._bungeeController.sendDataToAll(eventName, info, true);
 	}
