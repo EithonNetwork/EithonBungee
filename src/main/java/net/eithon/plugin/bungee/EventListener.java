@@ -7,6 +7,7 @@ import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeJoinEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeLeaveEvent;
+import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeSwitchEvent;
 import net.eithon.plugin.bungee.logic.joinleave.JoinLeaveController;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 import net.eithon.plugin.bungee.logic.teleport.TeleportController;
@@ -47,6 +48,9 @@ public class EventListener implements Listener {
 		case JoinLeaveController.JOIN_EVENT:
 			this._controller.publishJoinEventOnThisServer(data);
 			break;
+		case JoinLeaveController.SWITCH_EVENT:
+			this._controller.publishSwitchEventOnThisServer(data);
+			break;
 		case JoinLeaveController.LEAVE_EVENT:
 			this._controller.publishLeaveEventOnThisServer(data);
 			break;
@@ -64,9 +68,7 @@ public class EventListener implements Listener {
 		Player player = event.getPlayer();
 		if (player == null) return;
 		verbose("onPlayerJoinEvent", "Player=%s", player.getName());
-		String joinMessage = this._controller.getJoinMessage(player);
-		if (joinMessage != null) event.setJoinMessage(joinMessage);
-		treatFirstTimeUsersSpecial(event, player);
+		event.setJoinMessage("");
 		this._controller.playerJoined(event.getPlayer());
 	}
 
@@ -75,15 +77,6 @@ public class EventListener implements Listener {
 		Player player = event.getPlayer();
 		verbose("onPlayerRespawnEvent", "Player=%s", player.getName());
 		this._controller.takeActionIfPlayerIsBannedOnThisServer(player);
-	}
-
-	private boolean treatFirstTimeUsersSpecial(PlayerJoinEvent event, Player player) {
-		if (player.hasPlayedBefore()) return false;
-		if (!this._controller.thisServerIsThePrimaryBungeeServer()) return false;
-		final String playerName = player.getName();
-		event.setJoinMessage(Config.M.joinedServerFirstTime.getMessageWithColorCoding(playerName));
-		Config.M.pleaseWelcomeNewPlayer.broadcastMessage(playerName);
-		return true;
 	}
 
 	@EventHandler(ignoreCancelled=true)
@@ -102,7 +95,7 @@ public class EventListener implements Listener {
 		this._controller.playerLeftThisServer(player);
 	}
 
-	// Player joined on any other bungee server
+	// Player joined a bungee server
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeJoinEvent(EithonBungeeJoinEvent event) {
 		final String playerName = event.getPlayerName();
@@ -114,6 +107,15 @@ public class EventListener implements Listener {
 		} else {
 			this._controller.broadcastPlayerJoined(event.getThatServerName(), event.getPlayerId(), playerName, event.getMainGroup());
 		}
+	}
+
+	// Player joined a bungee server
+	@EventHandler(ignoreCancelled=true)
+	public void onEithonBungeeSwitchEvent(EithonBungeeSwitchEvent event) {
+		final String playerName = event.getPlayerName();
+		verbose("onEithonBungeeSwitchEvent", "Player=%s", playerName);
+		if (event.getPlayerId() == null) return;
+		this._controller.broadcastPlayerSwitched(event.getPreviousServerName(), event.getThatServerName(), event.getPlayerId(), playerName, event.getMainGroup());
 	}
 
 	// Player quit on any bungee server

@@ -8,29 +8,26 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 public class JoinLeaveInfo  extends JsonObject<JoinLeaveInfo> {
-	private String _serverName;
+	private String _fromServerName;
+	private String _toServerName;
 	private String _mainGroup;
 	private String _playerName;
 	private UUID _playerId;
 	private boolean _isNewOnServer;
 	
-	public JoinLeaveInfo() {
-		this._serverName = null;
-		this._mainGroup = null;
-		this._playerName = null;
-		this._playerId = null;
-		this._isNewOnServer = false;
-	}
-	
-	public JoinLeaveInfo(String serverName, UUID playerId, String playerName, String mainGroup) {
-		this._serverName = serverName;
+	public JoinLeaveInfo(String fromServerName, String toServerName, UUID playerId, String playerName, String mainGroup) {
+		this._fromServerName = fromServerName;
+		this._toServerName = toServerName;
 		this._playerId = playerId;
 		this._playerName = playerName;
 		this._mainGroup = mainGroup;
 		this._isNewOnServer = false;
 	}
 	
-	public String getServerName() { return this._serverName; }
+	public JoinLeaveInfo() { }
+
+	public String getFromServerName() { return this._fromServerName; }
+	public String getToServerName() { return this._toServerName; }
 	public String getMainGroup() { return this._mainGroup; }
 	public String getPlayerName() { return this._playerName; }
 	public UUID getPlayerId() { return this._playerId; }
@@ -50,7 +47,8 @@ public class JoinLeaveInfo  extends JsonObject<JoinLeaveInfo> {
 	@Override
 	public Object toJson() {
 		JSONObject json = new JSONObject();
-		json.put("serverName", this._serverName);
+		json.put("fromServerName", this._fromServerName);
+		json.put("toServerName", this._toServerName);
 		json.put("mainGroup", this._mainGroup);
 		json.put("playerId", this._playerId == null ? null : this._playerId.toString());
 		json.put("playerName", this._playerName);
@@ -62,7 +60,8 @@ public class JoinLeaveInfo  extends JsonObject<JoinLeaveInfo> {
 	public JoinLeaveInfo fromJson(Object json) {
 		JSONObject jsonObject = (JSONObject) json;
 		if (jsonObject == null) return null;
-		this._serverName = (String) jsonObject.get("serverName");
+		this._fromServerName = (String) jsonObject.get("fromServerName");
+		this._toServerName = (String) jsonObject.get("toServerName");
 		this._mainGroup = (String) jsonObject.get("mainGroup");
 		this._playerId = null;
 		String uuid = (String) jsonObject.get("playerId");

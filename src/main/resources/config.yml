@@ -53,22 +53,22 @@ messages:
   #
   # Parameters: <player name> (%s)
   #
-  RequestTpTo: 'Player %s requests to teleport to you. Enter one of the commands "/eithonbungee tp accept" or "/eithonbungee tp deny".'
+  RequestTpTo: '[color=aqua]%s[/color] requests to teleport to you. \nType [color=aqua]/tpaccept[/color] to accept or [color=aqua]/tpdeny[/color] to deny the request.'
   
   #
   # Parameters: <player name> (%s)
   #
-  RequestTpHere: 'Player %s requests to teleport you to him/her. Enter one of the commands "/eithonbungee tp accept" or "/eithonbungee tp deny".'
+  RequestTpHere: '[color=darkaqua]%s[/color] requests to teleport you to him/her. \nType [color=aqua]/tpaccept[/color] to accept or [color=aqua]/tpdeny[/color] to deny the request.'
   
   #
   # Parameters: <player name> (%s)
   #
-  DenyTpTo: 'Player %s denied you to teleport to him/her.'
+  DenyTpTo: '%s denied you to teleport to him/her.'
   
   #
   # Parameters: <player name> (%s)
   #
-  DenyTpHere: 'Player %s denied to be teleported to you.'
+  DenyTpHere: '%s denied to be teleported to you.'
   
   #
   # Parameters: <player name> (%s), <message> (%s)
@@ -114,28 +114,16 @@ messages:
   PleaseWelcomeNewPlayer: "[subtitle/]Welcome [color=lightpurple]%s[/color] [color=white]to the server![/color]"
   
   #
-  # Confirmation message when banning a player
-  # Parameters: <player name> (%s), <server name> (%s), <time> (%s)
-  #
-  BannedPlayer: "Player %s is now banned on server %s until %s."
-  
-  #
-  # Confirmation message when removing the ban for a player
-  # Parameters: <player name> (%s), <server name> (%s) 
-  #
-  UnbannedPlayer: "Player %s has been unbanned on server %s."
-  
-  #
-  # Trying to unban a player that wasn't banned
-  # Parameters: <player name> (%s), <server name> (%s) 
-  #
-  PlayerNotBanned: "Player %s is not banned on server %s?"
-  
-  #
   # %PLAYER_NAME%, %SERVER_NAME%
   #
+  
+  switch:
+    message: '[color=green]+[/color] [color=yellow]%PLAYER_NAME%[/color] [color=gray]has switched from %PREVIOUS_SERVER_NAME% to the %SERVER_NAME% server.[/color]'
+    groups:
+        Owner: '[color=green]+[/color] [color=red]%PLAYER_NAME%[/color] [color=gray]has switched from %PREVIOUS_SERVER_NAME% to the %SERVER_NAME% server.[/color]'
+    
   join:
-    message: '[color=green]+[/color] [color=yellow]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
+    message: '[color=green]+[/color] [color=darkaqua]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
     groups:
         Owner: '[color=green]+[/color] [color=red]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
         Admin: '[color=green]+[/color] [color=red]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
@@ -146,7 +134,8 @@ messages:
         Submod: '[color=green]+[/color] [color=darkgreen]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
         Tourist: '[color=green]+[/color] [color=yellow]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
         Trusted: '[color=green]+[/color] [color=yellow]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
-        Builder: '[color=green]+[/color] [color=yellow]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
+        BuilderT1: '[color=green]+[/color] [color=yellow]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
+        BuilderT2: '[color=green]+[/color] [color=yellow]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
         Legend: '[color=green]+[/color] [color=yellow]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
         Veteran: '[color=green]+[/color] [color=blue]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
         Citizen: '[color=green]+[/color] [color=blue]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
@@ -166,7 +155,7 @@ messages:
         Kyralix: '[color=green]+[/color] [color=gold]%PLAYER_NAME%[/color] [color=gray]the cool kid just joined the %SERVER_NAME% server! Yay ~[/color]'
         Robot_Rebel: '[color=green]+[/color] [color=darkgreen]%PLAYER_NAME%[/color] [color=gray]just joined the %SERVER_NAME% server. Hello Bootifuls![/color]'
   quit:
-    message: '[color=red]-[/color] [color=yellow]%PLAYER_NAME%[/color] [color=gray]has left the %SERVER_NAME% server.[/color]'
+    message: '[color=red]-[/color] [color=darkaqua]%PLAYER_NAME%[/color] [color=gray]has left the %SERVER_NAME% server.[/color]'
     groups:
         Owner: '[color=red]-[/color] [color=red]%PLAYER_NAME%[/color] [color=gray]has left the %SERVER_NAME% server.[/color]'
         Admin: '[color=red]-[/color] [color=red]%PLAYER_NAME%[/color] [color=gray]has left the %SERVER_NAME% server.[/color]'
