@@ -16,7 +16,6 @@ import net.eithon.plugin.bungee.logic.ban.BanController;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 import net.eithon.plugin.bungee.logic.individualmessage.IndividualMessageController;
 import net.eithon.plugin.bungee.logic.joinleave.JoinLeaveController;
-import net.eithon.plugin.bungee.logic.players.BungeePlayer;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 import net.eithon.plugin.bungee.logic.teleport.TeleportController;
 
@@ -88,13 +87,18 @@ public class Controller {
 				serverName, playerName, groupName));
 		// Avoid double join messages
 		if (serverName.equalsIgnoreCase(_bungeeServerName)) return;
-		this._individualMessageController.broadcastPlayerJoined(serverName, playerName, groupName);
+		String fromServerName = this._bungeePlayerController.getBungeeServerName(playerId);
+		verbose("broadcastPlayerJoined", "From server=%s", fromServerName);
+		this._individualMessageController.broadcastPlayerJoined(serverName, fromServerName, playerName, groupName);
 		verbose("broadcastPlayerJoined", "Leave");
 	}
 
 	public String getJoinMessage(Player player) {
-		String mainGroup = JoinLeaveController.getHighestGroup(player.getUniqueId());
-		return this._individualMessageController.getJoinMessage(this._bungeeServerName, player.getName(), mainGroup);
+		final UUID playerId = player.getUniqueId();
+		String mainGroup = JoinLeaveController.getHighestGroup(playerId);
+		String fromServerName = this._bungeePlayerController.getBungeeServerName(playerId);
+		verbose("broadcastPlayerJoined", "From server=%s", fromServerName);
+		return this._individualMessageController.getJoinMessage(this._bungeeServerName, fromServerName, player.getName(), mainGroup);
 	}
 
 	public String getQuitMessage(Player player) {
@@ -203,13 +207,12 @@ public class Controller {
 	public boolean sendMessageToPlayer(Player sender, OfflinePlayer receiver,
 			String message) {
 		if (!controllersAreReady()) return false;
-		BungeePlayer bungeePlayer = this._bungeePlayerController.getBungeePlayer(receiver);
-		if (bungeePlayer == null) {
+		String bungeeServerName = this._bungeePlayerController.getBungeeServerName(receiver);
+		if (bungeeServerName == null) {
 			sender.sendMessage(String.format("Player %s seems to be offline.", receiver.getName()));
 			return false;
 		}
 		MessageToPlayerPojo info = new MessageToPlayerPojo(sender, receiver, message);
-		String bungeeServerName = bungeePlayer.getBungeeServerName();
 		this._bungeeController.sendDataToServer(bungeeServerName, MESSAGE_TO_PLAYER, info, true);
 		return true;
 	}

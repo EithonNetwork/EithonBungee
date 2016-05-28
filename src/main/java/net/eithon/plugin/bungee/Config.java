@@ -73,6 +73,7 @@ public class Config {
 		public static ConfigurableMessage playerNotBanned;
 		public static IndividualConfigurableMessage joinMessage;
 		public static IndividualConfigurableMessage quitMessage;
+		public static IndividualConfigurableMessage switchMessage;
 
 		static void load(Configuration config) {
 			requestTpTo = config.getConfigurableMessage(
@@ -117,6 +118,7 @@ public class Config {
 					"Player %s is not banned on server %s?");
 			joinMessage = new IndividualConfigurableMessage(config, "messages.join");
 			quitMessage = new IndividualConfigurableMessage(config, "messages.quit");
+			switchMessage = new IndividualConfigurableMessage(config, "messages.switch");
 		}		
 	}
 

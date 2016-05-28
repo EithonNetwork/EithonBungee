@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.7 (2016-05-28)
+
+* NEW: Now has switch server messages.
+
 ### 1.6 (2016-05-26)
 
 * CHANGE: Welcome new player message now sent to all servers, but only if player joined Hub for the first time.

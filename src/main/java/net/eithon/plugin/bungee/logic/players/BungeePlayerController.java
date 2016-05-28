@@ -180,7 +180,7 @@ public class BungeePlayerController {
 		return null;
 	}
 
-	public BungeePlayer getBungeePlayer(OfflinePlayer player) {
+	private BungeePlayer getBungeePlayer(OfflinePlayer player) {
 		verbose("getBungeePlayer", "Player = %s", player.getName());
 		BungeePlayer cachedBungeePlayer = null;
 		synchronized(this._allCurrentPlayers) {

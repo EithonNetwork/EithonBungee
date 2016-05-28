@@ -116,6 +116,12 @@ messages:
   #
   # %PLAYER_NAME%, %SERVER_NAME%
   #
+  
+  switch:
+    message: '[color=green]+[/color] [color=yellow]%PLAYER_NAME%[/color] [color=gray]has switched from %PREVIOUS_SERVER_NAME% to the %SERVER_NAME% server.[/color]'
+    groups:
+        Owner: '[color=green]+[/color] [color=red]%PLAYER_NAME%[/color] [color=gray]has switched from %PREVIOUS_SERVER_NAME% to the %SERVER_NAME% server.[/color]'
+    
   join:
     message: '[color=green]+[/color] [color=darkaqua]%PLAYER_NAME%[/color] [color=gray]has joined the %SERVER_NAME% server.[/color]'
     groups:

@@ -10,7 +10,7 @@ import net.eithon.plugin.bungee.db.DbPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
-public class BungeePlayer {
+class BungeePlayer {
 	private OfflinePlayer offlinePlayer;
 	private DbPlayer dbPlayer;
 
