@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.7.7 (2016-05-29)
+
+* BUG: Players on server were marked as offline.
+
 ### 1.7.6 (2016-05-29)
 
 * BUG: No quit messages. Players were not marked in db when quitted.

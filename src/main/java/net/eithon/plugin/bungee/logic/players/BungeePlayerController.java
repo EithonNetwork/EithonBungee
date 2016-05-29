@@ -74,7 +74,6 @@ public class BungeePlayerController {
 						this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
 						verbose("refresh", "Added player %s, server %s", 
 								playerName, currentBungeeServerName);
-						continue;
 					}
 				}
 				if (refreshServers) broadcastRefresh();
