@@ -167,7 +167,7 @@ public class CommandHandler {
 		}
 		boolean success = this._controller.requestTpPlayerHere(anchorPlayer, movingPlayer);
 		if (!success) return;
-		anchorPlayer.sendMessage(String.format("Request sent to player %s", anchorPlayer.getName()));
+		anchorPlayer.sendMessage(String.format("Request sent to player %s", movingPlayer.getName()));
 	}
 
 	private void tpDeny(EithonCommand eithonCommand)
@@ -244,8 +244,10 @@ public class CommandHandler {
 
 	private void refreshCommand(EithonCommand command)
 	{
+		CommandSender sender = command.getSender();
 		this._controller.refreshBungeePlayer();
 		this._controller.refreshWarpLocations();
+		sender.sendMessage("Started refresh of bungee players and warp locations.");
 	}
 
 	private void serverCommand(EithonCommand command)

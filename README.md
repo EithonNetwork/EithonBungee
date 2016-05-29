@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.8.2 (2016-05-29)
+
+* BUG: Command confirm messages updated.
+
 ### 1.8.1 (2016-05-29)
 
 * BUG: When accepting a teleport request, you accepted all old teleport requests.
