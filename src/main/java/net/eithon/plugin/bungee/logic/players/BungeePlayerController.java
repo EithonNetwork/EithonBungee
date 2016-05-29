@@ -33,11 +33,11 @@ public class BungeePlayerController {
 		this._allCurrentPlayers = new PlayerCollection<BungeePlayer>();
 		refreshAsync();
 	}
-	
+
 	public void purgePlayers() {
 		DbPlayer.deleteByServerName(Config.V.database, this._bungeeServerName);
 	}
-	
+
 	public void refreshAsync() {
 		if (this._refreshIsRunning) return;
 		final BukkitRunnable runnable = new BukkitRunnable() {
@@ -62,15 +62,21 @@ public class BungeePlayerController {
 				final List<BungeePlayer> allBungeePlayers = BungeePlayer.findAll(false);
 				this._allCurrentPlayers.clear();
 				for (BungeePlayer bungeePlayer : allBungeePlayers) {
+					final String playerName = bungeePlayer.getPlayerName();
 					final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
-					boolean hasLeft = maybeLeft(this._bungeeServerName, bungeePlayer);
-					if (hasLeft || (currentBungeeServerName == null)) {
+					final String previousBungeeServerName = bungeePlayer.getPreviousBungeeServerName();
+					if (bungeePlayer.maybeDelete(this._bungeeServerName)) {
+						verbose("refresh", "Removed player %s, server %s", 
+								playerName, previousBungeeServerName);
 						refreshServers = true;
 						continue;
 					}
-					this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
-					verbose("refresh", "Added player %s, server %s", 
-							bungeePlayer.getPlayerName(), currentBungeeServerName);
+					if (currentBungeeServerName != null) {
+						this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
+						verbose("refresh", "Added player %s, server %s", 
+								playerName, currentBungeeServerName);
+						continue;
+					}
 				}
 				if (refreshServers) broadcastRefresh();
 			} finally {
@@ -78,17 +84,6 @@ public class BungeePlayerController {
 			}
 		}
 		verbose("refresh", "Leave");
-	}
-
-	private boolean maybeLeft(String thisBungeeServerName, BungeePlayer bungeePlayer) {
-		if (thisBungeeServerName == null || bungeePlayer.isOnlineOnThisServer()) return false;
-		final String playerName = bungeePlayer.getPlayerName();
-		final String previousBungeeServerName = bungeePlayer.getPreviousBungeeServerName();
-		boolean wasUpdated = bungeePlayer.maybeLeft(thisBungeeServerName);
-		if (!wasUpdated) return false;
-		verbose("refresh", "Removed player %s, server %s", 
-				playerName, previousBungeeServerName);
-		return true;
 	}
 
 	public void addPlayerOnThisServerAsync(final Player player) {
@@ -181,7 +176,7 @@ public class BungeePlayerController {
 				this._allCurrentPlayers.put(playerId, bungeePlayer);
 			} else {
 				if (found) this._allCurrentPlayers.remove(playerId);
-				bungeePlayer.maybeLeft(this._bungeeServerName);
+				bungeePlayer.maybeDelete(this._bungeeServerName);
 			}
 		}
 	}

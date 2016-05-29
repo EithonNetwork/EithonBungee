@@ -10,6 +10,7 @@ import net.eithon.plugin.bungee.db.DbPlayer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 class BungeePlayer {
 	private OfflinePlayer offlinePlayer;
@@ -75,17 +76,12 @@ class BungeePlayer {
 		this.dbPlayer.updateBungeeServerName(bungeeServerName, null);
 	}
 
-	public boolean maybeLeft(String bungeeServerName) {
-		this.dbPlayer.refresh();
-		String currentBungeeServerName = getCurrentBungeeServerName();
-		if (currentBungeeServerName == null) {
-			if (!bungeeServerName.equalsIgnoreCase(getPreviousBungeeServerName())) return true;
-			if (deleteIfOld(this.dbPlayer)) this.dbPlayer = null;
-			return true;
-		}
-		if (!currentBungeeServerName.equalsIgnoreCase(bungeeServerName)) return false;
-		if (this.getOfflinePlayer().isOnline()) return false;
-		this.dbPlayer.updateLeftAt(LocalDateTime.now());
+	public boolean maybeDelete(String bungeeServerName) {
+		if (!bungeeServerName.equalsIgnoreCase(this.dbPlayer.getBungeeServerName())) return false;
+		Player player = this.offlinePlayer.getPlayer();
+		if (player != null) return false;
+		if (!deleteIfOld(this.dbPlayer)) return false;
+		this.dbPlayer = null;
 		return true;
 	}
 
@@ -97,6 +93,6 @@ class BungeePlayer {
 	public UUID getPlayerId() { return this.dbPlayer.getPlayerId(); }
 	public boolean isOnlineOnThisServer() { return getOfflinePlayer().isOnline(); }
 	public void refresh() { this.dbPlayer.refresh(); }
-	
+
 	private boolean hasLeft() { return this.dbPlayer.getPlayerLeftServerAt() != null; }
 }
