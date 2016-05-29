@@ -46,6 +46,11 @@ public class Controller {
 		waitForServerName();
 	}
 
+	public void disable() {
+		if (!controllersAreReady()) return;
+		this._bungeePlayerController.purgePlayers();
+	}
+
 	private boolean controllersAreReady() { 
 		boolean controllersAreReady = this._bungeeServerName != null;
 		verbose("controllersAreReady", controllersAreReady ? "TRUE" : "FALSE");
@@ -256,11 +261,6 @@ public class Controller {
 		return this._teleportController.changeServer(player, serverName);
 	}
 
-	public void bungeePlayerAddedOnOtherServer(JSONObject data) {
-		if (!controllersAreReady()) return;
-		this._bungeePlayerController.bungeePlayerAddedOnOtherServerAsync(data);
-	}
-
 	public void refreshBungeePlayer() {
 		if (!controllersAreReady()) return;
 		this._bungeePlayerController.refreshAsync();
@@ -325,6 +325,12 @@ public class Controller {
 		}
 		this._teleportController.playerJoined(player);
 		this._bungeePlayerController.addPlayerOnThisServerAsync(player);
+	}
+
+	public void playerJoinedOnOtherServer(UUID playerId, String playerName,
+			String otherServerName) {
+		if (!controllersAreReady()) return;
+		this._bungeePlayerController.bungeePlayerAddedOnOtherServerAsync(playerId, playerName, otherServerName);
 	}
 
 	public void takeActionIfPlayerIsBannedOnThisServer(Player player) {

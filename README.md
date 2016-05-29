@@ -4,6 +4,18 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.7.5 (2016-05-29)
+
+* BUG: Too many refresh. Players was thought to be logged out.
+
+### 1.7.4 (2016-05-29)
+
+* BUG: Did not empty table on server restart.
+
+### 1.7.3 (2016-05-29)
+
+* BUG: Player on other servers where not always in the list of bungee players.
+
 ### 1.7.2 (2016-05-29)
 
 * BUG: Player switching to another server resulted in both a quit message and a switch message on the server he/she moved from.

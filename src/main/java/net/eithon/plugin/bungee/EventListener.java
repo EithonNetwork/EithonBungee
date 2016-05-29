@@ -42,9 +42,6 @@ public class EventListener implements Listener {
 		case Controller.MESSAGE_TO_PLAYER:
 			this._controller.handleMessageEvent(data);
 			break;
-		case BungeePlayerController.BUNGEE_PLAYER_ADDED:
-			this._controller.bungeePlayerAddedOnOtherServer(data);
-			break;
 		case JoinLeaveController.JOIN_EVENT:
 			this._controller.publishJoinEventOnThisServer(data);
 			break;
@@ -102,6 +99,7 @@ public class EventListener implements Listener {
 		final String playerName = event.getPlayerName();
 		verbose("onEithonBungeeJoinEvent", "Player=%s", playerName);
 		if (event.getPlayerId() == null) return;
+		this._controller.playerJoinedOnOtherServer(event.getPlayerId(), playerName, event.getThatServerName());
 		if (event.getIsNewOnServer() && this._controller.serverIsThePrimaryBungeeServer(event.getThatServerName())) {
 			Config.M.joinedServerFirstTime.broadcastMessage(playerName);
 			Config.M.pleaseWelcomeNewPlayer.broadcastMessage(playerName);			
@@ -116,6 +114,7 @@ public class EventListener implements Listener {
 		final String playerName = event.getPlayerName();
 		verbose("onEithonBungeeSwitchEvent", "Player=%s", playerName);
 		if (event.getPlayerId() == null) return;
+		this._controller.playerJoinedOnOtherServer(event.getPlayerId(), event.getPlayerName(), event.getThatServerName());
 		this._controller.broadcastPlayerSwitched(event.getPreviousServerName(), event.getThatServerName(), event.getPlayerId(), playerName, event.getMainGroup());
 	}
 
