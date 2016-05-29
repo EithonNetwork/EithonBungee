@@ -83,8 +83,9 @@ public class EventListener implements Listener {
 	public void onPlayerQuitEvent(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
-		String quitMessage = this._controller.getQuitMessage(player);
-		if (quitMessage != null) event.setQuitMessage(quitMessage);
+		//String quitMessage = this._controller.getQuitMessage(player);
+		//if (quitMessage != null) event.setQuitMessage(quitMessage);
+		event.setQuitMessage("");
 		this._controller.playerLeftThisServer(player);
 	}
 
