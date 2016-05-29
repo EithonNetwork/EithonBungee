@@ -254,7 +254,7 @@ public class CommandHandler {
 	{
 		String serverName = command.getArgument("name").asString();
 		Player player = command.getPlayer();
-		boolean success = this._controller.connectPlayerToServer(player, serverName);
+		boolean success = this._controller.connectPlayerToServerOrInformSender(player, player, serverName);
 		if (!success) return;
 		Config.M.connectedToServer.sendMessage(player, serverName);
 	}

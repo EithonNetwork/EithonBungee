@@ -4,8 +4,8 @@ import java.util.UUID;
 
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.facades.PermissionsFacade;
+import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
-import net.eithon.plugin.eithonlibrary.Config;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -16,12 +16,10 @@ public class JoinLeaveController {
 	public static final String SWITCH_EVENT = "SwitchEvent";
 	public static final String JOIN_EVENT = "JoinEvent";
 	public static final String LEAVE_EVENT = "LeaveEvent";
-	private String _serverName;
 	private BungeeController _bungeeController;
 
-	public JoinLeaveController(EithonPlugin eithonPlugin, BungeeController bungeeController, String serverName) {
+	public JoinLeaveController(EithonPlugin eithonPlugin, BungeeController bungeeController) {
 		this._bungeeController = bungeeController;
-		this._serverName = serverName;
 	}
 
 	public void playerJoinedThisServer(Player player) {
@@ -36,28 +34,28 @@ public class JoinLeaveController {
 	
 	public void publishJoinEventOnThisServer(JSONObject data) {
 		JoinLeaveInfo info = JoinLeaveInfo.getFromJson(data);
-		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(this._serverName, info.getToServerName(), 
+		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(Config.V.thisBungeeServerName, info.getToServerName(), 
 				info.getPlayerId(), info.getPlayerName(), info.getMainGroup(), info.getIsNewOnServer());
 		Bukkit.getServer().getPluginManager().callEvent(e);			
 	}
 	
 	public void publishSwitchEventOnThisServer(JSONObject data) {
 		JoinLeaveInfo info = JoinLeaveInfo.getFromJson(data);
-		EithonBungeeSwitchEvent e = new EithonBungeeSwitchEvent(this._serverName, info.getFromServerName(), info.getToServerName(), 
+		EithonBungeeSwitchEvent e = new EithonBungeeSwitchEvent(Config.V.thisBungeeServerName, info.getFromServerName(), info.getToServerName(), 
 				info.getPlayerId(), info.getPlayerName(), info.getMainGroup());
 		Bukkit.getServer().getPluginManager().callEvent(e);			
 	}
 	
 	private void publishJoinEventOnThisServer(Player player) {
 		String mainGroup = getHighestGroup(player.getUniqueId());
-		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(this._serverName, this._serverName, 
+		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(Config.V.thisBungeeServerName, Config.V.thisBungeeServerName, 
 				player.getUniqueId(), player.getName(), mainGroup, !player.hasPlayedBefore());
 		Bukkit.getServer().getPluginManager().callEvent(e);			
 	}
 	
 	private void publishSwitchEventOnThisServer(Player player, String previousServer) {
 		String mainGroup = getHighestGroup(player.getUniqueId());
-		EithonBungeeSwitchEvent e = new EithonBungeeSwitchEvent(this._serverName, previousServer, this._serverName, 
+		EithonBungeeSwitchEvent e = new EithonBungeeSwitchEvent(Config.V.thisBungeeServerName, previousServer, Config.V.thisBungeeServerName, 
 				player.getUniqueId(), player.getName(), mainGroup);
 		Bukkit.getServer().getPluginManager().callEvent(e);			
 	}
@@ -73,7 +71,7 @@ public class JoinLeaveController {
 
 	public void publishLeaveEventOnThisServer(String serverName, UUID playerId,
 			String playerName, String mainGroup) {
-		EithonBungeeLeaveEvent e = new EithonBungeeLeaveEvent(_serverName, serverName, 
+		EithonBungeeLeaveEvent e = new EithonBungeeLeaveEvent(Config.V.thisBungeeServerName, serverName, 
 				playerId, playerName, mainGroup);
 		Bukkit.getServer().getPluginManager().callEvent(e);
 	}
@@ -91,15 +89,15 @@ public class JoinLeaveController {
 	}
 
 	private void sendSwitchEventToOtherServers(Player player, String fromServer) {
-		sendEventToOtherServers(SWITCH_EVENT, player, fromServer, this._serverName);
+		sendEventToOtherServers(SWITCH_EVENT, player, fromServer, Config.V.thisBungeeServerName);
 	}
 
 	private void sendJoinEventToOtherServers(Player player) {
-		sendEventToOtherServers(JOIN_EVENT, player, null, this._serverName);
+		sendEventToOtherServers(JOIN_EVENT, player, null, Config.V.thisBungeeServerName);
 	}
 
 	public void sendLeaveEventToOtherServers(Player player) {
-		sendEventToOtherServers(LEAVE_EVENT, player, this._serverName, null);
+		sendEventToOtherServers(LEAVE_EVENT, player, Config.V.thisBungeeServerName, null);
 	}
 
 	private void sendEventToOtherServers(String eventName, Player player, String fromServerName, String toServerName) {

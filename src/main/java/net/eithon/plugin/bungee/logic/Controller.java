@@ -99,11 +99,11 @@ public class Controller {
 		String bungeeServerName = this._bungeeController.getBungeeServerName();
 		if (bungeeServerName != null) {
 			if (bungeeServerName.equalsIgnoreCase(Config.V.thisBungeeServerName)) {
-				this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController, bungeeServerName);
-				this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController, bungeeServerName);
-				this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController, bungeeServerName);
+				this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController);
+				this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController);
+				this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController);
 				this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
-				this._banController = new BanController(this._plugin, bungeeServerName, this);
+				this._banController = new BanController(this._plugin);
 				createEithonBungeeFixesListener();
 				this._bungeeServerName = bungeeServerName;
 				return;
@@ -302,12 +302,12 @@ public class Controller {
 		return this._teleportController.warpTo(sender, player, name);
 	}
 
-	public boolean connectPlayerToServer(Player player, String serverName) {
+	public boolean connectPlayerToServerOrInformSender(CommandSender sender, Player player, String serverName) {
 		if (!controllersAreReady()) {
-			Config.M.tryAgain.sendMessage(player);
+			if (sender != null) Config.M.tryAgain.sendMessage(sender);
 			return false;
 		}
-		return this._teleportController.changeServer(player, serverName);
+		return this._teleportController.changeServer(sender, player, serverName);
 	}
 
 	public void refreshBungeePlayer() {

@@ -26,7 +26,6 @@ public class TeleportController {
 	public static final String WARP_LOCATION_REFRESH = "WarpLocationRefresh";
 	private HashMap<UUID, TeleportPojo> _waitingForTeleport;
 	private HashMap<UUID, List<TeleportPojo>> _requestsForTeleport;
-	private String _bungeeServerName;
 	final private BungeePlayerController _bungeePlayers;
 	private BungeeController _bungeeController;
 	private EithonPlugin _eithonPlugin;
@@ -34,13 +33,12 @@ public class TeleportController {
 	public TeleportController(
 			final EithonPlugin eithonPlugin,
 			final BungeePlayerController bungeePlayers, 
-			final BungeeController bungeeController, String bungeeServerName) {
+			final BungeeController bungeeController) {
 		this._eithonPlugin = eithonPlugin;
 		this._bungeePlayers = bungeePlayers;
 		this._bungeeController = bungeeController;
 		this._waitingForTeleport = new HashMap<UUID, TeleportPojo>();
 		this._requestsForTeleport = new HashMap<UUID, List<TeleportPojo>>();
-		this._bungeeServerName = bungeeServerName;
 		this.refreshWarpLocationsAsync();
 	}
 
@@ -78,7 +76,7 @@ public class TeleportController {
 
 	public boolean warpTo(CommandSender sender, Player player, String name) {
 		WarpLocation warpLocation = WarpLocation.getByName(name);
-		if (warpLocation.getBungeeServerName().equalsIgnoreCase(this._bungeeServerName)) {
+		if (warpLocation.getBungeeServerName().equalsIgnoreCase(Config.V.thisBungeeServerName)) {
 			player.teleport(warpLocation.getLocation());
 		} else {
 			String bungeeServerName = warpLocation.getBungeeServerName();
@@ -90,8 +88,8 @@ public class TeleportController {
 		return true;
 	}
 
-	public boolean changeServer(Player player, String serverName) {
-		if (!this._bungeeController.playerHasPermissionToAccessServerOrInformSender(player, player, serverName)) return false;
+	public boolean changeServer(CommandSender sender, Player player, String serverName) {
+		if (!this._bungeeController.playerHasPermissionToAccessServerOrInformSender(sender, player, serverName)) return false;
 
 		TeleportPojo info = new TeleportPojo(player);
 		sendTeleportMessageToBungeeServer(serverName, info);
@@ -99,7 +97,7 @@ public class TeleportController {
 		boolean success = this._bungeeController.connectToServer(player, serverName);
 
 		if (!success) {
-			Config.M.couldNotConnectToServer.sendMessage(player, serverName, "Unspecified fail reason");
+			if (sender != null) Config.M.couldNotConnectToServer.sendMessage(sender, serverName, "Unspecified fail reason");
 			return false;
 		}
 		return true;
@@ -262,7 +260,7 @@ public class TeleportController {
 			TeleportPojo info) {
 		final String anchorBungeeServerName = this._bungeePlayers.getCurrentBungeeServerName(info.getAnchorPlayerId());
 		if (anchorBungeeServerName == null) return;
-		if (!anchorBungeeServerName.equalsIgnoreCase(this._bungeeServerName)) {
+		if (!anchorBungeeServerName.equalsIgnoreCase(Config.V.thisBungeeServerName)) {
 			// The player has moved to another server, make another server switch
 			OfflinePlayer anchorPlayer = Bukkit.getOfflinePlayer(info.getAnchorPlayerId());
 			if (anchorPlayer == null) return;
