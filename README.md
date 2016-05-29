@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.7.1 (2016-05-29)
+
+* BUG: Old players were not removed at refresh.
+
 ### 1.7 (2016-05-28)
 
 * NEW: Now has switch server messages.

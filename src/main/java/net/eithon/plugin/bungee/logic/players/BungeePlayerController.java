@@ -51,15 +51,16 @@ public class BungeePlayerController {
 		}
 		synchronized(this._allCurrentPlayers) {
 			this._allCurrentPlayers.clear();
-			for (BungeePlayer bungeePlayer : BungeePlayer.findAll()) {
-				boolean wasDeleted = maybeLeft(this._bungeeServerName, bungeePlayer);
-				if (wasDeleted) {
+			for (BungeePlayer bungeePlayer : BungeePlayer.findAll(false)) {
+				final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
+				boolean hasLeft = maybeLeft(this._bungeeServerName, bungeePlayer);
+				if (hasLeft || (currentBungeeServerName == null)) {
 					refreshServers = true;
 					continue;
 				}
 				this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
 				verbose("refresh", "Added player %s, server %s", 
-						bungeePlayer.getPlayerName(), bungeePlayer.getCurrentBungeeServerName());
+						bungeePlayer.getPlayerName(), currentBungeeServerName);
 			}
 		}
 		if (refreshServers) broadcastRefresh();
@@ -68,10 +69,12 @@ public class BungeePlayerController {
 
 	private boolean maybeLeft(String thisBungeeServerName, BungeePlayer bungeePlayer) {
 		if (thisBungeeServerName == null || bungeePlayer.isOnlineOnThisServer()) return false;
+		final String playerName = bungeePlayer.getPlayerName();
+		final String previousBungeeServerName = bungeePlayer.getPreviousBungeeServerName();
 		boolean wasUpdated = bungeePlayer.maybeLeft(thisBungeeServerName);
 		if (!wasUpdated) return false;
 		verbose("refresh", "Removed player %s, server %s", 
-				bungeePlayer.getPlayerName(), bungeePlayer.getPreviousBungeeServerName());
+				playerName, previousBungeeServerName);
 		return true;
 	}
 
@@ -151,7 +154,8 @@ public class BungeePlayerController {
 				if (bungeePlayer == null) return;
 			} else bungeePlayer.refresh();
 			final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
-			if (!otherServerName.equalsIgnoreCase(currentBungeeServerName)) {
+			if (((currentBungeeServerName != null) 
+					&& !currentBungeeServerName.equalsIgnoreCase(otherServerName))) {
 				// Join/leave probably out of sync. Update instead of remove.
 				this._eithonPlugin.getEithonLogger().warning(
 						"BungeePlayers.removeBungeePlayer(%s,%s): Server name in DB = %s. Will add/update instead of remove.",
