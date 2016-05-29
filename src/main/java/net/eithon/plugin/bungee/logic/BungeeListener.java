@@ -43,7 +43,7 @@ class BungeeListener implements PluginMessageListener {
 			String serverName = in.readUTF();
 			String playerId = in.readUTF();
 			String playerName = in.readUTF();
-			this._controller.playerLeftOnAnotherServer(serverName, UUID.fromString(playerId), playerName);
+			this._controller.publishLeaveEventOnThisServer(serverName, UUID.fromString(playerId), playerName);
 		} else {
 			verbose("onPluginMessageReceived", String.format("Unknown command: %s", command));			
 			return;			

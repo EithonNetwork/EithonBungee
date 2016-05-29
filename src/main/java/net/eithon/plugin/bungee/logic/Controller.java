@@ -119,7 +119,6 @@ public class Controller {
 	public void broadcastPlayerQuitted(String serverName, UUID playerId, String playerName, String groupName) {
 		verbose("broadcastPlayerQuitted", String.format("Enter: serverName=%s, player=%s, groupName=%s",
 				serverName, playerName, groupName));
-		if (serverName.equalsIgnoreCase(_bungeeServerName)) return;
 		this._individualMessageController.broadcastPlayerQuit(serverName, playerName, groupName);
 		verbose("broadcastPlayerQuitted", "Leave");
 	}
@@ -128,10 +127,6 @@ public class Controller {
 		BungeeListener bungeeListener = new BungeeListener(this._plugin, this);
 		this._plugin.getServer().getMessenger().
 		registerIncomingPluginChannel(this._plugin, BungeeListener.EITHON_BUNGEE_FIXES_CHANNEL, bungeeListener);
-	}
-
-	void playerLeftOnAnotherServer(String serverName, UUID playerId, String playerName) {
-		this._joinLeaveController.playerLeftOnAnotherServer(serverName, playerId, playerName);
 	}
 
 	public boolean requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
@@ -285,6 +280,11 @@ public class Controller {
 		this._joinLeaveController.publishLeaveEventOnThisServer(data);
 	}
 
+	public void publishLeaveEventOnThisServer(String serverName, UUID playerId,
+			String playerName) {
+		this._joinLeaveController.publishLeaveEventOnThisServer(serverName, playerId, playerName, null);
+	}
+
 	public void playerJoined(final Player player) {	
 		if (!controllersAreReady()) {
 			new BukkitRunnable() {
@@ -344,9 +344,9 @@ public class Controller {
 
 	public void removeBungeePlayer(UUID playerId, String playerName, String otherServerName) {
 		if (!controllersAreReady()) return;
-		if (this._bungeeServerName.equalsIgnoreCase(otherServerName)) return;
-
+		this._bungeePlayerController.removePlayerAsync(playerId, playerName, otherServerName);
 	}
+	
 	public void banPlayerOnThisServer(
 			final Player player,
 			final long seconds) {

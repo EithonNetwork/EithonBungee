@@ -63,14 +63,13 @@ public class BungeePlayerController {
 				this._allCurrentPlayers.clear();
 				for (BungeePlayer bungeePlayer : allBungeePlayers) {
 					final String playerName = bungeePlayer.getPlayerName();
-					final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
-					final String previousBungeeServerName = bungeePlayer.getPreviousBungeeServerName();
 					if (bungeePlayer.maybeDelete(this._bungeeServerName)) {
 						verbose("refresh", "Removed player %s, server %s", 
-								playerName, previousBungeeServerName);
+								playerName, this._bungeeServerName);
 						refreshServers = true;
 						continue;
 					}
+					final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
 					if (currentBungeeServerName != null) {
 						this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
 						verbose("refresh", "Added player %s, server %s", 
