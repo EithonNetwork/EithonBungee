@@ -8,6 +8,7 @@ A plugin to handle BungeeCord stuff.
 
 * NEW: Configuration with name of bungee cord servers.
 * NEW: Sending out heartbeats.
+* CHANGE: Tab completion for server names.
 
 ### 1.8.2 (2016-05-29)
 

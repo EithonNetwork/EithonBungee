@@ -47,6 +47,6 @@ class HeartBeatPojo implements IJsonObject<HeartBeatPojo>{
 	}
 
 	public boolean isTooOld() {
-		return this.createdAt.plusSeconds(Config.V.secondsBetweenHeartBeats).isBefore(LocalDateTime.now());
+		return this.createdAt.plusSeconds(Config.V.secondsBetweenHeartBeats*2).isBefore(LocalDateTime.now());
 	}
 }

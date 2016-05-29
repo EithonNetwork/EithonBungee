@@ -16,7 +16,6 @@ public class Config {
 		V.load(config);
 		C.load(config);
 		M.load(config);
-
 	}
 	
 	public static class V {
@@ -32,7 +31,7 @@ public class Config {
 
 		static void load(Configuration config) {
 			database = null;
-			secondsBetweenHeartBeats = config.getSeconds("MaxAllowedHeartbeatDelayTimeSpan", 30);
+			secondsBetweenHeartBeats = config.getSeconds("TimeSpanBetweenHeartBeats", 10);
 			maxAllowedTeleportDelayInSeconds = config.getSeconds("MaxAllowedTeleportDelayTimeSpan", 30);
 			maxAllowedMessageDelayInSeconds = config.getSeconds("MaxAllowedMessageDelayInSeconds", 10);
 			groupPriorities = config.getStringList("GroupPriorities");

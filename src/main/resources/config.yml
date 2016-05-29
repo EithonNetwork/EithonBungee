@@ -34,6 +34,10 @@ BungeeServers: [Builder, Creative, Hardcore, Hub, Survival]
 # The name of this bungee cord server
 ThisBungeeServer: [Hub]
 
+#
+# The time between server heartbeats
+TimeSpanBetweenHeartBeats: 10s
+
 database:
   Name: eithon_bungee
   Hostname: localhost

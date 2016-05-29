@@ -26,10 +26,8 @@ public class CommandHandler {
 			commandSyntax
 			.parseCommandSyntax("refresh")
 			.setCommandExecutor(p -> refreshCommand(p));
-			commandSyntax
-			.parseCommandSyntax("server <name>")
-			.setCommandExecutor(p -> serverCommand(p));
 			setupTpCommand(commandSyntax);
+			setupServerCommand(commandSyntax);
 			setupMessageCommand(commandSyntax);
 			setupWarpCommand(commandSyntax);
 			setupBanCommand(commandSyntax);
@@ -40,6 +38,15 @@ public class CommandHandler {
 	}
 	
 	ICommandSyntax getCommandSyntax() { return this._commandSyntax; }
+
+	private void setupServerCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
+		ICommandSyntax cmd = commandSyntax
+		.parseCommandSyntax("server <name>")
+		.setCommandExecutor(p -> serverCommand(p));
+		cmd
+		.getParameterSyntax("name")
+		.setMandatoryValues(ec -> Config.V.bungeeServerNames);
+	}
 
 	private void setupTpCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
 		
@@ -104,10 +111,16 @@ public class CommandHandler {
 		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("ban add <player> <server> <time-span : TIME_SPAN  {24h, 48h, 72h, ...}>")
 				.setCommandExecutor(eithonCommand -> banAdd(eithonCommand));
 		acceptAllBungeePlayerNames(cmd);
+		cmd
+		.getParameterSyntax("server")
+		.setMandatoryValues(ec -> Config.V.bungeeServerNames);
 		
 		// message reply <message>
 		cmd = commandSyntax.parseCommandSyntax("ban remove <player> <server>")
 				.setCommandExecutor(eithonCommand -> banRemove(eithonCommand));
+		cmd
+		.getParameterSyntax("server")
+		.setMandatoryValues(ec -> Config.V.bungeeServerNames);
 		
 		// message reply <message>
 		cmd = commandSyntax.parseCommandSyntax("ban list")
