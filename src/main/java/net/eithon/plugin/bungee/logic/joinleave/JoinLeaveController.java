@@ -2,8 +2,10 @@ package net.eithon.plugin.bungee.logic.joinleave;
 
 import java.util.UUID;
 
+import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.facades.PermissionsFacade;
+import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 
@@ -17,8 +19,10 @@ public class JoinLeaveController {
 	public static final String JOIN_EVENT = "JoinEvent";
 	public static final String LEAVE_EVENT = "LeaveEvent";
 	private BungeeController _bungeeController;
+	private EithonPlugin _eithonPlugin;
 
 	public JoinLeaveController(EithonPlugin eithonPlugin, BungeeController bungeeController) {
+		this._eithonPlugin = eithonPlugin;
 		this._bungeeController = bungeeController;
 	}
 
@@ -47,6 +51,7 @@ public class JoinLeaveController {
 	}
 	
 	private void publishJoinEventOnThisServer(Player player) {
+		verbose("publishJoinEventOnThisServer", "Player=%s", player.getName());
 		String mainGroup = getHighestGroup(player.getUniqueId());
 		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(Config.V.thisBungeeServerName, Config.V.thisBungeeServerName, 
 				player.getUniqueId(), player.getName(), mainGroup, !player.hasPlayedBefore());
@@ -54,6 +59,7 @@ public class JoinLeaveController {
 	}
 	
 	private void publishSwitchEventOnThisServer(Player player, String previousServer) {
+		verbose("publishSwitchEventOnThisServer", "Player=%s", player.getName());
 		String mainGroup = getHighestGroup(player.getUniqueId());
 		EithonBungeeSwitchEvent e = new EithonBungeeSwitchEvent(Config.V.thisBungeeServerName, previousServer, Config.V.thisBungeeServerName, 
 				player.getUniqueId(), player.getName(), mainGroup);
@@ -76,11 +82,12 @@ public class JoinLeaveController {
 		Bukkit.getServer().getPluginManager().callEvent(e);
 	}
 
-	public static String getHighestGroup(UUID playerId) {
+	public String getHighestGroup(UUID playerId) {
 		String[] currentGroups = PermissionsFacade.getPlayerPermissionGroups(playerId);
 		for (String priorityGroup : Config.V.groupPriorities) {
 			for (String playerGroup : currentGroups) {
 				if (playerGroup.equalsIgnoreCase(priorityGroup)) {
+					verbose("getHighestGroup", "Highest group: %s", priorityGroup);
 					return priorityGroup;
 				}
 			}
@@ -108,10 +115,8 @@ public class JoinLeaveController {
 		this._bungeeController.sendDataToAll(eventName, info, true);
 	}
 
-	/*
 	private void verbose(String method, String format, Object... args) {
 		String message = CoreMisc.safeFormat(format, args);
 		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "JoinLeaveController.%s: %s", method, message);
 	}
-	*/
 }

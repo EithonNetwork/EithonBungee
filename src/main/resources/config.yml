@@ -32,7 +32,7 @@ BungeeServers: [Builder, Creative, Hardcore, Hub, Survival]
 
 #
 # The name of this bungee cord server
-ThisBungeeServer: [Hub]
+ThisBungeeServer: Hub
 
 #
 # The time between server heartbeats

@@ -48,23 +48,28 @@ public class Controller {
 		this._individualMessageController = new IndividualMessageController(this._plugin);
 		this._heartBeats = new HashMap<String, HeartBeatPojo>();
 		waitForServerName();
-		instanceCount++;
-		sendHeartBeats(instanceCount);
+		sendHeartBeats();
 	}
 
-	private void sendHeartBeats(int instanceNumber) {
-		if (instanceNumber != instanceCount) return;
-		if (controllersAreReady()) {
-			HeartBeatPojo info = new HeartBeatPojo(this._bungeeServerName);
-			if (this._bungeeController.sendDataToAll(HEARTBEAT, info, true)) handleHeartbeat(info);
-		}
-		final BukkitRunnable runnable = new BukkitRunnable() {
+	private void sendHeartBeats() {
+		final int instanceNumber = instanceCount++;
+		new BukkitRunnable() {
 			@Override
 			public void run() {
-				sendHeartBeats(instanceNumber);
+				if (!sendHeartBeat(instanceNumber)) this.cancel();;
 			}
-		};
-		runnable.runTaskLaterAsynchronously(this._plugin, Config.V.secondsBetweenHeartBeats);
+		}.runTaskTimerAsynchronously(
+				this._plugin, 
+				0,
+				TimeMisc.secondsToTicks(Config.V.secondsBetweenHeartBeats));;
+	}
+
+	private boolean sendHeartBeat(int instanceNumber) {
+		if (instanceNumber != instanceCount) return false;
+		if (!controllersAreReady()) return true;
+		HeartBeatPojo info = new HeartBeatPojo(this._bungeeServerName);
+		if (this._bungeeController.sendDataToAll(HEARTBEAT, info, true)) handleHeartbeat(info);
+		return true;
 	}
 
 	public void disable() {
@@ -137,15 +142,19 @@ public class Controller {
 	}
 
 	public String getJoinMessage(Player player) {
+		verbose("getQuitMessage", "Player=%s", player.getName());
+		if (!controllersAreReady()) return null;
 		final UUID playerId = player.getUniqueId();
-		String mainGroup = JoinLeaveController.getHighestGroup(playerId);
+		String mainGroup = this._joinLeaveController.getHighestGroup(playerId);
 		String fromServerName = this._bungeePlayerController.getPreviousBungeeServerName(playerId);
 		if (fromServerName == null) return null;
 		return this._individualMessageController.getJoinMessage(this._bungeeServerName, fromServerName, player.getName(), mainGroup);
 	}
 
 	public String getQuitMessage(Player player) {
-		String mainGroup = JoinLeaveController.getHighestGroup(player.getUniqueId());
+		verbose("getQuitMessage", "Player=%s", player.getName());
+		if (!controllersAreReady()) return null;
+		String mainGroup = this._joinLeaveController.getHighestGroup(player.getUniqueId());
 		return this._individualMessageController.getQuitMessage(this._bungeeServerName, player.getName(), mainGroup);
 	}
 
