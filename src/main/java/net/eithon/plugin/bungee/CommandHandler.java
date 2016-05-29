@@ -24,6 +24,9 @@ public class CommandHandler {
 
 		try {	
 			commandSyntax
+			.parseCommandSyntax("refresh")
+			.setCommandExecutor(p -> refreshCommand(p));
+			commandSyntax
 			.parseCommandSyntax("server <name>")
 			.setCommandExecutor(p -> serverCommand(p));
 			setupTpCommand(commandSyntax);
@@ -237,6 +240,12 @@ public class CommandHandler {
 	private void banList(EithonCommand eithonCommand) {
 		CommandSender sender = eithonCommand.getSender();
 		this._controller.banListAsync(sender);
+	}
+
+	private void refreshCommand(EithonCommand command)
+	{
+		this._controller.refreshBungeePlayer();
+		this._controller.refreshWarpLocations();
 	}
 
 	private void serverCommand(EithonCommand command)

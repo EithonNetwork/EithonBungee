@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.8 (2016-05-29)
+
+* NEW: Added a refresh command.
+
 ### 1.7.8 (2016-05-29)
 
 * BUG: No message on request tp here.
