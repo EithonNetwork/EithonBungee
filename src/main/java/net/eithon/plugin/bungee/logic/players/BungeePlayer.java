@@ -39,8 +39,8 @@ class BungeePlayer {
 		return true;
 	}
 
-	public static List<BungeePlayer> findAll() {
-		return DbPlayer.findAll(Config.V.database).stream().map(dbPlayer -> new BungeePlayer(dbPlayer)).collect(Collectors.toList());
+	public static List<BungeePlayer> findAll(boolean onlyOnline) {
+		return DbPlayer.findAll(Config.V.database, onlyOnline).stream().map(dbPlayer -> new BungeePlayer(dbPlayer)).collect(Collectors.toList());
 	}
 
 	public static BungeePlayer createOrUpdate(OfflinePlayer player, String bungeeServerName) {
@@ -78,8 +78,12 @@ class BungeePlayer {
 	public boolean maybeLeft(String bungeeServerName) {
 		this.dbPlayer.refresh();
 		String currentBungeeServerName = getCurrentBungeeServerName();
-		if (currentBungeeServerName == null) return false;
+		if (currentBungeeServerName == null) {
+			if (deleteIfOld(this.dbPlayer)) this.dbPlayer = null;
+			return true;
+		}
 		if (!currentBungeeServerName.equalsIgnoreCase(bungeeServerName)) return false;
+		if (this.getOfflinePlayer().isOnline()) return false;
 		this.dbPlayer.updateLeftAt(LocalDateTime.now());
 		return true;
 	}

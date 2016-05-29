@@ -32,10 +32,15 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 		return getByWhere(database, "player_id=?", playerId.toString());
 	}
 
-	public static List<DbPlayer> findAll(Database database) {
+	public static List<DbPlayer> findAll(Database database, boolean onlyOnline) {
 		DbPlayer dbPlayer = new DbPlayer(database);
+		if (onlyOnline) return dbPlayer.findAllOnline();
 		return dbPlayer.findAll();
 	}
+
+	protected List<DbPlayer> findAllOnline()  {
+		return findByWhere("left_at IS NULL");
+	}	
 
 	private DbPlayer(Database database, UUID playerId, String playerName, String bungeeServerName) {
 		this(database);
