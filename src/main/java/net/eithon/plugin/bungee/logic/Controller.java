@@ -28,6 +28,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.json.simple.JSONObject;
 
 public class Controller {	
+	public static final String HEARTBEAT = "Heartbeat";
 	public static final String MESSAGE_TO_PLAYER = "MessageToPlayer";
 	private EithonBungeePlugin _plugin;
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
@@ -38,12 +39,32 @@ public class Controller {
 	private BungeePlayerController _bungeePlayerController;
 	private BungeeController _bungeeController;
 	private BanController _banController;
+	private static int instanceCount = 0;
+	private HashMap<String, HeartBeatPojo> _heartBeats;
 
 	public Controller(EithonBungeePlugin plugin, BungeeController bungeeController) {
 		this._plugin = plugin;
 		this._bungeeController = bungeeController;
 		this._individualMessageController = new IndividualMessageController(this._plugin);
+		this._heartBeats = new HashMap<String, HeartBeatPojo>();
 		waitForServerName();
+		instanceCount++;
+		sendHeartBeats(instanceCount);
+	}
+
+	private void sendHeartBeats(int instanceNumber) {
+		if (instanceNumber != instanceCount) return;
+		if (controllersAreReady()) {
+			HeartBeatPojo info = new HeartBeatPojo(this._bungeeServerName);
+			if (this._bungeeController.sendDataToAll(HEARTBEAT, info, true)) handleHeartbeat(info);
+		}
+		final BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				sendHeartBeats(instanceNumber);
+			}
+		};
+		runnable.runTaskLaterAsynchronously(this._plugin, Config.V.secondsBetweenHeartBeats);
 	}
 
 	public void disable() {
@@ -65,18 +86,30 @@ public class Controller {
 		if (serverName == null) return false;
 		return serverName.equalsIgnoreCase(Config.V.primaryBungeeServer);
 	}
+	
+	public boolean serverHeartIsBeating(String serverName) {
+		HeartBeatPojo info = null;
+		synchronized (this._heartBeats) {
+			info = this._heartBeats.get(serverName);
+		}
+		return (info != null) && !info.isTooOld();
+	}
 
 	private void waitForServerName() {
 		String bungeeServerName = this._bungeeController.getBungeeServerName();
 		if (bungeeServerName != null) {
-			this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController, bungeeServerName);
-			this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController, bungeeServerName);
-			this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController, bungeeServerName);
-			this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
-			this._banController = new BanController(this._plugin, bungeeServerName, this);
-			createEithonBungeeFixesListener();
-			this._bungeeServerName = bungeeServerName;
-			return;
+			if (bungeeServerName.equalsIgnoreCase(Config.V.thisBungeeServerName)) {
+				this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController, bungeeServerName);
+				this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController, bungeeServerName);
+				this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController, bungeeServerName);
+				this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
+				this._banController = new BanController(this._plugin, bungeeServerName, this);
+				createEithonBungeeFixesListener();
+				this._bungeeServerName = bungeeServerName;
+				return;
+			}
+			this._plugin.getEithonLogger().error("According to the configuration this server is named %s, but according to BungeeCord it is named %s",
+					Config.V.thisBungeeServerName, bungeeServerName);
 		}
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
@@ -171,6 +204,27 @@ public class Controller {
 			return;
 		}
 		this._teleportController.handleTeleportEvent(jsonObject);
+	}
+	
+	public void handleHeartbeat(JSONObject jsonObject) {
+		if (!controllersAreReady()) {
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					handleHeartbeat(jsonObject);
+				}
+			}
+			.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1));
+			return;
+		}
+		HeartBeatPojo info = HeartBeatPojo.createFromJsonObject(jsonObject);
+		handleHeartbeat(info);
+	}
+
+	private void handleHeartbeat(HeartBeatPojo info) {
+		synchronized (this._heartBeats) {
+			this._heartBeats.put(info.getServerName(), info);
+		}
 	}
 
 	public void handleMessageEvent(JSONObject jsonObject) {
@@ -346,7 +400,7 @@ public class Controller {
 		if (!controllersAreReady()) return;
 		this._bungeePlayerController.removePlayerAsync(playerId, playerName, otherServerName);
 	}
-	
+
 	public void banPlayerOnThisServer(
 			final Player player,
 			final long seconds) {

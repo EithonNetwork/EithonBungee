@@ -4,6 +4,11 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.9 (2016-05-29)
+
+* NEW: Configuration with name of bungee cord servers.
+* NEW: Sending out heartbeats.
+
 ### 1.8.2 (2016-05-29)
 
 * BUG: Command confirm messages updated.

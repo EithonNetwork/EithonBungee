@@ -14,6 +14,10 @@ public class EithonBungeeApi {
 		this._bungeeController = bungeeController;
 		this._controller = controller;
 	}
+	
+	public boolean serverHeartIsBeating(String serverName) {
+		return this._controller.serverHeartIsBeating(serverName);
+	}
 
 	public boolean broadcastMessage(ConfigurableMessage configurableMessage, Object... args) {
 		String message = configurableMessage.getMessageWithColorCoding(args);
