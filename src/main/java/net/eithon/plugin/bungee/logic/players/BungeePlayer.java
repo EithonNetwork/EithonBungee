@@ -53,8 +53,7 @@ class BungeePlayer {
 			if (!player.getName().equals(dbPlayer.getPlayerName())) {
 				dbPlayer.updatePlayerName(player.getName());
 			}
-			if ((bungeeServerName != null)
-					&& !bungeeServerName.equalsIgnoreCase(dbPlayer.getBungeeServerName())) {
+			if (bungeeServerName != null) {
 				dbPlayer.updateBungeeServerName(bungeeServerName, null);
 			}
 		}
@@ -78,11 +77,14 @@ class BungeePlayer {
 
 	public boolean maybeDelete(String bungeeServerName) {
 		if (!bungeeServerName.equalsIgnoreCase(this.dbPlayer.getBungeeServerName())) return false;
-		Player player = this.offlinePlayer.getPlayer();
+		Player player = Bukkit.getServer().getPlayer(this.dbPlayer.getPlayerId());
 		if (player != null) return false;
-		if (!deleteIfOld(this.dbPlayer)) return false;
-		this.dbPlayer = null;
-		return true;
+		if (deleteIfOld(this.dbPlayer)) {
+			this.dbPlayer = null;
+			return true;
+		}
+		this.dbPlayer.updateLeftAt(LocalDateTime.now());
+		return false;
 	}
 
 	public String getCurrentBungeeServerName() { if (hasLeft()) return null; else return this.dbPlayer.getBungeeServerName(); }

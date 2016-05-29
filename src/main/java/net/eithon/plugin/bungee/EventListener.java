@@ -120,8 +120,8 @@ public class EventListener implements Listener {
 
 	// Player quit on any bungee server
 	@EventHandler(ignoreCancelled=true)
-	public void onEithonBungeeQuitEvent(EithonBungeeLeaveEvent event) {
-		verbose("onEithonBungeeQuitEvent", "Player=%s", event.getPlayerName());
+	public void onEithonBungeeLeaveEvent(EithonBungeeLeaveEvent event) {
+		verbose("onEithonBungeeLeaveEvent", "Player=%s", event.getPlayerName());
 		if (event.getPlayerId() == null) return;
 		this._controller.eithonBungeeLeaveReceived(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
 	}

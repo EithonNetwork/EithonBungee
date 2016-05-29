@@ -4,24 +4,21 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
-### 1.7.5 (2016-05-29)
+### 1.8.1 (2016-05-29)
 
+* BUG: When accepting a teleport request, you accepted all old teleport requests.
+
+### 1.8 (2016-05-29)
+
+* NEW: Added a refresh command.
+* CHANGE: Player names are not mandatory for tp anymore.
+* BUG: No message on request tp here.
+* BUG: Players on server were marked as offline.
+* BUG: No quit messages. Players were not marked in db when quitted.
 * BUG: Too many refresh. Players was thought to be logged out.
-
-### 1.7.4 (2016-05-29)
-
 * BUG: Did not empty table on server restart.
-
-### 1.7.3 (2016-05-29)
-
 * BUG: Player on other servers where not always in the list of bungee players.
-
-### 1.7.2 (2016-05-29)
-
 * BUG: Player switching to another server resulted in both a quit message and a switch message on the server he/she moved from.
-
-### 1.7.1 (2016-05-29)
-
 * BUG: Old players were not removed at refresh.
 
 ### 1.7 (2016-05-28)
@@ -43,17 +40,8 @@ A plugin to handle BungeeCord stuff.
 ### 1.4 (2016-05-22)
 
 * NEW: Support for temporarily banning players from servers. (Needed in from EithonHardcore plugin).
-
-### 1.3.3 (2016-05-22)
-
 * BUG: When adding a warp location, the current server was not updated - only all other servers.
-
-### 1.3.2 (2016-05-15)
-
 * BUG: There were double quit messages on the server you quit from.
-
-### 1.3.1 (2016-05-15)
-
 * BUG: There were double join messages on the server you joined.
 * BUG: When you left the current server for another server, the original server lost track of you. 
 

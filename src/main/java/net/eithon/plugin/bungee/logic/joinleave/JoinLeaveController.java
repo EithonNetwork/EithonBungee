@@ -71,12 +71,7 @@ public class JoinLeaveController {
 				info.getMainGroup());			
 	}
 
-	public void playerLeftOnAnotherServer(String serverName, UUID playerId,
-			String playerName) {
-		publishLeaveEventOnThisServer(serverName, playerId, playerName, null);
-	}
-
-	private void publishLeaveEventOnThisServer(String serverName, UUID playerId,
+	public void publishLeaveEventOnThisServer(String serverName, UUID playerId,
 			String playerName, String mainGroup) {
 		EithonBungeeLeaveEvent e = new EithonBungeeLeaveEvent(_serverName, serverName, 
 				playerId, playerName, mainGroup);

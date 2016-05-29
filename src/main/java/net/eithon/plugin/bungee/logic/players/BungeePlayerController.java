@@ -63,19 +63,17 @@ public class BungeePlayerController {
 				this._allCurrentPlayers.clear();
 				for (BungeePlayer bungeePlayer : allBungeePlayers) {
 					final String playerName = bungeePlayer.getPlayerName();
-					final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
-					final String previousBungeeServerName = bungeePlayer.getPreviousBungeeServerName();
 					if (bungeePlayer.maybeDelete(this._bungeeServerName)) {
 						verbose("refresh", "Removed player %s, server %s", 
-								playerName, previousBungeeServerName);
+								playerName, this._bungeeServerName);
 						refreshServers = true;
 						continue;
 					}
+					final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
 					if (currentBungeeServerName != null) {
 						this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
 						verbose("refresh", "Added player %s, server %s", 
 								playerName, currentBungeeServerName);
-						continue;
 					}
 				}
 				if (refreshServers) broadcastRefresh();
@@ -96,19 +94,6 @@ public class BungeePlayerController {
 		runnable.runTaskAsynchronously(this._eithonPlugin);
 	}
 
-	public void bungeePlayerAddedOnOtherServerAsync(
-			final UUID playerId, 
-			final String playerName, 
-			final String otherServerName) {
-		final BukkitRunnable runnable = new BukkitRunnable() {
-			@Override
-			public void run() {
-				bungeePlayerAddedOnOtherServer(playerId, playerName, otherServerName);
-			}
-		};
-		runnable.runTaskAsynchronously(this._eithonPlugin);
-	}
-
 	private void addPlayerOnThisServer(final Player player) {
 		verbose("addPlayerOnThisServer", "player=%s, Local bungeeServerName=%s",
 				player.getName(), this._bungeeServerName);
@@ -121,6 +106,19 @@ public class BungeePlayerController {
 			}
 			this._allCurrentPlayers.put(player, bungeePlayer);
 		}
+	}
+
+	public void bungeePlayerAddedOnOtherServerAsync(
+			final UUID playerId, 
+			final String playerName, 
+			final String otherServerName) {
+		final BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				bungeePlayerAddedOnOtherServer(playerId, playerName, otherServerName);
+			}
+		};
+		runnable.runTaskAsynchronously(this._eithonPlugin);
 	}
 
 	private void bungeePlayerAddedOnOtherServer(

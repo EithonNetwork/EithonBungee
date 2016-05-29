@@ -62,10 +62,10 @@ public class TeleportController {
 		return true;
 	}
 
-	public void tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) {
+	public boolean tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) {
 		String bungeeServerName = this._bungeePlayers.getCurrentBungeeServerNameOrInformSender(sender, movingPlayer);
-		if (bungeeServerName == null) return;
-		
+		if (bungeeServerName == null) return false;
+
 		if (movingPlayer.isOnline() && force) {
 			movingPlayer.getPlayer().teleport(anchorPlayer);
 		} else {
@@ -73,6 +73,7 @@ public class TeleportController {
 			info.setAsRequestFromAnchorPlayer(force);
 			sendTeleportMessageToBungeeServer(bungeeServerName, info);
 		}
+		return true;
 	}
 
 	public boolean warpTo(CommandSender sender, Player player, String name) {
@@ -157,17 +158,22 @@ public class TeleportController {
 			verbose("waitForPlayerToComeToServer", "Leave. Teleporting player %s according to info",player.getName());
 			return;
 		}
-		this._waitingForTeleport.put(playerId, info);
+		synchronized (this._waitingForTeleport) {
+			this._waitingForTeleport.put(playerId, info);
+		}
 		verbose("waitForPlayerToComeToServer", "Leave. Added to _waitingForTeleport");
 	}
 
-	private void saveRequest(Player localPlayer, TeleportPojo info) {
-		List<TeleportPojo> list = this._requestsForTeleport.get(localPlayer.getUniqueId());
-		if (list == null) {
-			list = new ArrayList<TeleportPojo>();
-			this._requestsForTeleport.put(localPlayer.getUniqueId(), list);
+	private void saveRequest(Player player, TeleportPojo info) {
+		final UUID playerId = player.getUniqueId();
+		synchronized (this._requestsForTeleport) {
+			List<TeleportPojo> list = this._requestsForTeleport.get(playerId);
+			if (list == null) {
+				list = new ArrayList<TeleportPojo>();
+				this._requestsForTeleport.put(playerId, list);
+			}
+			list.add(info);
 		}
-		list.add(info);
 	}
 
 	private void requestTpTo(Player localPlayer, OfflinePlayer remotePlayer) {
@@ -217,12 +223,15 @@ public class TeleportController {
 
 	public void playerJoined(final Player movingPlayer) {
 		verbose("playerJoined", "movingPlayer=%s", movingPlayer.getName());
-		TeleportPojo info = this._waitingForTeleport.get(movingPlayer.getUniqueId());
-		if (info == null) {
-			verbose("playerJoined", "Not waiting for player %s", movingPlayer.getName());
-			return;
+		final UUID movingPlayerId = movingPlayer.getUniqueId();
+		TeleportPojo info = null;
+		synchronized (this._waitingForTeleport) {
+			info = this._waitingForTeleport.remove(movingPlayerId);
+			if (info == null) {
+				verbose("playerJoined", "Not waiting for player %s", movingPlayer.getName());
+				return;
+			}
 		}
-		this._waitingForTeleport.remove(movingPlayer.getUniqueId());
 		if (info.isTooOld()) {
 			verbose("playerJoined", "Teleport info was too old for player %s", movingPlayer.getName());
 			return;
@@ -286,28 +295,34 @@ public class TeleportController {
 	}
 
 	public void deny(CommandSender sender, Player localPlayer) {
-		List<TeleportPojo> list = this._requestsForTeleport.get(localPlayer.getUniqueId());
+		List<TeleportPojo> list = null;
+		synchronized (this._requestsForTeleport) {
+			list = this._requestsForTeleport.remove(localPlayer.getUniqueId());
+		}
 		for (TeleportPojo info : list) {
+			if (info.isTooOld()) continue;
 			info.setAsDenyResponse();
 			sendTeleportMessageToBungeeServer(info);
 		}
-		this._requestsForTeleport.remove(localPlayer.getUniqueId());
 	}
 
 	public void accept(CommandSender sender, Player localPlayer) {
-		List<TeleportPojo> list = this._requestsForTeleport.get(localPlayer.getUniqueId());
+		List<TeleportPojo> list = null;
+		synchronized (this._requestsForTeleport) {
+			list = this._requestsForTeleport.remove(localPlayer.getUniqueId());
+		}
 		if (list == null) {
 			sender.sendMessage("You don't have any pending request.");
 			return;
 		}
 		for (TeleportPojo info : list) {
+			if (info.isTooOld()) continue;
 			if (info.getMessageDirectionIsFromMovingToAnchor()) {
 				tpPlayerHere(sender, localPlayer, info.getMovingPlayerId(), true);
 			} else {
 				tpToPlayer(sender, localPlayer, info.getAnchorPlayerId(), true);			
 			}
-		}
-		this._requestsForTeleport.remove(localPlayer.getUniqueId());
+		}		
 	}
 
 	public List<String> getWarpNames() {

@@ -24,6 +24,9 @@ public class CommandHandler {
 
 		try {	
 			commandSyntax
+			.parseCommandSyntax("refresh")
+			.setCommandExecutor(p -> refreshCommand(p));
+			commandSyntax
 			.parseCommandSyntax("server <name>")
 			.setCommandExecutor(p -> serverCommand(p));
 			setupTpCommand(commandSyntax);
@@ -114,7 +117,7 @@ public class CommandHandler {
 	private void acceptAllBungeePlayerNames(ICommandSyntax cmd) {
 		cmd
 		.getParameterSyntax("player")
-		.setMandatoryValues(ec -> this._controller.getBungeePlayerNames(ec));
+		.setExampleValues(ec -> this._controller.getBungeePlayerNames(ec));
 	}
 
 	private void forcedTpToPlayer(EithonCommand eithonCommand)
@@ -162,7 +165,9 @@ public class CommandHandler {
 		if (movingPlayer == null) {
 			throw new NotImplementedException();
 		}
-		this._controller.requestTpPlayerHere(anchorPlayer, movingPlayer);
+		boolean success = this._controller.requestTpPlayerHere(anchorPlayer, movingPlayer);
+		if (!success) return;
+		anchorPlayer.sendMessage(String.format("Request sent to player %s", anchorPlayer.getName()));
 	}
 
 	private void tpDeny(EithonCommand eithonCommand)
@@ -235,6 +240,12 @@ public class CommandHandler {
 	private void banList(EithonCommand eithonCommand) {
 		CommandSender sender = eithonCommand.getSender();
 		this._controller.banListAsync(sender);
+	}
+
+	private void refreshCommand(EithonCommand command)
+	{
+		this._controller.refreshBungeePlayer();
+		this._controller.refreshWarpLocations();
 	}
 
 	private void serverCommand(EithonCommand command)
