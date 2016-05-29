@@ -139,9 +139,9 @@ public class Controller {
 		this._teleportController.tpToPlayer(movingPlayer, movingPlayer, anchorPlayer, true);
 	}
 
-	public void requestTpPlayerHere(Player movingPlayer, OfflinePlayer anchorPlayer) {
-		if (!controllersAreReady()) return;
-		this._teleportController.tpPlayerHere(movingPlayer, movingPlayer, anchorPlayer, false);
+	public boolean requestTpPlayerHere(Player movingPlayer, OfflinePlayer anchorPlayer) {
+		if (!controllersAreReady()) return false;
+		return this._teleportController.tpPlayerHere(movingPlayer, movingPlayer, anchorPlayer, false);
 	}
 
 	public void forcedTpPlayerHere(Player movingPlayer, OfflinePlayer anchorPlayer) {

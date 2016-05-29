@@ -94,19 +94,6 @@ public class BungeePlayerController {
 		runnable.runTaskAsynchronously(this._eithonPlugin);
 	}
 
-	public void bungeePlayerAddedOnOtherServerAsync(
-			final UUID playerId, 
-			final String playerName, 
-			final String otherServerName) {
-		final BukkitRunnable runnable = new BukkitRunnable() {
-			@Override
-			public void run() {
-				bungeePlayerAddedOnOtherServer(playerId, playerName, otherServerName);
-			}
-		};
-		runnable.runTaskAsynchronously(this._eithonPlugin);
-	}
-
 	private void addPlayerOnThisServer(final Player player) {
 		verbose("addPlayerOnThisServer", "player=%s, Local bungeeServerName=%s",
 				player.getName(), this._bungeeServerName);
@@ -119,6 +106,19 @@ public class BungeePlayerController {
 			}
 			this._allCurrentPlayers.put(player, bungeePlayer);
 		}
+	}
+
+	public void bungeePlayerAddedOnOtherServerAsync(
+			final UUID playerId, 
+			final String playerName, 
+			final String otherServerName) {
+		final BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				bungeePlayerAddedOnOtherServer(playerId, playerName, otherServerName);
+			}
+		};
+		runnable.runTaskAsynchronously(this._eithonPlugin);
 	}
 
 	private void bungeePlayerAddedOnOtherServer(

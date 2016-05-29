@@ -62,9 +62,9 @@ public class TeleportController {
 		return true;
 	}
 
-	public void tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) {
+	public boolean tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) {
 		String bungeeServerName = this._bungeePlayers.getCurrentBungeeServerNameOrInformSender(sender, movingPlayer);
-		if (bungeeServerName == null) return;
+		if (bungeeServerName == null) return false;
 		
 		if (movingPlayer.isOnline() && force) {
 			movingPlayer.getPlayer().teleport(anchorPlayer);
@@ -73,6 +73,7 @@ public class TeleportController {
 			info.setAsRequestFromAnchorPlayer(force);
 			sendTeleportMessageToBungeeServer(bungeeServerName, info);
 		}
+		return true;
 	}
 
 	public boolean warpTo(CommandSender sender, Player player, String name) {

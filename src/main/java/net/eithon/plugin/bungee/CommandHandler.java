@@ -162,7 +162,9 @@ public class CommandHandler {
 		if (movingPlayer == null) {
 			throw new NotImplementedException();
 		}
-		this._controller.requestTpPlayerHere(anchorPlayer, movingPlayer);
+		boolean success = this._controller.requestTpPlayerHere(anchorPlayer, movingPlayer);
+		if (!success) return;
+		anchorPlayer.sendMessage(String.format("Request sent to player %s", anchorPlayer.getName()));
 	}
 
 	private void tpDeny(EithonCommand eithonCommand)
