@@ -27,6 +27,7 @@ public final class EithonBungeePlugin extends EithonPlugin {
 	@Override
 	public void onDisable() {
 		super.onDisable();
+		this._controller.disable();
 		this._controller = null;
 	}
 	

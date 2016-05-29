@@ -9,6 +9,7 @@ import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeJoinEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeLeaveEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeSwitchEvent;
 import net.eithon.plugin.bungee.logic.joinleave.JoinLeaveController;
+import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 import net.eithon.plugin.bungee.logic.teleport.TeleportController;
 
 import org.bukkit.entity.Player;
@@ -49,6 +50,9 @@ public class EventListener implements Listener {
 			break;
 		case JoinLeaveController.LEAVE_EVENT:
 			this._controller.publishLeaveEventOnThisServer(data);
+			break;
+		case BungeePlayerController.BUNGEE_PLAYER_REFRESH:
+			this._controller.refreshBungeePlayer();
 			break;
 		case TeleportController.WARP_LOCATION_REFRESH:
 			this._controller.refreshWarpLocations();

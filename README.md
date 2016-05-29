@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.7.4 (2016-05-29)
+
+* BUG: Did not empty table on server restart.
+
 ### 1.7.3 (2016-05-29)
 
 * BUG: Player on other servers where not always in the list of bungee players.

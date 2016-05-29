@@ -38,7 +38,12 @@ public class DbPlayer extends DbRecord<DbPlayer> implements IDbRecord<DbPlayer> 
 		return dbPlayer.findAll();
 	}
 
-	protected List<DbPlayer> findAllOnline()  {
+	public static void deleteByServerName(Database database, String bungeeServerName) {
+		DbPlayer dbPlayer = new DbPlayer(database);
+		dbPlayer.deleteByWhere("bungee_server_name='%s'", bungeeServerName);
+	}
+
+	private List<DbPlayer> findAllOnline()  {
 		return findByWhere("left_at IS NULL");
 	}	
 

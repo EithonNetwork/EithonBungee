@@ -8,6 +8,8 @@ import net.eithon.library.core.CoreMisc;
 import net.eithon.library.core.PlayerCollection;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
+import net.eithon.plugin.bungee.Config;
+import net.eithon.plugin.bungee.db.DbPlayer;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 
 import org.bukkit.Bukkit;
@@ -17,20 +19,26 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class BungeePlayerController {
+	public static final String BUNGEE_PLAYER_REFRESH = "BungeePlayerRefresh";
 	private PlayerCollection<BungeePlayer> _allCurrentPlayers;
 	private EithonPlugin _eithonPlugin;
 	private String _bungeeServerName;
 	private boolean _refreshIsRunning = false;
+	private BungeeController _bungeeController;
 
 	public BungeePlayerController(EithonPlugin eithonPlugin, BungeeController bungeeController, String bungeeServerName) {
 		this._eithonPlugin = eithonPlugin;
 		this._bungeeServerName = bungeeServerName;
+		this._bungeeController = bungeeController;
 		this._allCurrentPlayers = new PlayerCollection<BungeePlayer>();
 		refreshAsync();
 	}
-
 	
-	private void refreshAsync() {
+	public void purgePlayers() {
+		DbPlayer.deleteByServerName(Config.V.database, this._bungeeServerName);
+	}
+	
+	public void refreshAsync() {
 		if (this._refreshIsRunning) return;
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
@@ -45,6 +53,7 @@ public class BungeePlayerController {
 		verbose("refresh", "Enter");
 		synchronized(this._allCurrentPlayers) {
 			if (this._refreshIsRunning) return;
+			boolean refreshServers = false;
 			try {
 				this._refreshIsRunning = true;
 				for (Player player : Bukkit.getOnlinePlayers()) {
@@ -55,11 +64,15 @@ public class BungeePlayerController {
 				for (BungeePlayer bungeePlayer : allBungeePlayers) {
 					final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
 					boolean hasLeft = maybeLeft(this._bungeeServerName, bungeePlayer);
-					if (hasLeft || (currentBungeeServerName == null)) continue;
+					if (hasLeft || (currentBungeeServerName == null)) {
+						refreshServers = true;
+						continue;
+					}
 					this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
 					verbose("refresh", "Added player %s, server %s", 
 							bungeePlayer.getPlayerName(), currentBungeeServerName);
 				}
+				if (refreshServers) broadcastRefresh();
 			} finally {
 				this._refreshIsRunning = false;
 			}
@@ -248,6 +261,12 @@ public class BungeePlayerController {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
 		if (player == null) return null;
 		return getPreviousBungeeServerName(player);		
+	}
+
+	private void broadcastRefresh() {
+		verbose("broadcastRefresh", "Enter");
+		this._bungeeController.sendDataToAll(BUNGEE_PLAYER_REFRESH, null, true);
+		verbose("broadcastRefresh", "Leave");
 	}
 
 	void verbose(String method, String format, Object... args) {

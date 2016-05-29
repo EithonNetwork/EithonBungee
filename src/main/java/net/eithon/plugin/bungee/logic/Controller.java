@@ -46,6 +46,11 @@ public class Controller {
 		waitForServerName();
 	}
 
+	public void disable() {
+		if (!controllersAreReady()) return;
+		this._bungeePlayerController.purgePlayers();
+	}
+
 	private boolean controllersAreReady() { 
 		boolean controllersAreReady = this._bungeeServerName != null;
 		verbose("controllersAreReady", controllersAreReady ? "TRUE" : "FALSE");
@@ -254,6 +259,11 @@ public class Controller {
 			return false;
 		}
 		return this._teleportController.changeServer(player, serverName);
+	}
+
+	public void refreshBungeePlayer() {
+		if (!controllersAreReady()) return;
+		this._bungeePlayerController.refreshAsync();
 	}
 
 	public void refreshWarpLocations() {
