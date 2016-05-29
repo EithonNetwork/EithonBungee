@@ -79,6 +79,7 @@ class BungeePlayer {
 		this.dbPlayer.refresh();
 		String currentBungeeServerName = getCurrentBungeeServerName();
 		if (currentBungeeServerName == null) {
+			if (!bungeeServerName.equalsIgnoreCase(getPreviousBungeeServerName())) return true;
 			if (deleteIfOld(this.dbPlayer)) this.dbPlayer = null;
 			return true;
 		}

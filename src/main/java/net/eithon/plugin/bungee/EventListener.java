@@ -9,7 +9,6 @@ import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeJoinEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeLeaveEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeSwitchEvent;
 import net.eithon.plugin.bungee.logic.joinleave.JoinLeaveController;
-import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
 import net.eithon.plugin.bungee.logic.teleport.TeleportController;
 
 import org.bukkit.entity.Player;
@@ -42,9 +41,6 @@ public class EventListener implements Listener {
 		case Controller.MESSAGE_TO_PLAYER:
 			this._controller.handleMessageEvent(data);
 			break;
-		case BungeePlayerController.BUNGEE_PLAYER_ADDED:
-			this._controller.bungeePlayerAddedOnOtherServer(data);
-			break;
 		case JoinLeaveController.JOIN_EVENT:
 			this._controller.publishJoinEventOnThisServer(data);
 			break;
@@ -53,9 +49,6 @@ public class EventListener implements Listener {
 			break;
 		case JoinLeaveController.LEAVE_EVENT:
 			this._controller.publishLeaveEventOnThisServer(data);
-			break;
-		case BungeePlayerController.BUNGEE_PLAYER_REFRESH:
-			this._controller.refreshBungeePlayer();
 			break;
 		case TeleportController.WARP_LOCATION_REFRESH:
 			this._controller.refreshWarpLocations();
@@ -102,6 +95,7 @@ public class EventListener implements Listener {
 		final String playerName = event.getPlayerName();
 		verbose("onEithonBungeeJoinEvent", "Player=%s", playerName);
 		if (event.getPlayerId() == null) return;
+		this._controller.playerJoinedOnOtherServer(event.getPlayerId(), playerName, event.getThatServerName());
 		if (event.getIsNewOnServer() && this._controller.serverIsThePrimaryBungeeServer(event.getThatServerName())) {
 			Config.M.joinedServerFirstTime.broadcastMessage(playerName);
 			Config.M.pleaseWelcomeNewPlayer.broadcastMessage(playerName);			
@@ -116,6 +110,7 @@ public class EventListener implements Listener {
 		final String playerName = event.getPlayerName();
 		verbose("onEithonBungeeSwitchEvent", "Player=%s", playerName);
 		if (event.getPlayerId() == null) return;
+		this._controller.playerJoinedOnOtherServer(event.getPlayerId(), event.getPlayerName(), event.getThatServerName());
 		this._controller.broadcastPlayerSwitched(event.getPreviousServerName(), event.getThatServerName(), event.getPlayerId(), playerName, event.getMainGroup());
 	}
 

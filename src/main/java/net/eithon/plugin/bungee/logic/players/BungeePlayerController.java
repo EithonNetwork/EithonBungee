@@ -15,25 +15,23 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.json.simple.JSONObject;
 
 public class BungeePlayerController {
-	public static final String BUNGEE_PLAYER_ADDED = "BungeePlayerAdded";
-	public static final String BUNGEE_PLAYER_REFRESH = "BungeePlayerRefresh";
 	private PlayerCollection<BungeePlayer> _allCurrentPlayers;
 	private EithonPlugin _eithonPlugin;
 	private String _bungeeServerName;
-	private BungeeController _bungeeController;
+	private boolean _refreshIsRunning = false;
 
 	public BungeePlayerController(EithonPlugin eithonPlugin, BungeeController bungeeController, String bungeeServerName) {
 		this._eithonPlugin = eithonPlugin;
-		this._bungeeController = bungeeController;
 		this._bungeeServerName = bungeeServerName;
 		this._allCurrentPlayers = new PlayerCollection<BungeePlayer>();
 		refreshAsync();
 	}
 
-	public void refreshAsync() {
+	
+	private void refreshAsync() {
+		if (this._refreshIsRunning) return;
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -45,25 +43,27 @@ public class BungeePlayerController {
 
 	private void refresh() {
 		verbose("refresh", "Enter");
-		boolean refreshServers = false;
-		for (Player player : Bukkit.getOnlinePlayers()) {
-			BungeePlayer.createOrUpdate(player, this._bungeeServerName);
-		}
 		synchronized(this._allCurrentPlayers) {
-			this._allCurrentPlayers.clear();
-			for (BungeePlayer bungeePlayer : BungeePlayer.findAll(false)) {
-				final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
-				boolean hasLeft = maybeLeft(this._bungeeServerName, bungeePlayer);
-				if (hasLeft || (currentBungeeServerName == null)) {
-					refreshServers = true;
-					continue;
+			if (this._refreshIsRunning) return;
+			try {
+				this._refreshIsRunning = true;
+				for (Player player : Bukkit.getOnlinePlayers()) {
+					BungeePlayer.createOrUpdate(player, this._bungeeServerName);
 				}
-				this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
-				verbose("refresh", "Added player %s, server %s", 
-						bungeePlayer.getPlayerName(), currentBungeeServerName);
+				final List<BungeePlayer> allBungeePlayers = BungeePlayer.findAll(false);
+				this._allCurrentPlayers.clear();
+				for (BungeePlayer bungeePlayer : allBungeePlayers) {
+					final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
+					boolean hasLeft = maybeLeft(this._bungeeServerName, bungeePlayer);
+					if (hasLeft || (currentBungeeServerName == null)) continue;
+					this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
+					verbose("refresh", "Added player %s, server %s", 
+							bungeePlayer.getPlayerName(), currentBungeeServerName);
+				}
+			} finally {
+				this._refreshIsRunning = false;
 			}
 		}
-		if (refreshServers) broadcastRefresh();
 		verbose("refresh", "Leave");
 	}
 
@@ -88,6 +88,19 @@ public class BungeePlayerController {
 		runnable.runTaskAsynchronously(this._eithonPlugin);
 	}
 
+	public void bungeePlayerAddedOnOtherServerAsync(
+			final UUID playerId, 
+			final String playerName, 
+			final String otherServerName) {
+		final BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				bungeePlayerAddedOnOtherServer(playerId, playerName, otherServerName);
+			}
+		};
+		runnable.runTaskAsynchronously(this._eithonPlugin);
+	}
+
 	private void addPlayerOnThisServer(final Player player) {
 		verbose("addPlayerOnThisServer", "player=%s, Local bungeeServerName=%s",
 				player.getName(), this._bungeeServerName);
@@ -99,33 +112,24 @@ public class BungeePlayerController {
 				return;
 			}
 			this._allCurrentPlayers.put(player, bungeePlayer);
-			publishBungeePlayerAdded(player);
 		}
 	}
 
-	public void bungeePlayerAddedOnOtherServerAsync(final JSONObject data) {
-		final BukkitRunnable runnable = new BukkitRunnable() {
-			@Override
-			public void run() {
-				bungeePlayerAddedOnOtherServer(BungeePlayerPojo.getFromJson(data));
-			}
-		};
-		runnable.runTaskAsynchronously(this._eithonPlugin);
-	}
-
-	private void bungeePlayerAddedOnOtherServer(BungeePlayerPojo info) {
-		final String otherServerName = info.getBungeeServerName();
+	private void bungeePlayerAddedOnOtherServer(
+			final UUID playerId, 
+			final String playerName, 
+			final String otherServerName) {
 		synchronized(this._allCurrentPlayers) {
-			final BungeePlayer bungeePlayer = BungeePlayer.getByPlayerId(info.getPlayerId());
+			final BungeePlayer bungeePlayer = BungeePlayer.getByPlayerId(playerId);
 			if (bungeePlayer == null) return;
 			final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
 			if (!otherServerName.equalsIgnoreCase(currentBungeeServerName)) {
 				this._eithonPlugin.getEithonLogger().error(
 						"BungeePlayers.addBungeePlayer(%s,%s): Server name in DB = %s. Will use DB value.",
-						info.getPlayerName(), otherServerName,
+						playerName, otherServerName,
 						bungeePlayer == null? "NULL" : currentBungeeServerName);
 			}
-			this._allCurrentPlayers.put(info.getPlayerId(), bungeePlayer);
+			this._allCurrentPlayers.put(playerId, bungeePlayer);
 		}
 	}
 
@@ -244,17 +248,6 @@ public class BungeePlayerController {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
 		if (player == null) return null;
 		return getPreviousBungeeServerName(player);		
-	}
-
-	private void broadcastRefresh() {
-		verbose("broadcastRefresh", "Enter");
-		this._bungeeController.sendDataToAll(BUNGEE_PLAYER_REFRESH, null, true);
-		verbose("broadcastRefresh", "Leave");
-	}
-
-	private void publishBungeePlayerAdded(Player player) {
-		BungeePlayerPojo info = new BungeePlayerPojo(player, this._bungeeServerName);
-		this._bungeeController.sendDataToAll(BUNGEE_PLAYER_ADDED, info, true);
 	}
 
 	void verbose(String method, String format, Object... args) {

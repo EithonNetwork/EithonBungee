@@ -256,16 +256,6 @@ public class Controller {
 		return this._teleportController.changeServer(player, serverName);
 	}
 
-	public void bungeePlayerAddedOnOtherServer(JSONObject data) {
-		if (!controllersAreReady()) return;
-		this._bungeePlayerController.bungeePlayerAddedOnOtherServerAsync(data);
-	}
-
-	public void refreshBungeePlayer() {
-		if (!controllersAreReady()) return;
-		this._bungeePlayerController.refreshAsync();
-	}
-
 	public void refreshWarpLocations() {
 		if (!controllersAreReady()) return;
 		this._teleportController.refreshWarpLocationsAsync();	
@@ -325,6 +315,12 @@ public class Controller {
 		}
 		this._teleportController.playerJoined(player);
 		this._bungeePlayerController.addPlayerOnThisServerAsync(player);
+	}
+
+	public void playerJoinedOnOtherServer(UUID playerId, String playerName,
+			String otherServerName) {
+		if (!controllersAreReady()) return;
+		this._bungeePlayerController.bungeePlayerAddedOnOtherServerAsync(playerId, playerName, otherServerName);
 	}
 
 	public void takeActionIfPlayerIsBannedOnThisServer(Player player) {
