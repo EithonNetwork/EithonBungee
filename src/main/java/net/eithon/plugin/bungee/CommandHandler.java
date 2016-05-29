@@ -117,7 +117,7 @@ public class CommandHandler {
 	private void acceptAllBungeePlayerNames(ICommandSyntax cmd) {
 		cmd
 		.getParameterSyntax("player")
-		.setMandatoryValues(ec -> this._controller.getBungeePlayerNames(ec));
+		.setExampleValues(ec -> this._controller.getBungeePlayerNames(ec));
 	}
 
 	private void forcedTpToPlayer(EithonCommand eithonCommand)

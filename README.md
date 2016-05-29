@@ -7,6 +7,7 @@ A plugin to handle BungeeCord stuff.
 ### 1.8 (2016-05-29)
 
 * NEW: Added a refresh command.
+* CHANGE: Player names are not mandatory for tp anymore.
 
 ### 1.7.8 (2016-05-29)
 
