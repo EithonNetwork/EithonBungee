@@ -38,7 +38,7 @@ public class Config {
 			database = getDatabase(config);
 			reloadWarpLocationsAfterSeconds = config.getSeconds("ReloadWarpLocationsAfterTimeSpan", "5m");
 			primaryBungeeServer = config.getString("PrimaryBungeeServer", "Hub");
-			groupPriorities = config.getStringList("BungeeServers");
+			bungeeServerNames = config.getStringList("BungeeServers");
 			thisBungeeServerName = config.getString("ThisBungeeServer", "Hub");
 		}
 

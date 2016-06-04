@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.9.2 (2016-06-0)
+
+* BUG: Read the wrong config.
+
 ### 1.9.1 (2016-06-04)
 
 * BUG: Missing confirmation message when doing a tp accept or tp deny.
