@@ -52,11 +52,12 @@ public class Controller {
 	}
 
 	private void sendHeartBeats() {
-		final int instanceNumber = instanceCount++;
+		final int instanceNumber = ++instanceCount;
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (!sendHeartBeat(instanceNumber)) this.cancel();;
+				if (instanceNumber != instanceCount) this.cancel();
+				sendHeartBeat(instanceNumber);
 			}
 		}.runTaskTimerAsynchronously(
 				this._plugin, 
@@ -64,12 +65,10 @@ public class Controller {
 				TimeMisc.secondsToTicks(Config.V.secondsBetweenHeartBeats));;
 	}
 
-	private boolean sendHeartBeat(int instanceNumber) {
-		if (instanceNumber != instanceCount) return false;
-		if (!controllersAreReady()) return true;
+	private void sendHeartBeat(int instanceNumber) {
+		if (!controllersAreReady()) return;
 		HeartBeatPojo info = new HeartBeatPojo(this._bungeeServerName);
 		if (this._bungeeController.sendDataToAll(HEARTBEAT, info, true)) handleHeartbeat(info);
-		return true;
 	}
 
 	public void disable() {

@@ -188,6 +188,7 @@ public class CommandHandler {
 		Player player = eithonCommand.getPlayerOrInformSender();
 		if (player == null) return;
 		this._controller.tpDeny(player);
+		player.sendMessage("You have denied the teleportation request.");
 	}
 
 	private void tpAccept(EithonCommand eithonCommand)
@@ -195,6 +196,8 @@ public class CommandHandler {
 		Player player = eithonCommand.getPlayerOrInformSender();
 		if (player == null) return;
 		this._controller.tpAccept(player);
+		player.sendMessage("You have accepted the teleportation request.");
+		
 	}
 
 	private void sendMessageToPlayer(EithonCommand eithonCommand) {

@@ -124,6 +124,7 @@ public class BungeeController {
 
 	public boolean playerHasPermissionToAccessServer(Player player,
 			String bungeeServerName) {
-		return player.hasPermission(String.format("eithonbungee.access.server.%s", bungeeServerName));
+		return player.hasPermission("eithonbungee.access.server")
+				&& player.hasPermission(String.format("eithonbungee.access.server.%s", bungeeServerName));
 	}
 }

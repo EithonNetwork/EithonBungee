@@ -4,6 +4,11 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.9.1 (2016-06-04)
+
+* BUG: Missing confirmation message when doing a tp accept or tp deny.
+* BUG: Heatbeats was never sent.
+
 ### 1.9 (2016-05-29)
 
 * NEW: Configuration with name of bungee cord servers.
