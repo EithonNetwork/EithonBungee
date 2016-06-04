@@ -4,13 +4,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import net.eithon.library.core.CoreMisc;
-import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.facades.PermissionsFacade;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
+import net.eithon.plugin.bungee.EithonBungeeApi;
+import net.eithon.plugin.bungee.EithonBungeePlugin;
 import net.eithon.plugin.bungee.db.DbServerBan;
-import net.eithon.plugin.bungee.logic.Controller;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -19,21 +19,17 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class BanController {
 
-	private final EithonPlugin _eithonPlugin;
-	private final Controller _controller;
-	private final String _serverName;
+	private final EithonBungeePlugin _eithonPlugin;
 
-	public BanController(EithonPlugin eithonPlugin, String serverName, Controller controller) {
+	public BanController(EithonBungeePlugin eithonPlugin) {
 		this._eithonPlugin = eithonPlugin;
-		this._controller = controller;
-		this._serverName = serverName;
 	}
 
 	public void banPlayerOnThisServerAsync(
 			final CommandSender sender, 
 			final OfflinePlayer player, 
 			final long seconds) {
-		banPlayerAsync(sender, player, this._serverName, seconds);
+		banPlayerAsync(sender, player, Config.V.thisBungeeServerName, seconds);
 	}
 
 	public void banPlayerAsync(
@@ -94,11 +90,11 @@ public class BanController {
 
 	public boolean takeActionIfPlayerIsBannedOnThisServer(final Player player) {
 		if (!isPlayerBannedOnThisServer(player)) return false;
-		final Controller controller = this._controller;
+		final EithonBungeeApi api = this._eithonPlugin.getApi();
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				controller.connectPlayerToServer(player, Config.V.primaryBungeeServer);
+				api.connectPlayerToServerOrInformSender(null, player, Config.V.primaryBungeeServer);
 			}
 		}
 		.runTask(this._eithonPlugin);
@@ -107,10 +103,10 @@ public class BanController {
 
 	public boolean isPlayerBannedOnThisServer(final Player player) {
 		verbose("isPlayerBannedOnThisServer", "Player %s", player.getName());
-		final DbServerBan dbServerBan = DbServerBan.get(Config.V.database, player.getUniqueId(), this._serverName);
+		final DbServerBan dbServerBan = DbServerBan.get(Config.V.database, player.getUniqueId(), Config.V.thisBungeeServerName);
 		if (dbServerBan == null) return false;
 		if (dbServerBan.getUnbanAt().isAfter(LocalDateTime.now())) return true;
-		unbanPlayer(null, player, this._serverName);
+		unbanPlayer(null, player, Config.V.thisBungeeServerName);
 		return false;
 	}
 

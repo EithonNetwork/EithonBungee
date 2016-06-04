@@ -28,6 +28,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.json.simple.JSONObject;
 
 public class Controller {	
+	public static final String HEARTBEAT = "Heartbeat";
 	public static final String MESSAGE_TO_PLAYER = "MessageToPlayer";
 	private EithonBungeePlugin _plugin;
 	private HashMap<UUID, OfflinePlayer> _lastMessageFrom;
@@ -38,12 +39,36 @@ public class Controller {
 	private BungeePlayerController _bungeePlayerController;
 	private BungeeController _bungeeController;
 	private BanController _banController;
+	private static int instanceCount = 0;
+	private HashMap<String, HeartBeatPojo> _heartBeats;
 
 	public Controller(EithonBungeePlugin plugin, BungeeController bungeeController) {
 		this._plugin = plugin;
 		this._bungeeController = bungeeController;
 		this._individualMessageController = new IndividualMessageController(this._plugin);
+		this._heartBeats = new HashMap<String, HeartBeatPojo>();
 		waitForServerName();
+		sendHeartBeats();
+	}
+
+	private void sendHeartBeats() {
+		final int instanceNumber = ++instanceCount;
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				if (instanceNumber != instanceCount) this.cancel();
+				sendHeartBeat(instanceNumber);
+			}
+		}.runTaskTimerAsynchronously(
+				this._plugin, 
+				0,
+				TimeMisc.secondsToTicks(Config.V.secondsBetweenHeartBeats));;
+	}
+
+	private void sendHeartBeat(int instanceNumber) {
+		if (!controllersAreReady()) return;
+		HeartBeatPojo info = new HeartBeatPojo(this._bungeeServerName);
+		if (this._bungeeController.sendDataToAll(HEARTBEAT, info, true)) handleHeartbeat(info);
 	}
 
 	public void disable() {
@@ -65,18 +90,30 @@ public class Controller {
 		if (serverName == null) return false;
 		return serverName.equalsIgnoreCase(Config.V.primaryBungeeServer);
 	}
+	
+	public boolean serverHeartIsBeating(String serverName) {
+		HeartBeatPojo info = null;
+		synchronized (this._heartBeats) {
+			info = this._heartBeats.get(serverName);
+		}
+		return (info != null) && !info.isTooOld();
+	}
 
 	private void waitForServerName() {
 		String bungeeServerName = this._bungeeController.getBungeeServerName();
 		if (bungeeServerName != null) {
-			this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController, bungeeServerName);
-			this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController, bungeeServerName);
-			this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController, bungeeServerName);
-			this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
-			this._banController = new BanController(this._plugin, bungeeServerName, this);
-			createEithonBungeeFixesListener();
-			this._bungeeServerName = bungeeServerName;
-			return;
+			if (bungeeServerName.equalsIgnoreCase(Config.V.thisBungeeServerName)) {
+				this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController);
+				this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController);
+				this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController);
+				this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
+				this._banController = new BanController(this._plugin);
+				createEithonBungeeFixesListener();
+				this._bungeeServerName = bungeeServerName;
+				return;
+			}
+			this._plugin.getEithonLogger().error("According to the configuration this server is named %s, but according to BungeeCord it is named %s",
+					Config.V.thisBungeeServerName, bungeeServerName);
 		}
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
@@ -104,15 +141,19 @@ public class Controller {
 	}
 
 	public String getJoinMessage(Player player) {
+		verbose("getQuitMessage", "Player=%s", player.getName());
+		if (!controllersAreReady()) return null;
 		final UUID playerId = player.getUniqueId();
-		String mainGroup = JoinLeaveController.getHighestGroup(playerId);
+		String mainGroup = this._joinLeaveController.getHighestGroup(playerId);
 		String fromServerName = this._bungeePlayerController.getPreviousBungeeServerName(playerId);
 		if (fromServerName == null) return null;
 		return this._individualMessageController.getJoinMessage(this._bungeeServerName, fromServerName, player.getName(), mainGroup);
 	}
 
 	public String getQuitMessage(Player player) {
-		String mainGroup = JoinLeaveController.getHighestGroup(player.getUniqueId());
+		verbose("getQuitMessage", "Player=%s", player.getName());
+		if (!controllersAreReady()) return null;
+		String mainGroup = this._joinLeaveController.getHighestGroup(player.getUniqueId());
 		return this._individualMessageController.getQuitMessage(this._bungeeServerName, player.getName(), mainGroup);
 	}
 
@@ -171,6 +212,27 @@ public class Controller {
 			return;
 		}
 		this._teleportController.handleTeleportEvent(jsonObject);
+	}
+	
+	public void handleHeartbeat(JSONObject jsonObject) {
+		if (!controllersAreReady()) {
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					handleHeartbeat(jsonObject);
+				}
+			}
+			.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1));
+			return;
+		}
+		HeartBeatPojo info = HeartBeatPojo.createFromJsonObject(jsonObject);
+		handleHeartbeat(info);
+	}
+
+	private void handleHeartbeat(HeartBeatPojo info) {
+		synchronized (this._heartBeats) {
+			this._heartBeats.put(info.getServerName(), info);
+		}
 	}
 
 	public void handleMessageEvent(JSONObject jsonObject) {
@@ -248,12 +310,12 @@ public class Controller {
 		return this._teleportController.warpTo(sender, player, name);
 	}
 
-	public boolean connectPlayerToServer(Player player, String serverName) {
+	public boolean connectPlayerToServerOrInformSender(CommandSender sender, Player player, String serverName) {
 		if (!controllersAreReady()) {
-			Config.M.tryAgain.sendMessage(player);
+			if (sender != null) Config.M.tryAgain.sendMessage(sender);
 			return false;
 		}
-		return this._teleportController.changeServer(player, serverName);
+		return this._teleportController.changeServer(sender, player, serverName);
 	}
 
 	public void refreshBungeePlayer() {
@@ -346,7 +408,7 @@ public class Controller {
 		if (!controllersAreReady()) return;
 		this._bungeePlayerController.removePlayerAsync(playerId, playerName, otherServerName);
 	}
-	
+
 	public void banPlayerOnThisServer(
 			final Player player,
 			final long seconds) {

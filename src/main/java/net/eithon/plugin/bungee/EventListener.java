@@ -36,6 +36,9 @@ public class EventListener implements Listener {
 		verbose("onEithonBungeeEvent", "event name=%s", event.getName());
 		JSONObject data = event.getData();
 		switch(event.getName()) {
+		case Controller.HEARTBEAT:
+			this._controller.handleHeartbeat(data);
+			break;
 		case TeleportController.TELEPORT_TO_PLAYER:
 			this._controller.handleTeleportEvent(data);
 			break;

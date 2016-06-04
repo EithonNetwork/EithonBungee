@@ -4,6 +4,21 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.9.2 (2016-06-0)
+
+* BUG: Read the wrong config.
+
+### 1.9.1 (2016-06-04)
+
+* BUG: Missing confirmation message when doing a tp accept or tp deny.
+* BUG: Heatbeats was never sent.
+
+### 1.9 (2016-05-29)
+
+* NEW: Configuration with name of bungee cord servers.
+* NEW: Sending out heartbeats.
+* CHANGE: Tab completion for server names.
+
 ### 1.8.2 (2016-05-29)
 
 * BUG: Command confirm messages updated.

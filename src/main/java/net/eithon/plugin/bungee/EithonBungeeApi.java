@@ -4,6 +4,7 @@ import net.eithon.library.plugin.ConfigurableMessage;
 import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class EithonBungeeApi {
@@ -13,6 +14,14 @@ public class EithonBungeeApi {
 	EithonBungeeApi(BungeeController bungeeController, Controller controller) {
 		this._bungeeController = bungeeController;
 		this._controller = controller;
+	}
+	
+	public boolean serverHeartIsBeating(String serverName) {
+		return this._controller.serverHeartIsBeating(serverName);
+	}
+
+	public boolean connectPlayerToServerOrInformSender(CommandSender sender, Player player, String serverName) {
+		return this._controller.connectPlayerToServerOrInformSender(sender, player, serverName);
 	}
 
 	public boolean broadcastMessage(ConfigurableMessage configurableMessage, Object... args) {

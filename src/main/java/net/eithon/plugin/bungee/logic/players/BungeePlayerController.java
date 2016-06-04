@@ -9,6 +9,7 @@ import net.eithon.library.core.PlayerCollection;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
+import net.eithon.plugin.bungee.EithonBungeePlugin;
 import net.eithon.plugin.bungee.db.DbPlayer;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 
@@ -21,21 +22,19 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class BungeePlayerController {
 	public static final String BUNGEE_PLAYER_REFRESH = "BungeePlayerRefresh";
 	private PlayerCollection<BungeePlayer> _allCurrentPlayers;
-	private EithonPlugin _eithonPlugin;
-	private String _bungeeServerName;
+	private EithonBungeePlugin _eithonPlugin;
 	private boolean _refreshIsRunning = false;
 	private BungeeController _bungeeController;
 
-	public BungeePlayerController(EithonPlugin eithonPlugin, BungeeController bungeeController, String bungeeServerName) {
+	public BungeePlayerController(EithonBungeePlugin eithonPlugin, BungeeController bungeeController) {
 		this._eithonPlugin = eithonPlugin;
-		this._bungeeServerName = bungeeServerName;
 		this._bungeeController = bungeeController;
 		this._allCurrentPlayers = new PlayerCollection<BungeePlayer>();
 		refreshAsync();
 	}
 
 	public void purgePlayers() {
-		DbPlayer.deleteByServerName(Config.V.database, this._bungeeServerName);
+		DbPlayer.deleteByServerName(Config.V.database, Config.V.thisBungeeServerName);
 	}
 
 	public void refreshAsync() {
@@ -57,23 +56,25 @@ public class BungeePlayerController {
 			try {
 				this._refreshIsRunning = true;
 				for (Player player : Bukkit.getOnlinePlayers()) {
-					BungeePlayer.createOrUpdate(player, this._bungeeServerName);
+					BungeePlayer.createOrUpdate(player, Config.V.thisBungeeServerName);
 				}
 				final List<BungeePlayer> allBungeePlayers = BungeePlayer.findAll(false);
 				this._allCurrentPlayers.clear();
 				for (BungeePlayer bungeePlayer : allBungeePlayers) {
 					final String playerName = bungeePlayer.getPlayerName();
-					if (bungeePlayer.maybeDelete(this._bungeeServerName)) {
+					if (bungeePlayer.maybeDelete(Config.V.thisBungeeServerName)) {
 						verbose("refresh", "Removed player %s, server %s", 
-								playerName, this._bungeeServerName);
+								playerName, Config.V.thisBungeeServerName);
 						refreshServers = true;
 						continue;
 					}
 					final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
-					if (currentBungeeServerName != null) {
+					if ((currentBungeeServerName != null) 
+							&& this._eithonPlugin.getApi().serverHeartIsBeating(currentBungeeServerName)) {
 						this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
 						verbose("refresh", "Added player %s, server %s", 
 								playerName, currentBungeeServerName);
+						refreshServers = true;
 					}
 				}
 				if (refreshServers) broadcastRefresh();
@@ -96,9 +97,9 @@ public class BungeePlayerController {
 
 	private void addPlayerOnThisServer(final Player player) {
 		verbose("addPlayerOnThisServer", "player=%s, Local bungeeServerName=%s",
-				player.getName(), this._bungeeServerName);
+				player.getName(), Config.V.thisBungeeServerName);
 		synchronized(this._allCurrentPlayers) {
-			final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, this._bungeeServerName);
+			final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, Config.V.thisBungeeServerName);
 			if (bungeePlayer == null) {
 				this._eithonPlugin.getEithonLogger().error("BungePlayerController.addPlayerOnThisServer: " +
 						String.format("Could not create a bungee player record for player %s.", player.getName()));
@@ -174,7 +175,7 @@ public class BungeePlayerController {
 				this._allCurrentPlayers.put(playerId, bungeePlayer);
 			} else {
 				if (found) this._allCurrentPlayers.remove(playerId);
-				bungeePlayer.maybeDelete(this._bungeeServerName);
+				bungeePlayer.maybeDelete(Config.V.thisBungeeServerName);
 			}
 		}
 	}

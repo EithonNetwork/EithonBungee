@@ -16,7 +16,6 @@ public class Config {
 		V.load(config);
 		C.load(config);
 		M.load(config);
-
 	}
 	
 	public static class V {
@@ -26,15 +25,21 @@ public class Config {
 		public static List<String> groupPriorities;
 		public static double reloadWarpLocationsAfterSeconds;
 		public static String primaryBungeeServer;
+		public static List<String> bungeeServerNames;
+		public static String thisBungeeServerName;
+		public static long secondsBetweenHeartBeats;
 
 		static void load(Configuration config) {
 			database = null;
+			secondsBetweenHeartBeats = config.getSeconds("TimeSpanBetweenHeartBeats", 10);
 			maxAllowedTeleportDelayInSeconds = config.getSeconds("MaxAllowedTeleportDelayTimeSpan", 30);
 			maxAllowedMessageDelayInSeconds = config.getSeconds("MaxAllowedMessageDelayInSeconds", 10);
 			groupPriorities = config.getStringList("GroupPriorities");
 			database = getDatabase(config);
 			reloadWarpLocationsAfterSeconds = config.getSeconds("ReloadWarpLocationsAfterTimeSpan", "5m");
 			primaryBungeeServer = config.getString("PrimaryBungeeServer", "Hub");
+			bungeeServerNames = config.getStringList("BungeeServers");
+			thisBungeeServerName = config.getString("ThisBungeeServer", "Hub");
 		}
 
 		private static Database getDatabase(Configuration config) {

@@ -26,6 +26,18 @@ GroupPriorities: [Owner, Admin, Developer, Architect, Designer, Mod, Submod, Tou
 # The primary server (from a BungeeChord perspective)
 PrimaryBungeeServer: Hub
 
+#
+# The list of all known BungeeCord servers in this cluster
+BungeeServers: [Builder, Creative, Hardcore, Hub, Survival]
+
+#
+# The name of this bungee cord server
+ThisBungeeServer: Hub
+
+#
+# The time between server heartbeats
+TimeSpanBetweenHeartBeats: 10s
+
 database:
   Name: eithon_bungee
   Hostname: localhost
