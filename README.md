@@ -4,12 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
-### 1.9.2 (2016-06-0)
+### 1.10 (2016-06-07)
 
-* BUG: Read the wrong config.
-
-### 1.9.1 (2016-06-04)
-
+* NEW: Added the config setting MandatoryPlayerNames.
+* BUG: Read the wrong config
 * BUG: Missing confirmation message when doing a tp accept or tp deny.
 * BUG: Heatbeats was never sent.
 
@@ -18,13 +16,7 @@ A plugin to handle BungeeCord stuff.
 * NEW: Configuration with name of bungee cord servers.
 * NEW: Sending out heartbeats.
 * CHANGE: Tab completion for server names.
-
-### 1.8.2 (2016-05-29)
-
 * BUG: Command confirm messages updated.
-
-### 1.8.1 (2016-05-29)
-
 * BUG: When accepting a teleport request, you accepted all old teleport requests.
 
 ### 1.8 (2016-05-29)

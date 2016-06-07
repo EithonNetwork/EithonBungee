@@ -28,6 +28,7 @@ public class Config {
 		public static List<String> bungeeServerNames;
 		public static String thisBungeeServerName;
 		public static long secondsBetweenHeartBeats;
+		public static boolean mandatoryPlayerNames;
 
 		static void load(Configuration config) {
 			database = null;
@@ -40,6 +41,7 @@ public class Config {
 			primaryBungeeServer = config.getString("PrimaryBungeeServer", "Hub");
 			bungeeServerNames = config.getStringList("BungeeServers");
 			thisBungeeServerName = config.getString("ThisBungeeServer", "Hub");
+			mandatoryPlayerNames = config.getBoolean("MandatoryPlayerNames", true);
 		}
 
 		private static Database getDatabase(Configuration config) {
