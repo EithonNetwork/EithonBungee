@@ -15,7 +15,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 public class CommandHandler {
 	private Controller _controller;
 	private ICommandSyntax _commandSyntax;
-	
+
 	public CommandHandler(EithonPlugin eithonPlugin, Controller controller) {
 		this._controller = controller;
 
@@ -36,25 +36,25 @@ public class CommandHandler {
 			e.printStackTrace();
 		}
 	}
-	
+
 	ICommandSyntax getCommandSyntax() { return this._commandSyntax; }
 
 	private void setupServerCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
 		ICommandSyntax cmd = commandSyntax
-		.parseCommandSyntax("server <name>")
-		.setCommandExecutor(p -> serverCommand(p));
+				.parseCommandSyntax("server <name>")
+				.setCommandExecutor(p -> serverCommand(p));
 		cmd
 		.getParameterSyntax("name")
 		.setMandatoryValues(ec -> Config.V.bungeeServerNames);
 	}
 
 	private void setupTpCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
-		
+
 		// tpto request <player>
 		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("tpto request <player>")
 				.setCommandExecutor(eithonCommand -> requestTpToPlayer(eithonCommand));
 		acceptAllBungeePlayerNames(cmd);
-		
+
 		// tpto force <player>
 		cmd = commandSyntax.parseCommandSyntax("tpto force <player>")
 				.setCommandExecutor(eithonCommand -> forcedTpToPlayer(eithonCommand));
@@ -80,23 +80,23 @@ public class CommandHandler {
 	}
 
 	private void setupMessageCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
-		
+
 		// message <player> <message>
 		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("message <player> <message:REST>")
 				.setCommandExecutor(eithonCommand -> sendMessageToPlayer(eithonCommand));
 		acceptAllBungeePlayerNames(cmd);
-		
+
 		// message reply <message>
 		cmd = commandSyntax.parseCommandSyntax("reply <message:REST>")
 				.setCommandExecutor(eithonCommand -> sendReply(eithonCommand));
 	}
 
 	private void setupWarpCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
-		
+
 		// message <player> <message>
 		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("warp add <name>")
 				.setCommandExecutor(eithonCommand -> warpAdd(eithonCommand));
-		
+
 		// message reply <message>
 		cmd = commandSyntax.parseCommandSyntax("warp to <name>")
 				.setCommandExecutor(eithonCommand -> warpTo(eithonCommand));
@@ -106,7 +106,7 @@ public class CommandHandler {
 	}
 
 	private void setupBanCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
-		
+
 		// message <player> <message>
 		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("ban add <player> <server> <time-span : TIME_SPAN  {24h, 48h, 72h, ...}>")
 				.setCommandExecutor(eithonCommand -> banAdd(eithonCommand));
@@ -114,23 +114,29 @@ public class CommandHandler {
 		cmd
 		.getParameterSyntax("server")
 		.setMandatoryValues(ec -> Config.V.bungeeServerNames);
-		
+
 		// message reply <message>
 		cmd = commandSyntax.parseCommandSyntax("ban remove <player> <server>")
 				.setCommandExecutor(eithonCommand -> banRemove(eithonCommand));
 		cmd
 		.getParameterSyntax("server")
 		.setMandatoryValues(ec -> Config.V.bungeeServerNames);
-		
+
 		// message reply <message>
 		cmd = commandSyntax.parseCommandSyntax("ban list")
 				.setCommandExecutor(eithonCommand -> banList(eithonCommand));
 	}
 
 	private void acceptAllBungeePlayerNames(ICommandSyntax cmd) {
-		cmd
-		.getParameterSyntax("player")
-		.setExampleValues(ec -> this._controller.getBungeePlayerNames(ec));
+		if (Config.V.mandatoryPlayerNames) {
+			cmd
+			.getParameterSyntax("player")
+			.setMandatoryValues(ec -> this._controller.getBungeePlayerNames(ec));
+		} else {
+			cmd
+			.getParameterSyntax("player")
+			.setExampleValues(ec -> this._controller.getBungeePlayerNames(ec));
+		}
 	}
 
 	private void forcedTpToPlayer(EithonCommand eithonCommand)
@@ -197,7 +203,7 @@ public class CommandHandler {
 		if (player == null) return;
 		this._controller.tpAccept(player);
 		player.sendMessage("You have accepted the teleportation request.");
-		
+
 	}
 
 	private void sendMessageToPlayer(EithonCommand eithonCommand) {

@@ -35,6 +35,11 @@ BungeeServers: [Builder, Creative, Hardcore, Hub, Survival]
 ThisBungeeServer: Hub
 
 #
+# Must the player names for tp exist in the list? (Recommended: true)
+# If true, then the command completes partial names (Ney for Neylion for instance).
+MandatoryPlayerNames: true
+
+#
 # The time between server heartbeats
 TimeSpanBetweenHeartBeats: 10s
 
