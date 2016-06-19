@@ -14,6 +14,7 @@ public class JoinLeaveInfo  extends JsonObject<JoinLeaveInfo> {
 	private String _playerName;
 	private UUID _playerId;
 	private boolean _isNewOnServer;
+	private boolean _isFirstJoinToday;
 	
 	public JoinLeaveInfo(String fromServerName, String toServerName, UUID playerId, String playerName, String mainGroup) {
 		this._fromServerName = fromServerName;
@@ -33,6 +34,8 @@ public class JoinLeaveInfo  extends JsonObject<JoinLeaveInfo> {
 	public UUID getPlayerId() { return this._playerId; }
 	public boolean getIsNewOnServer() { return this._isNewOnServer; }
 	public void setIsNewOnServer() { this._isNewOnServer = true; }
+	public boolean getIsFirstJoinToday() { return this._isFirstJoinToday; }
+	public void setIsFirstJoinToday() { this._isFirstJoinToday = true; }
 	
 	public String toJSONString() {
 		return ((JSONObject) toJson()).toJSONString();

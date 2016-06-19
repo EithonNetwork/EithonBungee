@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.11 (2016-06-19)
+
+* NEW: Added information to EithonBungeeJoinEvent to detect if it was the first join for today.
+
 ### 1.10 (2016-06-07)
 
 * NEW: Added the config setting MandatoryPlayerNames.
