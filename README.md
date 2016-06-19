@@ -7,6 +7,7 @@ A plugin to handle BungeeCord stuff.
 ### 1.11 (2016-06-19)
 
 * NEW: Added information to EithonBungeeJoinEvent to detect if it was the first join for today.
+* NEW: Now listens to EithonPublicMessageEvent.
 
 ### 1.10 (2016-06-07)
 
