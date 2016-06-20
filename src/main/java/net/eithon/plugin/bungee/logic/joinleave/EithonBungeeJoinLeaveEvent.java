@@ -32,4 +32,10 @@ public abstract class EithonBungeeJoinLeaveEvent extends Event {
 	public String getThatServerName() { return this._thatServerName; }
 
 	public String getThisServerName() { return this._thisServerName; }
+
+	@Override
+	public String toString() {
+		return String.format("Player=%s, mainGroup=%s, thisServer=%s, thatServer=%s", 
+				this._playerName, this._mainGroup, this._thisServerName, this._thatServerName);
+	}
 }

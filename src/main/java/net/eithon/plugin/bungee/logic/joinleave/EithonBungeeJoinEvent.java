@@ -33,4 +33,12 @@ public class EithonBungeeJoinEvent extends EithonBungeeJoinLeaveEvent {
 	public HandlerList getHandlers() {
 		return handlers;
 	}
+
+	@Override
+	public String toString() {
+		return String.format("%s, isNewOnServer=%s, firstJoinToday=%s", 
+				super.toString(),
+				this.isNewOnServer ? "TRUE" : "FALSE", 
+						this.firstJoinToday ? "TRUE" : "FALSE");
+	}
 }
