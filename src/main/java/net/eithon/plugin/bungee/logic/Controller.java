@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import net.eithon.library.command.EithonCommand;
 import net.eithon.library.core.CoreMisc;
+import net.eithon.library.plugin.ConfigurableMessage;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
@@ -433,6 +434,11 @@ public class Controller {
 			final OfflinePlayer player, 
 			final String serverName) {
 		this._banController.unbanPlayerAsync(sender, player, serverName);
+	}
+
+	public void publicMessage(String message, boolean useTitle) {
+		ConfigurableMessage.broadcastToThisServer(message, useTitle);
+		this._bungeeController.broadcastMessage(message, useTitle);
 	}
 
 	public void banListAsync(final CommandSender sender) {

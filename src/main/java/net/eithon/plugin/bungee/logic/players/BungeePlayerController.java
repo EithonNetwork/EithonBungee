@@ -55,9 +55,6 @@ public class BungeePlayerController {
 			boolean refreshServers = false;
 			try {
 				this._refreshIsRunning = true;
-				for (Player player : Bukkit.getOnlinePlayers()) {
-					BungeePlayer.createOrUpdate(player, Config.V.thisBungeeServerName);
-				}
 				final List<BungeePlayer> allBungeePlayers = BungeePlayer.findAll(false);
 				this._allCurrentPlayers.clear();
 				for (BungeePlayer bungeePlayer : allBungeePlayers) {
@@ -74,8 +71,15 @@ public class BungeePlayerController {
 						this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
 						verbose("refresh", "Added player %s, server %s", 
 								playerName, currentBungeeServerName);
-						refreshServers = true;
 					}
+				}
+				for (Player player : Bukkit.getOnlinePlayers()) {
+					BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, Config.V.thisBungeeServerName);
+					if (this._allCurrentPlayers.hasInformation(player)) continue;
+					this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
+					verbose("refresh", "Added player %s, current server", 
+							bungeePlayer.getPlayerName(), bungeePlayer.getCurrentBungeeServerName());
+					refreshServers = true;			
 				}
 				if (refreshServers) broadcastRefresh();
 			} finally {

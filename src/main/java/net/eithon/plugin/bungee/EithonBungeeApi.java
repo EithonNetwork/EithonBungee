@@ -27,7 +27,7 @@ public class EithonBungeeApi {
 	public boolean broadcastMessage(ConfigurableMessage configurableMessage, Object... args) {
 		String message = configurableMessage.getMessageWithColorCoding(args);
 		if (message == null) return false;
-		configurableMessage.broadcastToThisServer(message);
+		if (!configurableMessage.broadcastToThisServer(args)) return false;
 		return bungeeBroadcastMessage(message, configurableMessage.getUseTitle());
 	}
 

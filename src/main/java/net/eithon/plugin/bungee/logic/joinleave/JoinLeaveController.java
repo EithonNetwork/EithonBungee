@@ -5,12 +5,16 @@ import java.util.UUID;
 import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.facades.PermissionsFacade;
+import net.eithon.library.plugin.PluginMisc;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
+import net.eithon.plugin.stats.EithonStatsApi;
+import net.eithon.plugin.stats.EithonStatsPlugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.json.simple.JSONObject;
 
 public class JoinLeaveController {
@@ -20,10 +24,23 @@ public class JoinLeaveController {
 	public static final String LEAVE_EVENT = "LeaveEvent";
 	private BungeeController _bungeeController;
 	private EithonPlugin _eithonPlugin;
+	private EithonStatsPlugin _eithonStatsPlugin;
 
 	public JoinLeaveController(EithonPlugin eithonPlugin, BungeeController bungeeController) {
 		this._eithonPlugin = eithonPlugin;
 		this._bungeeController = bungeeController;
+		this._eithonStatsPlugin = connectToStats(eithonPlugin);
+	}
+
+	private EithonStatsPlugin connectToStats(EithonPlugin eithonPlugin) {
+		Plugin plugin = PluginMisc.getPlugin("EithonStats");
+		if (plugin != null && plugin.isEnabled() && (plugin instanceof EithonStatsPlugin)) {
+			eithonPlugin.getEithonLogger().info("Succesfully hooked into the EithonStats plugin!");
+			return ((EithonStatsPlugin) plugin);
+		} else {
+			eithonPlugin.getEithonLogger().warning("The EithonStats plugin was not found.");
+			return null;
+		}
 	}
 
 	public void playerJoinedThisServer(Player player) {
@@ -39,7 +56,9 @@ public class JoinLeaveController {
 	public void publishJoinEventOnThisServer(JSONObject data) {
 		JoinLeaveInfo info = JoinLeaveInfo.getFromJson(data);
 		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(Config.V.thisBungeeServerName, info.getToServerName(), 
-				info.getPlayerId(), info.getPlayerName(), info.getMainGroup(), info.getIsNewOnServer());
+				info.getPlayerId(), info.getPlayerName(), info.getMainGroup());
+		if (info.getIsFirstJoinToday()) e.setIsFirstJoinToday();
+		if (info.getIsNewOnServer()) e.setIsNewOnServer();
 		Bukkit.getServer().getPluginManager().callEvent(e);			
 	}
 	
@@ -54,7 +73,12 @@ public class JoinLeaveController {
 		verbose("publishJoinEventOnThisServer", "Player=%s", player.getName());
 		String mainGroup = getHighestGroup(player.getUniqueId());
 		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(Config.V.thisBungeeServerName, Config.V.thisBungeeServerName, 
-				player.getUniqueId(), player.getName(), mainGroup, !player.hasPlayedBefore());
+				player.getUniqueId(), player.getName(), mainGroup);
+		if (!player.hasPlayedBefore()) e.setIsNewOnServer();
+		if ((this._eithonStatsPlugin != null)
+				&& (EithonStatsApi.isFirstIntervalToday(player))) {
+			e.setIsFirstJoinToday();
+		}	
 		Bukkit.getServer().getPluginManager().callEvent(e);			
 	}
 	
@@ -112,6 +136,10 @@ public class JoinLeaveController {
 		String mainGroup = getHighestGroup(player.getUniqueId());
 		JoinLeaveInfo info = new JoinLeaveInfo(fromServerName, toServerName, player.getUniqueId(), player.getName(), mainGroup);
 		if (!player.hasPlayedBefore()) info.setIsNewOnServer();
+		if ((this._eithonStatsPlugin != null)
+				&& (EithonStatsApi.isFirstIntervalToday(player))) {
+			info.setIsFirstJoinToday();
+		}
 		this._bungeeController.sendDataToAll(eventName, info, true);
 	}
 

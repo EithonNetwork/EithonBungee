@@ -2,6 +2,7 @@ package net.eithon.plugin.bungee;
 
 import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
+import net.eithon.library.plugin.EithonPublicMessageEvent;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeEvent;
@@ -104,8 +105,8 @@ public class EventListener implements Listener {
 		if (event.getPlayerId() == null) return;
 		this._controller.playerJoinedOnOtherServer(event.getPlayerId(), playerName, event.getThatServerName());
 		if (event.getIsNewOnServer() && this._controller.serverIsThePrimaryBungeeServer(event.getThatServerName())) {
-			Config.M.joinedServerFirstTime.broadcastMessage(playerName);
-			Config.M.pleaseWelcomeNewPlayer.broadcastMessage(playerName);			
+			Config.M.joinedServerFirstTime.broadcastToThisServer(playerName);
+			Config.M.pleaseWelcomeNewPlayer.broadcastToThisServer(playerName);			
 		} else {
 			this._controller.broadcastPlayerJoined(event.getThatServerName(), event.getPlayerId(), playerName, event.getMainGroup());
 		}
@@ -127,6 +128,13 @@ public class EventListener implements Listener {
 		verbose("onEithonBungeeLeaveEvent", "Player=%s", event.getPlayerName());
 		if (event.getPlayerId() == null) return;
 		this._controller.eithonBungeeLeaveReceived(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
+	}
+
+	// Message to be broadcasted
+	@EventHandler
+	public void onEithonPublicMessageEvent(EithonPublicMessageEvent event) {
+		verbose("onEithonPublicMessageEvent", "Message=%s", event.getMessage());
+		this._controller.publicMessage(event.getMessage(), event.getUseTitle());
 	}
 
 	void verbose(String method, String format, Object... args) {

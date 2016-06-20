@@ -4,6 +4,16 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.11.1 (2016-06-20)
+
+* BUG: Information about "first join today" was never sent to other servers.
+
+### 1.11 (2016-06-19)
+
+* NEW: Added information to EithonBungeeJoinEvent to detect if it was the first join for today.
+* NEW: Now listens to EithonPublicMessageEvent.
+* BUG: Never ending loop of refresh.
+
 ### 1.10 (2016-06-07)
 
 * NEW: Added the config setting MandatoryPlayerNames.

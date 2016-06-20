@@ -46,7 +46,7 @@ public class IndividualMessageController {
 				playerName, groupName);
 		if (configurableMessage == null) return;
 		HashMap<String,String> namedArguments = getNamedArguments(serverName, fromServerName, playerName);
-		configurableMessage.broadcastMessage(namedArguments);
+		configurableMessage.broadcastToThisServer(namedArguments);
 		verbose("broadCastMessage", "Leave");
 	}
 

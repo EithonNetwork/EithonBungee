@@ -4,6 +4,7 @@ version: ${project.version}
 author: vanbrayne
 description: A Minecraft plugin for bungee server support
 depend: [EithonLibrary]
+softdepend: [EithonStats]
 commands:
   eithonbungee:
     description: Teleport to other player
