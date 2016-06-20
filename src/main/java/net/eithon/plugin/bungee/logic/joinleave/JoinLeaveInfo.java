@@ -56,6 +56,7 @@ public class JoinLeaveInfo  extends JsonObject<JoinLeaveInfo> {
 		json.put("playerId", this._playerId == null ? null : this._playerId.toString());
 		json.put("playerName", this._playerName);
 		json.put("isNewOnServer", this._isNewOnServer);
+		json.put("isFirstJoinToday", this._isFirstJoinToday);
 		return json;
 	}
 
@@ -71,11 +72,16 @@ public class JoinLeaveInfo  extends JsonObject<JoinLeaveInfo> {
 		if (uuid != null) {
 			this._playerId = UUID.fromString(uuid);
 		}
-		this._isNewOnServer = false;
 		this._playerName = (String) jsonObject.get("playerName");
+		this._isNewOnServer = false;
 		Boolean isNewOnServer = (Boolean) jsonObject.get("isNewOnServer");
 		if (isNewOnServer != null) {
 			this._isNewOnServer = isNewOnServer.booleanValue();
+		}
+		this._isFirstJoinToday = false;
+		Boolean isFirstJoinToday = (Boolean) jsonObject.get("isFirstJoinToday");
+		if (isFirstJoinToday != null) {
+			this._isFirstJoinToday = isFirstJoinToday.booleanValue();
 		}
 		return this;
 	}
