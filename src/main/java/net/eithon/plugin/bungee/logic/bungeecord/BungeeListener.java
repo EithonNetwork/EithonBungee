@@ -67,7 +67,7 @@ class BungeeListener implements PluginMessageListener {
 			MessageInfo info = MessageInfo.getFromJsonString(body);
 			broadcastMessage(forwardHeader, info);
 		} else {
-			this._eithonPlugin.getEithonLogger().error("Unknown commandName: %s", commandName);			
+			this._eithonPlugin.logError("Unknown commandName: %s", commandName);			
 		}
 		verbose("onPluginMessageReceived", "Leave");
 	}

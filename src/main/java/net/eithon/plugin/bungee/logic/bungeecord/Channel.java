@@ -29,7 +29,7 @@ class Channel {
 	boolean send(String subChannel, MessageOut msgOut, String... arguments) {
 		Player player = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
 		if (player == null) {
-			this._eithonPlugin.getEithonLogger().warning(
+			this._eithonPlugin.logWarn(
 					"No player found. Postponed until a player joins the server.");
 			retryInBackgroundUntilServerHasPlayer(subChannel, msgOut, arguments);
 			return false;
