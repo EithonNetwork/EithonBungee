@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.11.2 (2016-06-27)
+
+* BUG: Added more debug printouts
+
 ### 1.11.1 (2016-06-20)
 
 * BUG: Information about "first join today" was never sent to other servers.

@@ -113,7 +113,7 @@ public class Controller {
 				this._bungeeServerName = bungeeServerName;
 				return;
 			}
-			this._plugin.getEithonLogger().error("According to the configuration this server is named %s, but according to BungeeCord it is named %s",
+			this._plugin.logError("According to the configuration this server is named %s, but according to BungeeCord it is named %s",
 					Config.V.thisBungeeServerName, bungeeServerName);
 		}
 		final BukkitRunnable runnable = new BukkitRunnable() {

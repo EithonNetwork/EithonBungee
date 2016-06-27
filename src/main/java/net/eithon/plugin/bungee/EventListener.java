@@ -1,9 +1,7 @@
 package net.eithon.plugin.bungee;
 
-import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.EithonPublicMessageEvent;
-import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.EithonBungeeEvent;
 import net.eithon.plugin.bungee.logic.joinleave.EithonBungeeJoinEvent;
@@ -68,7 +66,7 @@ public class EventListener implements Listener {
 	public void onPlayerJoinEvent(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
-		verbose("onPlayerJoinEvent", "Player=%s", player.getName());
+		this._eithonPlugin.dbgMinor("onPlayerJoinEvent: Player=%s", player.getName());
 		event.setJoinMessage("");
 		this._controller.playerJoined(event.getPlayer());
 	}
@@ -76,7 +74,8 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onPlayerRespawnEvent(PlayerRespawnEvent event) {
 		Player player = event.getPlayer();
-		verbose("onPlayerRespawnEvent", "Player=%s", player.getName());
+		if (player == null) return;
+		this._eithonPlugin.dbgMinor("onPlayerRespawnEvent: Player=%s", player.getName());
 		this._controller.takeActionIfPlayerIsBannedOnThisServer(player);
 	}
 
@@ -84,8 +83,7 @@ public class EventListener implements Listener {
 	public void onPlayerQuitEvent(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
-		//String quitMessage = this._controller.getQuitMessage(player);
-		//if (quitMessage != null) event.setQuitMessage(quitMessage);
+		this._eithonPlugin.dbgMinor("onPlayerQuitEvent: Player=%s", player.getName());
 		event.setQuitMessage("");
 		this._controller.playerLeftThisServer(player);
 	}
@@ -94,6 +92,7 @@ public class EventListener implements Listener {
 	public void onPlayerKickEvent(PlayerKickEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
+		this._eithonPlugin.dbgMinor("onPlayerKickEvent: Player=%s", player.getName());
 		this._controller.playerLeftThisServer(player);
 	}
 
@@ -101,7 +100,7 @@ public class EventListener implements Listener {
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeJoinEvent(EithonBungeeJoinEvent event) {
 		final String playerName = event.getPlayerName();
-		verbose("onEithonBungeeJoinEvent", "Player=%s", playerName);
+		this._eithonPlugin.dbgMinor("onEithonBungeeJoinEvent: Player=%s", playerName);
 		if (event.getPlayerId() == null) return;
 		this._controller.playerJoinedOnOtherServer(event.getPlayerId(), playerName, event.getThatServerName());
 		if (event.getIsNewOnServer() && this._controller.serverIsThePrimaryBungeeServer(event.getThatServerName())) {
@@ -116,7 +115,7 @@ public class EventListener implements Listener {
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeSwitchEvent(EithonBungeeSwitchEvent event) {
 		final String playerName = event.getPlayerName();
-		verbose("onEithonBungeeSwitchEvent", "Player=%s", playerName);
+		this._eithonPlugin.dbgMinor("onEithonBungeeSwitchEvent: Player=%s", playerName);
 		if (event.getPlayerId() == null) return;
 		this._controller.playerJoinedOnOtherServer(event.getPlayerId(), event.getPlayerName(), event.getThatServerName());
 		this._controller.broadcastPlayerSwitched(event.getPreviousServerName(), event.getThatServerName(), event.getPlayerId(), playerName, event.getMainGroup());
@@ -125,20 +124,19 @@ public class EventListener implements Listener {
 	// Player quit on any bungee server
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeLeaveEvent(EithonBungeeLeaveEvent event) {
-		verbose("onEithonBungeeLeaveEvent", "Player=%s", event.getPlayerName());
 		if (event.getPlayerId() == null) return;
+		this._eithonPlugin.dbgMinor("onEithonBungeeLeaveEvent: Player=%s", event.getPlayerName());
 		this._controller.eithonBungeeLeaveReceived(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
 	}
 
 	// Message to be broadcasted
 	@EventHandler
 	public void onEithonPublicMessageEvent(EithonPublicMessageEvent event) {
-		verbose("onEithonPublicMessageEvent", "Message=%s", event.getMessage());
+		this._eithonPlugin.dbgMinor("onEithonPublicMessageEvent: Player=%s", event.getMessage());
 		this._controller.publicMessage(event.getMessage(), event.getUseTitle());
 	}
 
 	void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "EventListener.%s: %s", method, message);
+		this._eithonPlugin.dbgVerbose("EventListener", method, format, args);
 	}
 }

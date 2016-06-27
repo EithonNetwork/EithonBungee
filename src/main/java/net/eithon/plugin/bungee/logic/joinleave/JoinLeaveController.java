@@ -35,10 +35,10 @@ public class JoinLeaveController {
 	private EithonStatsPlugin connectToStats(EithonPlugin eithonPlugin) {
 		Plugin plugin = PluginMisc.getPlugin("EithonStats");
 		if (plugin != null && plugin.isEnabled() && (plugin instanceof EithonStatsPlugin)) {
-			eithonPlugin.getEithonLogger().info("Succesfully hooked into the EithonStats plugin!");
+			eithonPlugin.logInfo("Succesfully hooked into the EithonStats plugin!");
 			return ((EithonStatsPlugin) plugin);
 		} else {
-			eithonPlugin.getEithonLogger().warning("The EithonStats plugin was not found.");
+			eithonPlugin.logWarn("The EithonStats plugin was not found.");
 			return null;
 		}
 	}

@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import net.eithon.library.core.CoreMisc;
 import net.eithon.library.core.PlayerCollection;
-import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
@@ -105,7 +104,7 @@ public class BungeePlayerController {
 		synchronized(this._allCurrentPlayers) {
 			final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, Config.V.thisBungeeServerName);
 			if (bungeePlayer == null) {
-				this._eithonPlugin.getEithonLogger().error("BungePlayerController.addPlayerOnThisServer: " +
+				this._eithonPlugin.logError("BungePlayerController.addPlayerOnThisServer: " +
 						String.format("Could not create a bungee player record for player %s.", player.getName()));
 				return;
 			}
@@ -135,7 +134,7 @@ public class BungeePlayerController {
 			if (bungeePlayer == null) return;
 			final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
 			if (!otherServerName.equalsIgnoreCase(currentBungeeServerName)) {
-				this._eithonPlugin.getEithonLogger().error(
+				this._eithonPlugin.logError(
 						"BungeePlayers.addBungeePlayer(%s,%s): Server name in DB = %s. Will use DB value.",
 						playerName, otherServerName,
 						bungeePlayer == null? "NULL" : currentBungeeServerName);
@@ -172,7 +171,7 @@ public class BungeePlayerController {
 			if (((currentBungeeServerName != null) 
 					&& !currentBungeeServerName.equalsIgnoreCase(otherServerName))) {
 				// Join/leave probably out of sync. Update instead of remove.
-				this._eithonPlugin.getEithonLogger().warning(
+				this._eithonPlugin.logWarn(
 						"BungeePlayers.removeBungeePlayer(%s,%s): Server name in DB = %s. Will add/update instead of remove.",
 						playerName, otherServerName,
 						bungeePlayer == null? "NULL" : currentBungeeServerName);
