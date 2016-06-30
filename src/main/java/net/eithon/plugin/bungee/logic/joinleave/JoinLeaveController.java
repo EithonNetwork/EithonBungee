@@ -2,11 +2,9 @@ package net.eithon.plugin.bungee.logic.joinleave;
 
 import java.util.UUID;
 
-import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.facades.PermissionsFacade;
 import net.eithon.library.plugin.PluginMisc;
-import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 import net.eithon.plugin.stats.EithonStatsApi;
@@ -142,9 +140,9 @@ public class JoinLeaveController {
 		}
 		this._bungeeController.sendDataToAll(eventName, info, true);
 	}
-
-	private void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "JoinLeaveController.%s: %s", method, message);
+	
+	private void verbose(String method, String format, Object... args)
+	{
+		this._eithonPlugin.dbgVerbose("JoinLeaveController", method, format, args);
 	}
 }

@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.ConfigurableMessage;
-import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
 
 public class IndividualMessageController {
@@ -83,9 +82,9 @@ public class IndividualMessageController {
 		namedArguments.put("PREVIOUS_SERVER_NAME", fromServerName);
 		return namedArguments;
 	}
-
-	private void verbose(String method, String format, Object... args) {
-		String message = String.format(format, args);
-		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "IndividualMessageController.%s: %s", method, message);
+	
+	private void verbose(String method, String format, Object... args)
+	{
+		this._eithonPlugin.dbgVerbose("IndividualMessageController", method, format, args);
 	}
 }

@@ -7,9 +7,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import net.eithon.library.command.EithonCommand;
-import net.eithon.library.core.CoreMisc;
 import net.eithon.library.plugin.ConfigurableMessage;
-import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
@@ -445,8 +443,7 @@ public class Controller {
 		this._banController.listBannedPlayersAsync(sender);
 	}
 
-	void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._plugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "Controller.%s: %s", method, message);
+	private void verbose(String method, String format, Object... args) {
+		this._plugin.dbgVerbose("Controller", method, format, args);	
 	}
 }
