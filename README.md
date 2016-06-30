@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.12 (2016-06-30)
+
+* CHANGE: Minecraft 1.10
+
 ### 1.11.2 (2016-06-27)
 
 * BUG: Added more debug printouts
