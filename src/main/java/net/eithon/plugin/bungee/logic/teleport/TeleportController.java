@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
-import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
@@ -366,9 +364,9 @@ public class TeleportController {
 	private void broadcastRefresh() {
 		this._bungeeController.sendDataToAll(WARP_LOCATION_REFRESH, null, true);
 	}
-
-	void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "Controller.%s: %s", method, message);
+	
+	private void verbose(String method, String format, Object... args)
+	{
+		this._eithonPlugin.dbgVerbose("TeleportController", method, format, args);
 	}
 }

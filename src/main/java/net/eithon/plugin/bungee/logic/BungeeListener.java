@@ -2,9 +2,7 @@ package net.eithon.plugin.bungee.logic;
 
 import java.util.UUID;
 
-import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
-import net.eithon.library.plugin.Logger.DebugPrintLevel;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
@@ -53,7 +51,6 @@ class BungeeListener implements PluginMessageListener {
 	}
 
 	private void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "BungeeListener.%s: %s", method, message);
+		this._eithonPlugin.dbgVerbose("BungeeListener", method, format, args);	
 	}
 }

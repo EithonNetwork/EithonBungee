@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import net.eithon.library.core.CoreMisc;
 import net.eithon.library.core.PlayerCollection;
-import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
 import net.eithon.plugin.bungee.db.DbPlayer;
@@ -266,8 +264,7 @@ public class BungeePlayerController {
 		verbose("broadcastRefresh", "Leave");
 	}
 
-	void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "BungeePlayerController.%s: %s", method, message);
+	private void verbose(String method, String format, Object... args) {
+		this._eithonPlugin.dbgVerbose("BungeePlayerController", method, format, args);	
 	}
 }

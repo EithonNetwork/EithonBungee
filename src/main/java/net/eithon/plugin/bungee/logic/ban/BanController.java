@@ -3,9 +3,7 @@ package net.eithon.plugin.bungee.logic.ban;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import net.eithon.library.core.CoreMisc;
 import net.eithon.library.facades.PermissionsFacade;
-import net.eithon.library.plugin.Logger.DebugPrintLevel;
 import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeeApi;
@@ -42,7 +40,7 @@ public class BanController {
 		PermissionsFacade.addPlayerPermissionAsync(player, permission);
 		banPlayerAsync(sender, player, serverName, LocalDateTime.now().plusSeconds(seconds));
 	}
-	
+
 	public void banPlayerAsync(
 			final CommandSender sender, 
 			final OfflinePlayer player, 
@@ -56,7 +54,7 @@ public class BanController {
 		}
 		.runTaskAsynchronously(this._eithonPlugin);	
 	}
-	
+
 	private void banPlayer(
 			final CommandSender sender, 
 			final OfflinePlayer player, 
@@ -143,8 +141,6 @@ public class BanController {
 	}
 
 	private void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._eithonPlugin.getEithonLogger().debug(DebugPrintLevel.VERBOSE, "BanController.%s: %s", method, message);
+		this._eithonPlugin.dbgVerbose("BanController", method, format, args);	
 	}
-
 }
