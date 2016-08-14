@@ -3,12 +3,16 @@ package net.eithon.plugin.bungee.logic.ban;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import net.eithon.library.exceptions.FatalException;
+import net.eithon.library.exceptions.TryAgainException;
 import net.eithon.library.facades.PermissionsFacade;
+import net.eithon.library.mysql.Database;
 import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeeApi;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
-import net.eithon.plugin.bungee.db.DbServerBan;
+import net.eithon.plugin.bungee.db.ServerBanLogic;
+import net.eithon.plugin.bungee.db.ServerBanPojo;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -18,9 +22,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class BanController {
 
 	private final EithonBungeePlugin _eithonPlugin;
+	private ServerBanLogic serverBanLogic;
 
-	public BanController(EithonBungeePlugin eithonPlugin) {
+	public BanController(EithonBungeePlugin eithonPlugin, Database database) throws FatalException {
 		this._eithonPlugin = eithonPlugin;
+		this.serverBanLogic = new ServerBanLogic(database);
 	}
 
 	public void banPlayerOnThisServerAsync(
@@ -49,7 +55,11 @@ public class BanController {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				banPlayer(sender, player, serverName, unbanAt);
+				try {
+					banPlayer(sender, player, serverName, unbanAt);
+				} catch (FatalException | TryAgainException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		.runTaskAsynchronously(this._eithonPlugin);	
@@ -59,34 +69,43 @@ public class BanController {
 			final CommandSender sender, 
 			final OfflinePlayer player, 
 			final String serverName, 
-			LocalDateTime unbanAt) {
+			LocalDateTime unbanAt) throws FatalException, TryAgainException {
 		verbose("banPlayerOnThisServer", "Player %s, unban at %s", player.getName(), unbanAt.toString());
 		final UUID playerId = player.getUniqueId();
-		DbServerBan dbServerBan = DbServerBan.get(Config.V.database, playerId, serverName);
-		if (dbServerBan == null) {
+		ServerBan serverBan = ServerBan.fromRow(serverBanLogic.get(playerId, serverName));
+		if (serverBan == null) {
 			verbose("banPlayerOnThisServer", "Create record");
-			dbServerBan = DbServerBan.create(Config.V.database, playerId, player.getName(), serverName, unbanAt);
+			serverBan = ServerBan.fromRow(serverBanLogic.create(player, serverName, unbanAt));
 		} else {
 			if ((unbanAt != null)
-					&& !unbanAt.isAfter(dbServerBan.getUnbanAt())) {
-				dbServerBan.updateUnbanAt(unbanAt);
-			} else unbanAt = dbServerBan.getUnbanAt();
+					&& !unbanAt.isAfter(serverBan.getUnbanAt())) {
+				updateUnbanAt(serverBan, unbanAt);
+			} else unbanAt = serverBan.getUnbanAt();
 		}
 		if (sender == null) return;
 		Config.M.bannedPlayer.sendMessage(sender, player.getName(), TimeMisc.fromLocalDateTime(unbanAt));
+	}
+
+	private void updateUnbanAt(ServerBan serverBan, LocalDateTime unbanAt) throws FatalException, TryAgainException {
+		serverBan.setUnbanAt(unbanAt);
+		serverBanLogic.update(serverBan.toRow());
 	}
 
 	public void takeActionIfPlayerIsBannedOnThisServerAsync(final Player player) {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				takeActionIfPlayerIsBannedOnThisServer(player);
+				try {
+					takeActionIfPlayerIsBannedOnThisServer(player);
+				} catch (FatalException | TryAgainException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		.runTaskAsynchronously(this._eithonPlugin);
 	}
 
-	public boolean takeActionIfPlayerIsBannedOnThisServer(final Player player) {
+	public boolean takeActionIfPlayerIsBannedOnThisServer(final Player player) throws FatalException, TryAgainException {
 		if (!isPlayerBannedOnThisServer(player)) return false;
 		final EithonBungeeApi api = this._eithonPlugin.getApi();
 		new BukkitRunnable() {
@@ -99,11 +118,12 @@ public class BanController {
 		return true;
 	}
 
-	public boolean isPlayerBannedOnThisServer(final Player player) {
+	public boolean isPlayerBannedOnThisServer(final Player player) throws FatalException, TryAgainException {
 		verbose("isPlayerBannedOnThisServer", "Player %s", player.getName());
-		final DbServerBan dbServerBan = DbServerBan.get(Config.V.database, player.getUniqueId(), Config.V.thisBungeeServerName);
-		if (dbServerBan == null) return false;
-		if (dbServerBan.getUnbanAt().isAfter(LocalDateTime.now())) return true;
+		final ServerBanPojo row = serverBanLogic.get(player.getUniqueId(), Config.V.thisBungeeServerName);
+		final ServerBan serverBan = ServerBan.fromRow(row);
+		if (serverBan == null) return false;
+		if (serverBan.getUnbanAt().isAfter(LocalDateTime.now())) return true;
 		unbanPlayer(null, player, Config.V.thisBungeeServerName);
 		return false;
 	}
@@ -112,20 +132,25 @@ public class BanController {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				unbanPlayer(sender, player, serverName);
+				try {
+					unbanPlayer(sender, player, serverName);
+				} catch (FatalException | TryAgainException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		.runTaskAsynchronously(this._eithonPlugin);
 	}
 
-	public void unbanPlayer(final CommandSender sender, final OfflinePlayer player, String serverName) {
-		final DbServerBan dbServerBan = DbServerBan.get(Config.V.database, player.getUniqueId(), serverName);
-		if (dbServerBan == null) {
+	public void unbanPlayer(final CommandSender sender, final OfflinePlayer player, String serverName) throws FatalException, TryAgainException {
+		final ServerBanPojo row = serverBanLogic.get(player.getUniqueId(), serverName);
+		final ServerBan serverBan = ServerBan.fromRow(row);
+		if (serverBan == null) {
 			if (sender == null) return;
 			Config.M.playerNotBanned.sendMessage(sender, player.getName(), serverName);
 			return;
 		}
-		dbServerBan.delete();
+		serverBanLogic.delete(serverBan.getId());
 		String permission = String.format("-eithonbungee.access.server.%s", serverName);
 		verbose("banPlayerOnThisServerAsync", "Player %s, remove permission %s", player.getName(), permission);
 		PermissionsFacade.removePlayerPermissionAsync(player, permission);
@@ -133,10 +158,15 @@ public class BanController {
 	}
 
 	public void listBannedPlayersAsync(CommandSender sender) {
-		for (DbServerBan dbServerBan : DbServerBan.findAll(Config.V.database)) {
-			sender.sendMessage(String.format("%s: %s (%s)",
-					dbServerBan.getPlayerName(), dbServerBan.getBungeeServerName(), 
-					TimeMisc.fromLocalDateTime(dbServerBan.getUnbanAt())));
+		try {
+			for (ServerBanPojo row : serverBanLogic.findAll()) {
+				ServerBan serverBan = ServerBan.fromRow(row);
+				sender.sendMessage(String.format("%s: %s (%s)",
+						serverBan.getPlayerName(), serverBan.getBungeeServerName(), 
+						TimeMisc.fromLocalDateTime(serverBan.getUnbanAt())));
+			}
+		} catch (FatalException | TryAgainException e) {
+			e.printStackTrace();
 		}
 	}
 

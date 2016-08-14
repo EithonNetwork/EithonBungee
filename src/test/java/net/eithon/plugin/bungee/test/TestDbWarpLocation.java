@@ -2,7 +2,7 @@ package net.eithon.plugin.bungee.test;
 
 import static org.junit.Assert.assertEquals;
 import junit.framework.Assert;
-import net.eithon.library.mysql.Database;
+import net.eithon.library.db.Database;
 import net.eithon.plugin.bungee.db.DbWarpLocation;
 
 import org.junit.Test;

@@ -7,8 +7,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import junit.framework.Assert;
-import net.eithon.library.mysql.Database;
-import net.eithon.plugin.bungee.db.DbPlayer;
+import net.eithon.library.db.Database;
+import net.eithon.plugin.bungee.db.PlayerController;
 
 import org.junit.Test;
 
@@ -20,7 +20,7 @@ public class TestDbPlayer {
 		String playerName = "player1";
 		String bungeeServerName = "a";
 		Database database = TestSupport.getDatabaseAndTruncateTables();
-		DbPlayer dbPlayer = DbPlayer.create(database, playerId, playerName, bungeeServerName);
+		PlayerController dbPlayer = PlayerController.create(database, playerId, playerName, bungeeServerName);
 		assertEquals(playerId, dbPlayer.getPlayerId());
 		assertEquals(playerName, dbPlayer.getPlayerName());
 		Assert.assertNull(dbPlayer.getPlayerLeftServerAt());
@@ -33,8 +33,8 @@ public class TestDbPlayer {
 		String playerName = "player1";
 		String bungeeServerName = "a";
 		Database database = TestSupport.getDatabaseAndTruncateTables();
-		DbPlayer dbPlayer = DbPlayer.create(database, playerId, playerName, bungeeServerName);
-		dbPlayer = DbPlayer.getByPlayerId(database, playerId);
+		PlayerController dbPlayer = PlayerController.create(database, playerId, playerName, bungeeServerName);
+		dbPlayer = PlayerController.getByPlayerId(database, playerId);
 		Assert.assertNotNull(dbPlayer);
 		assertEquals(playerId, dbPlayer.getPlayerId());
 		assertEquals(playerName, dbPlayer.getPlayerName());
@@ -48,11 +48,11 @@ public class TestDbPlayer {
 		String playerName = "player1";
 		String bungeeServerName = "a";
 		Database database = TestSupport.getDatabaseAndTruncateTables();
-		DbPlayer dbPlayer = DbPlayer.create(database, playerId, playerName, bungeeServerName);
-		dbPlayer = DbPlayer.getByPlayerId(database, playerId);
+		PlayerController dbPlayer = PlayerController.create(database, playerId, playerName, bungeeServerName);
+		dbPlayer = PlayerController.getByPlayerId(database, playerId);
 		bungeeServerName = bungeeServerName + "2";
 		dbPlayer.updateBungeeServerName(bungeeServerName, null);
-		dbPlayer = DbPlayer.getByPlayerId(database, playerId);
+		dbPlayer = PlayerController.getByPlayerId(database, playerId);
 		Assert.assertNull(dbPlayer.getPlayerLeftServerAt());
 		assertEquals(bungeeServerName, dbPlayer.getBungeeServerName());
 	}
@@ -63,11 +63,11 @@ public class TestDbPlayer {
 		String playerName = "player1";
 		String bungeeServerName = "a";
 		Database database = TestSupport.getDatabaseAndTruncateTables();
-		DbPlayer dbPlayer = DbPlayer.create(database, playerId, playerName, bungeeServerName);
-		dbPlayer = DbPlayer.getByPlayerId(database, playerId);
+		PlayerController dbPlayer = PlayerController.create(database, playerId, playerName, bungeeServerName);
+		dbPlayer = PlayerController.getByPlayerId(database, playerId);
 		LocalDateTime time = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 		dbPlayer.updateLeftAt(time);
-		dbPlayer = DbPlayer.getByPlayerId(database, playerId);
+		dbPlayer = PlayerController.getByPlayerId(database, playerId);
 		assertEquals(time, dbPlayer.getPlayerLeftServerAt());
 	}	
 	
@@ -77,13 +77,13 @@ public class TestDbPlayer {
 		String playerName = "player1";
 		String bungeeServerName = "a";
 		Database database = TestSupport.getDatabaseAndTruncateTables();
-		DbPlayer dbPlayer = DbPlayer.create(database, playerId, playerName, bungeeServerName);
+		PlayerController dbPlayer = PlayerController.create(database, playerId, playerName, bungeeServerName);
 		LocalDateTime time = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 		dbPlayer.updateLeftAt(time);
-		dbPlayer = DbPlayer.getByPlayerId(database, playerId);
+		dbPlayer = PlayerController.getByPlayerId(database, playerId);
 		bungeeServerName = bungeeServerName + "2";
 		dbPlayer.updateBungeeServerName(bungeeServerName, null);
-		dbPlayer = DbPlayer.getByPlayerId(database, playerId);
+		dbPlayer = PlayerController.getByPlayerId(database, playerId);
 		Assert.assertNull(dbPlayer.getPlayerLeftServerAt());
 		assertEquals(bungeeServerName, dbPlayer.getBungeeServerName());
 	}

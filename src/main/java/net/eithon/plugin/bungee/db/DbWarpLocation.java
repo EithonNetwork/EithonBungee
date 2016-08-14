@@ -5,10 +5,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 
-import net.eithon.library.mysql.Database;
-import net.eithon.library.mysql.DbRecord;
-import net.eithon.library.mysql.IDbRecord;
-
 public class DbWarpLocation extends DbRecord<DbWarpLocation> implements IDbRecord<DbWarpLocation> {
 	private String name;
 	private String bungeeServerName;

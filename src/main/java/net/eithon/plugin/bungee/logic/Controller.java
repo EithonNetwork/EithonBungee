@@ -7,6 +7,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import net.eithon.library.command.EithonCommand;
+import net.eithon.library.exceptions.FatalException;
+import net.eithon.library.exceptions.TryAgainException;
+import net.eithon.library.mysql.Database;
 import net.eithon.library.plugin.ConfigurableMessage;
 import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
@@ -40,9 +43,11 @@ public class Controller {
 	private BanController _banController;
 	private static int instanceCount = 0;
 	private HashMap<String, HeartBeatPojo> _heartBeats;
+	private Database _database;
 
-	public Controller(EithonBungeePlugin plugin, BungeeController bungeeController) {
+	public Controller(EithonBungeePlugin plugin, BungeeController bungeeController) throws FatalException {
 		this._plugin = plugin;
+		this._database = new Database(Config.V.databaseUrl, Config.V.databaseUsername, Config.V.databasePassword);
 		this._bungeeController = bungeeController;
 		this._individualMessageController = new IndividualMessageController(this._plugin);
 		this._heartBeats = new HashMap<String, HeartBeatPojo>();
@@ -72,7 +77,11 @@ public class Controller {
 
 	public void disable() {
 		if (!controllersAreReady()) return;
-		this._bungeePlayerController.purgePlayers();
+		try {
+			this._bungeePlayerController.purgePlayers();
+		} catch (FatalException | TryAgainException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private boolean controllersAreReady() { 
@@ -89,7 +98,7 @@ public class Controller {
 		if (serverName == null) return false;
 		return serverName.equalsIgnoreCase(Config.V.primaryBungeeServer);
 	}
-	
+
 	public boolean serverHeartIsBeating(String serverName) {
 		HeartBeatPojo info = null;
 		synchronized (this._heartBeats) {
@@ -98,15 +107,15 @@ public class Controller {
 		return (info != null) && !info.isTooOld();
 	}
 
-	private void waitForServerName() {
+	private void waitForServerName() throws FatalException {
 		String bungeeServerName = this._bungeeController.getBungeeServerName();
 		if (bungeeServerName != null) {
 			if (bungeeServerName.equalsIgnoreCase(Config.V.thisBungeeServerName)) {
-				this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController);
+				this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController, this._database);
 				this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController);
 				this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController);
 				this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
-				this._banController = new BanController(this._plugin);
+				this._banController = new BanController(this._plugin, this._database);
 				createEithonBungeeFixesListener();
 				this._bungeeServerName = bungeeServerName;
 				return;
@@ -117,7 +126,11 @@ public class Controller {
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
-				waitForServerName();
+				try {
+					waitForServerName();
+				} catch (FatalException e) {
+					e.printStackTrace();
+				}
 			}
 		};
 		runnable.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1));
@@ -139,7 +152,7 @@ public class Controller {
 		verbose("broadcastPlayerSwitched", "Leave");
 	}
 
-	public String getJoinMessage(Player player) {
+	public String getJoinMessage(Player player) throws FatalException, TryAgainException {
 		verbose("getQuitMessage", "Player=%s", player.getName());
 		if (!controllersAreReady()) return null;
 		final UUID playerId = player.getUniqueId();
@@ -212,7 +225,7 @@ public class Controller {
 		}
 		this._teleportController.handleTeleportEvent(jsonObject);
 	}
-	
+
 	public void handleHeartbeat(JSONObject jsonObject) {
 		if (!controllersAreReady()) {
 			new BukkitRunnable() {
@@ -271,7 +284,7 @@ public class Controller {
 	}
 
 	public boolean sendMessageToPlayer(Player sender, OfflinePlayer receiver,
-			String message) {
+			String message) throws FatalException, TryAgainException {
 		if (!controllersAreReady()) return false;
 		String bungeeServerName = this._bungeePlayerController.getCurrentBungeeServerName(receiver);
 		if (bungeeServerName == null) {
@@ -284,7 +297,7 @@ public class Controller {
 	}
 
 	public String replyMessageToPlayer(Player sender,
-			String message) {
+			String message) throws FatalException, TryAgainException {
 		OfflinePlayer receiver = this._lastMessageFrom.get(sender.getUniqueId());
 		if (receiver == null) {
 			sender.sendMessage("No player to reply to.");
@@ -360,24 +373,32 @@ public class Controller {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				playerJoinedStageTwo(player);
+				try {
+					playerJoinedStageTwo(player);
+				} catch (FatalException | TryAgainException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		.runTaskAsynchronously(this._plugin);
 	}
 
-	private void playerJoinedStageTwo(final Player player) {
+	private void playerJoinedStageTwo(final Player player) throws FatalException, TryAgainException {
 		if (this._banController.takeActionIfPlayerIsBannedOnThisServer(player)) return;
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				playerJoinedStageThree(player);
+				try {
+					playerJoinedStageThree(player);
+				} catch (FatalException | TryAgainException e) {
+					e.printStackTrace();
+				}
 
 			}
 		}.runTask(this._plugin);
 	}
 
-	private void playerJoinedStageThree(final Player player) {
+	private void playerJoinedStageThree(final Player player) throws FatalException, TryAgainException {
 		String previousServerName = this._bungeePlayerController.getAnyBungeeServerName(player);
 		if ((previousServerName==null) || (previousServerName.equalsIgnoreCase(this._bungeeServerName))) {
 			this._joinLeaveController.playerJoinedThisServer(player);

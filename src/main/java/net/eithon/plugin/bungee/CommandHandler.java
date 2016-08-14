@@ -5,6 +5,7 @@ import net.eithon.library.command.EithonCommand;
 import net.eithon.library.command.ICommandSyntax;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.plugin.bungee.logic.Controller;
+import net.eithon.plugin.stats.logic.TryHandler;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -214,7 +215,9 @@ public class CommandHandler {
 			throw new NotImplementedException();
 		}
 		String message = eithonCommand.getArgument("message").asString();
-		boolean success = this._controller.sendMessageToPlayer(sender, receiver, message);
+		boolean success = TryHandler.handleExceptions(sender, () -> {
+					return this._controller.sendMessageToPlayer(sender, receiver, message);
+				});
 		if (!success) return;
 		Config.M.messageSent.sendMessage(sender, receiver.getName(), message);
 	}
@@ -223,7 +226,9 @@ public class CommandHandler {
 		Player sender = eithonCommand.getPlayerOrInformSender();
 		if (sender == null) return;
 		String message = eithonCommand.getArgument("message").asString();
-		String receiverName = this._controller.replyMessageToPlayer(sender, message);
+		String receiverName = TryHandler.handleExceptions(sender, () -> {
+			return this._controller.replyMessageToPlayer(sender, message);
+		});
 		if (receiverName == null) return;
 		Config.M.messageSent.sendMessage(sender, receiverName, message);
 	}

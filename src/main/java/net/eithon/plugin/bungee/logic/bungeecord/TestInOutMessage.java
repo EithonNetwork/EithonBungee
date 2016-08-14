@@ -2,7 +2,7 @@ package net.eithon.plugin.bungee.logic.bungeecord;
 
 // https://bukkit.org/threads/how-to-unit-test-your-plugin-with-example-project.23569/
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 

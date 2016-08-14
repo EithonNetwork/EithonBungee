@@ -1,28 +1,21 @@
 package net.eithon.plugin.bungee.logic.players;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
-import net.eithon.plugin.bungee.Config;
-import net.eithon.plugin.bungee.db.DbPlayer;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 class BungeePlayer {
-	private OfflinePlayer offlinePlayer;
-	private DbPlayer dbPlayer;
 
-	private BungeePlayer(DbPlayer dbPlayer) {
-		this.dbPlayer = dbPlayer;
-		this.offlinePlayer = Bukkit.getOfflinePlayer(dbPlayer.getPlayerId());
-	}
+	private long id;
+	private String bungeeServerName;
+	private UUID playerId;
+	private String playerName;
+	private LocalDateTime leftAt;
 
-	public static BungeePlayer getByPlayerId(UUID playerId) {
-		DbPlayer dbPlayer = DbPlayer.getByPlayerId(Config.V.database, playerId);
+	/*public static BungeePlayer getByPlayerId(UUID playerId) {
+		PlayerController dbPlayer = PlayerController.getByPlayerId(Config.V.database, playerId);
 		if (dbPlayer == null) return null;
 		if (deleteIfOld(dbPlayer)) return null;
 		if (dbPlayer.getPlayerName() == null) {
@@ -32,23 +25,15 @@ class BungeePlayer {
 		return new BungeePlayer(dbPlayer);
 	}
 
-	private static boolean deleteIfOld(DbPlayer dbPlayer) {
-		final LocalDateTime playerLeftServerAt = dbPlayer.getPlayerLeftServerAt();
-		if (playerLeftServerAt == null) return false;
-		if (playerLeftServerAt.plusSeconds(60).isAfter(LocalDateTime.now()))  return false;
-		dbPlayer.delete();
-		return true;
-	}
-
 	public static List<BungeePlayer> findAll(boolean onlyOnline) {
-		return DbPlayer.findAll(Config.V.database, onlyOnline).stream().map(dbPlayer -> new BungeePlayer(dbPlayer)).collect(Collectors.toList());
+		return PlayerController.findAll(Config.V.database, onlyOnline).stream().map(dbPlayer -> new BungeePlayer(playerRow)).collect(Collectors.toList());
 	}
 
 	public static BungeePlayer createOrUpdate(OfflinePlayer player, String bungeeServerName) {
 		UUID playerId = player.getUniqueId();
-		DbPlayer dbPlayer = DbPlayer.getByPlayerId(Config.V.database, playerId);
+		PlayerController dbPlayer = PlayerController.getByPlayerId(Config.V.database, playerId);
 		if (dbPlayer == null) {
-			dbPlayer = DbPlayer.create(Config.V.database, playerId, player.getName(), bungeeServerName);
+			dbPlayer = PlayerController.create(Config.V.database, playerId, player.getName(), bungeeServerName);
 		} else {
 			if (!player.getName().equals(dbPlayer.getPlayerName())) {
 				dbPlayer.updatePlayerName(player.getName());
@@ -72,29 +57,72 @@ class BungeePlayer {
 	}
 
 	public void update(String bungeeServerName) {
-		this.dbPlayer.updateBungeeServerName(bungeeServerName, null);
+		this.playerRow.updateBungeeServerName(bungeeServerName, null);
+	}
+	*/
+	
+	public boolean isOld() {
+		if (isOnline()) return false;
+		if (this.leftAt.plusSeconds(60).isAfter(LocalDateTime.now()))  return false;
+		return true;
 	}
 
-	public boolean maybeDelete(String bungeeServerName) {
-		if (!bungeeServerName.equalsIgnoreCase(this.dbPlayer.getBungeeServerName())) return false;
-		Player player = Bukkit.getServer().getPlayer(this.dbPlayer.getPlayerId());
-		if (player != null) return false;
-		if (deleteIfOld(this.dbPlayer)) {
-			this.dbPlayer = null;
-			return true;
-		}
-		this.dbPlayer.updateLeftAt(LocalDateTime.now());
-		return false;
+	public boolean isSameServer(String serverName) {
+		return serverName.equalsIgnoreCase(this.bungeeServerName);
 	}
 
-	public String getCurrentBungeeServerName() { if (hasLeft()) return null; else return this.dbPlayer.getBungeeServerName(); }
-	public String getPreviousBungeeServerName() { if (!hasLeft()) return null; return this.dbPlayer.getBungeeServerName(); }
-	public String getAnyBungeeServerName() { return this.dbPlayer.getBungeeServerName(); }
-	private OfflinePlayer getOfflinePlayer() { return this.offlinePlayer; }
-	public String getPlayerName() { return this.dbPlayer.getPlayerName(); }
-	public UUID getPlayerId() { return this.dbPlayer.getPlayerId(); }
-	public boolean isOnlineOnThisServer() { return getOfflinePlayer().isOnline(); }
-	public void refresh() { this.dbPlayer.refresh(); }
+	public String getCurrentBungeeServerName() { if (hasLeft()) return null; else return getBungeeServerName(); }
+	public String getPreviousBungeeServerName2() { if (!hasLeft()) return null; return getBungeeServerName(); }
+	public String getAnyBungeeServerName() { return getBungeeServerName(); }
+	
+	private boolean hasLeft() { return this.leftAt != null; }
 
-	private boolean hasLeft() { return this.dbPlayer.getPlayerLeftServerAt() != null; }
+	public String getBungeeServerName() {
+		return bungeeServerName;
+	}
+
+	public void setBungeeServerName(String bungeeServerName) {
+		this.bungeeServerName = bungeeServerName;
+	}
+
+	public UUID getPlayerId() {
+		return this.playerId;
+	}
+
+	public void setPlayerId(UUID playerId) {
+		this.playerId = playerId;
+	}
+
+	public String getPlayerName() {
+		return this.playerName;
+	}
+
+	public void setPlayerName(String playerName) {
+		this.playerName = playerName;
+	}
+
+	public LocalDateTime getLeftAt() {
+		return leftAt;
+	}
+
+	public void setLeftAt(LocalDateTime leftAt) {
+		this.leftAt = leftAt;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public boolean isOnline() {
+		return this.leftAt == null;
+	}
+
+	public boolean isOnlineOnServer(String bungeeServerName) {
+		if (!isSameServer(bungeeServerName)) return false;
+		return isOnline();
+	}
 }
