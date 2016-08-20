@@ -11,7 +11,7 @@ import net.eithon.library.exceptions.TryAgainException;
 import net.eithon.library.mysql.Database;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
-import net.eithon.plugin.bungee.db.PlayerController;
+import net.eithon.plugin.bungee.db.PlayerTable;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 
 import org.bukkit.Bukkit;
@@ -26,10 +26,10 @@ public class BungeePlayerController {
 	private EithonBungeePlugin _eithonPlugin;
 	private boolean _refreshIsRunning = false;
 	private BungeeController _bungeeController;
-	private PlayerController playerController;
+	private PlayerTable playerController;
 
 	public BungeePlayerController(EithonBungeePlugin eithonPlugin, BungeeController bungeeController, Database database) throws FatalException {
-		this.playerController = new PlayerController(database);
+		this.playerController = new PlayerTable(database);
 		this._eithonPlugin = eithonPlugin;
 		this._bungeeController = bungeeController;
 		this._allCurrentPlayers = new PlayerCollection<BungeePlayer>();
@@ -37,7 +37,7 @@ public class BungeePlayerController {
 	}
 
 	public void purgePlayers() throws FatalException, TryAgainException {
-		playerController.deleteByServerName(Config.V.database, Config.V.thisBungeeServerName);
+		playerController.deleteByServerName(Config.V.thisBungeeServerName);
 	}
 
 	public void refreshAsync() {

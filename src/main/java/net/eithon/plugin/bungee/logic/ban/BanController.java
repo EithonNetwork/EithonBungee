@@ -11,8 +11,8 @@ import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeeApi;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
-import net.eithon.plugin.bungee.db.ServerBanLogic;
-import net.eithon.plugin.bungee.db.ServerBanPojo;
+import net.eithon.plugin.bungee.db.ServerBanTable;
+import net.eithon.plugin.bungee.db.ServerBanRow;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -22,11 +22,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class BanController {
 
 	private final EithonBungeePlugin _eithonPlugin;
-	private ServerBanLogic serverBanLogic;
+	private ServerBanTable serverBanLogic;
 
 	public BanController(EithonBungeePlugin eithonPlugin, Database database) throws FatalException {
 		this._eithonPlugin = eithonPlugin;
-		this.serverBanLogic = new ServerBanLogic(database);
+		this.serverBanLogic = new ServerBanTable(database);
 	}
 
 	public void banPlayerOnThisServerAsync(
@@ -120,7 +120,7 @@ public class BanController {
 
 	public boolean isPlayerBannedOnThisServer(final Player player) throws FatalException, TryAgainException {
 		verbose("isPlayerBannedOnThisServer", "Player %s", player.getName());
-		final ServerBanPojo row = serverBanLogic.get(player.getUniqueId(), Config.V.thisBungeeServerName);
+		final ServerBanRow row = serverBanLogic.get(player.getUniqueId(), Config.V.thisBungeeServerName);
 		final ServerBan serverBan = ServerBan.createFromRow(row);
 		if (serverBan == null) return false;
 		if (serverBan.getUnbanAt().isAfter(LocalDateTime.now())) return true;
@@ -143,7 +143,7 @@ public class BanController {
 	}
 
 	public void unbanPlayer(final CommandSender sender, final OfflinePlayer player, String serverName) throws FatalException, TryAgainException {
-		final ServerBanPojo row = serverBanLogic.get(player.getUniqueId(), serverName);
+		final ServerBanRow row = serverBanLogic.get(player.getUniqueId(), serverName);
 		final ServerBan serverBan = ServerBan.createFromRow(row);
 		if (serverBan == null) {
 			if (sender == null) return;
@@ -159,7 +159,7 @@ public class BanController {
 
 	public void listBannedPlayersAsync(CommandSender sender) {
 		try {
-			for (ServerBanPojo row : serverBanLogic.findAll()) {
+			for (ServerBanRow row : serverBanLogic.findAll()) {
 				ServerBan serverBan = ServerBan.createFromRow(row);
 				sender.sendMessage(String.format("%s: %s (%s)",
 						serverBan.getPlayerName(), serverBan.getBungeeServerName(), 

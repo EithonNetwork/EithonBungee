@@ -3,11 +3,11 @@ package net.eithon.plugin.bungee.logic.players;
 import java.sql.Timestamp;
 import java.util.UUID;
 
-import net.eithon.plugin.bungee.db.PlayerPojo;
+import net.eithon.plugin.bungee.db.PlayerRow;
 
 public class BungeePlayerMapper {
 
-	public static BungeePlayer rowToModel(PlayerPojo row)  {
+	public static BungeePlayer rowToModel(PlayerRow row)  {
 		if (row == null) return null;
 		BungeePlayer model = new BungeePlayer();
 		model.setBungeeServerName(row.bungee_server_name);
@@ -18,9 +18,9 @@ public class BungeePlayerMapper {
 		return model;
 	}
 	
-	public static PlayerPojo modelToRow(BungeePlayer model)  {
+	public static PlayerRow modelToRow(BungeePlayer model)  {
 		if (model == null) return null;
-		PlayerPojo row = new PlayerPojo();
+		PlayerRow row = new PlayerRow();
 		row.bungee_server_name = model.getBungeeServerName();
 		row.id = model.getId();
 		row.left_at = Timestamp.valueOf(model.getLeftAt());

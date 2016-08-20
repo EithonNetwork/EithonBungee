@@ -2,10 +2,10 @@ package net.eithon.plugin.bungee.db;
 
 import java.sql.Timestamp;
 
-import net.eithon.library.mysql.Table;
+import net.eithon.library.mysql.Row;
 
-public class PlayerPojo extends Table {
-	public PlayerPojo() {
+public class PlayerRow extends Row {
+	public PlayerRow() {
 		super("player");
 	}
 	public String bungee_server_name;

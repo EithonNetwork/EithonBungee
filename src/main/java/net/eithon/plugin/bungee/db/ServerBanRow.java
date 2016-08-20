@@ -2,11 +2,11 @@ package net.eithon.plugin.bungee.db;
 
 import java.sql.Timestamp;
 
-import net.eithon.library.mysql.Table;
+import net.eithon.library.mysql.Row;
 import net.eithon.library.time.TimeMisc;
 
-public class ServerBanPojo extends Table {
-	public ServerBanPojo() {
+public class ServerBanRow extends Row {
+	public ServerBanRow() {
 		super("server_ban");
 		// TODO Auto-generated constructor stub
 	}

@@ -9,8 +9,8 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 import net.eithon.library.mysql.Database;
-import net.eithon.plugin.bungee.db.PlayerController;
-import net.eithon.plugin.bungee.db.PlayerPojo;
+import net.eithon.plugin.bungee.db.PlayerTable;
+import net.eithon.plugin.bungee.db.PlayerRow;
 
 import org.junit.Test;
 
@@ -23,8 +23,8 @@ public class TestDbPlayer {
 			String playerName = "player1";
 			String bungeeServerName = "a";
 			Database database = TestSupport.getDatabaseAndTruncateTables();
-			PlayerController handler = new PlayerController(database);
-			PlayerPojo dbPlayer = handler.create(playerId, playerName, bungeeServerName);
+			PlayerTable handler = new PlayerTable(database);
+			PlayerRow dbPlayer = handler.create(playerId, playerName, bungeeServerName);
 			assertEquals(playerId.toString(), dbPlayer.player_id);
 			assertEquals(playerName, dbPlayer.player_name);
 			Assert.assertNull(dbPlayer.left_at);
@@ -41,8 +41,8 @@ public class TestDbPlayer {
 			String playerName = "player1";
 			String bungeeServerName = "a";
 			Database database = TestSupport.getDatabaseAndTruncateTables();
-			PlayerController handler = new PlayerController(database);
-			PlayerPojo dbPlayer = handler.create(playerId, playerName, bungeeServerName);
+			PlayerTable handler = new PlayerTable(database);
+			PlayerRow dbPlayer = handler.create(playerId, playerName, bungeeServerName);
 			dbPlayer = handler.getByPlayerId(playerId);
 			Assert.assertNotNull(dbPlayer);
 			assertEquals(playerId.toString(), dbPlayer.player_id);
@@ -61,8 +61,8 @@ public class TestDbPlayer {
 			String playerName = "player1";
 			String bungeeServerName = "a";
 			Database database = TestSupport.getDatabaseAndTruncateTables();
-			PlayerController handler = new PlayerController(database);
-			PlayerPojo dbPlayer = handler.create(playerId, playerName, bungeeServerName);
+			PlayerTable handler = new PlayerTable(database);
+			PlayerRow dbPlayer = handler.create(playerId, playerName, bungeeServerName);
 			dbPlayer = handler.getByPlayerId(playerId);
 			bungeeServerName += "2";
 			dbPlayer.bungee_server_name = bungeeServerName;
@@ -82,8 +82,8 @@ public class TestDbPlayer {
 			String playerName = "player1";
 			String bungeeServerName = "a";
 			Database database = TestSupport.getDatabaseAndTruncateTables();
-			PlayerController handler = new PlayerController(database);
-			PlayerPojo dbPlayer = handler.create(playerId, playerName, bungeeServerName);
+			PlayerTable handler = new PlayerTable(database);
+			PlayerRow dbPlayer = handler.create(playerId, playerName, bungeeServerName);
 			dbPlayer = handler.getByPlayerId(playerId);
 			final Timestamp time = Timestamp.valueOf(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 			dbPlayer.left_at = time;
@@ -102,8 +102,8 @@ public class TestDbPlayer {
 			String playerName = "player1";
 			String bungeeServerName = "a";
 			Database database = TestSupport.getDatabaseAndTruncateTables();
-			PlayerController handler = new PlayerController(database);
-			PlayerPojo dbPlayer = handler.create(playerId, playerName, bungeeServerName);
+			PlayerTable handler = new PlayerTable(database);
+			PlayerRow dbPlayer = handler.create(playerId, playerName, bungeeServerName);
 			final Timestamp time = Timestamp.valueOf(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 			dbPlayer.left_at = time;
 			bungeeServerName += "2";

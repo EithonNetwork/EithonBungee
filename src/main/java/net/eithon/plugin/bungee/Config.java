@@ -3,7 +3,6 @@ package net.eithon.plugin.bungee;
 import java.util.List;
 
 import net.eithon.library.extensions.EithonPlugin;
-import net.eithon.library.mysql.Database;
 import net.eithon.library.plugin.ConfigurableMessage;
 import net.eithon.library.plugin.Configuration;
 import net.eithon.plugin.bungee.logic.individualmessage.IndividualConfigurableMessage;
@@ -18,7 +17,6 @@ public class Config {
 	}
 	
 	public static class V {
-		public static Database database;
 		public static long maxAllowedTeleportDelayInSeconds;
 		public static long maxAllowedMessageDelayInSeconds;
 		public static List<String> groupPriorities;
@@ -33,17 +31,16 @@ public class Config {
 		public static String databasePassword;
 
 		static void load(Configuration config) {
-			database = null;
 			secondsBetweenHeartBeats = config.getSeconds("TimeSpanBetweenHeartBeats", 10);
 			maxAllowedTeleportDelayInSeconds = config.getSeconds("MaxAllowedTeleportDelayTimeSpan", 30);
 			maxAllowedMessageDelayInSeconds = config.getSeconds("MaxAllowedMessageDelayInSeconds", 10);
 			groupPriorities = config.getStringList("GroupPriorities");
-			getDatabase(config);
 			reloadWarpLocationsAfterSeconds = config.getSeconds("ReloadWarpLocationsAfterTimeSpan", "5m");
 			primaryBungeeServer = config.getString("PrimaryBungeeServer", "Hub");
 			bungeeServerNames = config.getStringList("BungeeServers");
 			thisBungeeServerName = config.getString("ThisBungeeServer", "Hub");
 			mandatoryPlayerNames = config.getBoolean("MandatoryPlayerNames", true);
+			getDatabase(config);
 		}
 
 		private static void getDatabase(Configuration config) {

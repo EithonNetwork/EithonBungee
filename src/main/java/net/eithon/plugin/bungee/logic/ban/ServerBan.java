@@ -5,9 +5,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import net.eithon.library.mysql.IRowMapper;
-import net.eithon.plugin.bungee.db.ServerBanPojo;
+import net.eithon.plugin.bungee.db.ServerBanRow;
 
-public class ServerBan implements IRowMapper<ServerBan, ServerBanPojo>{
+public class ServerBan implements IRowMapper<ServerBan, ServerBanRow>{
 	private long id;
 	private String bungeeServerName;
 	private UUID playerId;
@@ -20,12 +20,12 @@ public class ServerBan implements IRowMapper<ServerBan, ServerBanPojo>{
 	public String getPlayerName() { return playerName; }
 	public String getBungeeServerName() { return bungeeServerName;}
 
-	public static ServerBan createFromRow(ServerBanPojo row) {
+	public static ServerBan createFromRow(ServerBanRow row) {
 		if (row == null) return null;
 		return new ServerBan().fromRow(row);
 	}
 	
-	public ServerBan fromRow(ServerBanPojo row) {
+	public ServerBan fromRow(ServerBanRow row) {
 		this.id = row.id;
 		this.bungeeServerName = row.bungee_server_name;
 		this.playerId = UUID.fromString(row.player_id);
@@ -34,8 +34,8 @@ public class ServerBan implements IRowMapper<ServerBan, ServerBanPojo>{
 		return this;
 	}
 
-	public ServerBanPojo toRow() {
-		ServerBanPojo row = new ServerBanPojo();
+	public ServerBanRow toRow() {
+		ServerBanRow row = new ServerBanRow();
 		row.id = this.id;
 		row.bungee_server_name = this.bungeeServerName;
 		row.player_id = this.playerId.toString();

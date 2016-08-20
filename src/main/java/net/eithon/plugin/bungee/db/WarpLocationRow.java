@@ -1,9 +1,9 @@
 package net.eithon.plugin.bungee.db;
 
-import net.eithon.library.mysql.Table;
+import net.eithon.library.mysql.Row;
 
-public class WarpLocationPojo extends Table {
-	public WarpLocationPojo() {
+public class WarpLocationRow extends Row {
+	public WarpLocationRow() {
 		super("warp_location");
 		// TODO Auto-generated constructor stub
 	}

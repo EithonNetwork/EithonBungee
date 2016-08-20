@@ -7,18 +7,18 @@ import java.util.stream.Collectors;
 import net.eithon.library.exceptions.FatalException;
 import net.eithon.library.exceptions.TryAgainException;
 import net.eithon.library.mysql.Database;
-import net.eithon.plugin.bungee.db.WarpLocationLogic;
+import net.eithon.plugin.bungee.db.WarpLocationTable;
 
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 
 public class WarpLocationController {
-	private WarpLocationLogic warpLocationLogic;
+	private WarpLocationTable warpLocationLogic;
 	private static Object lock = new Object();
 	private HashMap<String, WarpLocation> _all = new HashMap<String, WarpLocation>();
 
 	public WarpLocationController(Database database) throws FatalException {
-		this.warpLocationLogic = new WarpLocationLogic(database);
+		this.warpLocationLogic = new WarpLocationTable(database);
 	}
 
 	public void refresh() throws FatalException, TryAgainException {

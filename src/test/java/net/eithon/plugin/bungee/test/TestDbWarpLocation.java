@@ -3,8 +3,8 @@ package net.eithon.plugin.bungee.test;
 import static org.junit.Assert.assertEquals;
 import junit.framework.Assert;
 import net.eithon.library.mysql.Database;
-import net.eithon.plugin.bungee.db.WarpLocationLogic;
-import net.eithon.plugin.bungee.db.WarpLocationPojo;
+import net.eithon.plugin.bungee.db.WarpLocationTable;
+import net.eithon.plugin.bungee.db.WarpLocationRow;
 
 import org.junit.Test;
 
@@ -17,8 +17,8 @@ public class TestDbWarpLocation {
 			String bungeeServerName = "a";
 			String location = "location 11";
 			Database database = TestSupport.getDatabaseAndTruncateTables();
-			WarpLocationLogic handler = new WarpLocationLogic(database);
-			WarpLocationPojo warpLocation = handler.create(name, bungeeServerName, location);
+			WarpLocationTable handler = new WarpLocationTable(database);
+			WarpLocationRow warpLocation = handler.create(name, bungeeServerName, location);
 			assertEquals(name, warpLocation.name);
 			assertEquals(bungeeServerName, warpLocation.bungee_server_name);
 			assertEquals(location, warpLocation.location);
@@ -34,8 +34,8 @@ public class TestDbWarpLocation {
 			String bungeeServerName = "a";
 			String location = "location 12";
 			Database database = TestSupport.getDatabaseAndTruncateTables();
-			WarpLocationLogic handler = new WarpLocationLogic(database);
-			WarpLocationPojo warpLocation = handler.create(name, bungeeServerName, location);
+			WarpLocationTable handler = new WarpLocationTable(database);
+			WarpLocationRow warpLocation = handler.create(name, bungeeServerName, location);
 			warpLocation = handler.getByName(name);
 			Assert.assertNotNull(warpLocation);
 			assertEquals(name, warpLocation.name);
@@ -53,8 +53,8 @@ public class TestDbWarpLocation {
 			String bungeeServerName = "a";
 			String location = "location 13";
 			Database database = TestSupport.getDatabaseAndTruncateTables();
-			WarpLocationLogic handler = new WarpLocationLogic(database);
-			WarpLocationPojo warpLocation = handler.create(name, bungeeServerName, location);
+			WarpLocationTable handler = new WarpLocationTable(database);
+			WarpLocationRow warpLocation = handler.create(name, bungeeServerName, location);
 			warpLocation = handler.getByName(name);
 			bungeeServerName = bungeeServerName + "2";
 			warpLocation.bungee_server_name = bungeeServerName;
