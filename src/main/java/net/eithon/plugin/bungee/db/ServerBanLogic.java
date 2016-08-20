@@ -9,18 +9,16 @@ import net.eithon.library.exceptions.TryAgainException;
 import net.eithon.library.mysql.Database;
 import net.eithon.library.mysql.DbLogic;
 
-import org.bukkit.OfflinePlayer;
-
 public class ServerBanLogic extends DbLogic<ServerBanPojo> {
 
 	public ServerBanLogic(final Database database) throws FatalException {
 		super(ServerBanPojo.class, database);
 	}
 	
-	public ServerBanPojo create(OfflinePlayer player, String bungeeServerName, LocalDateTime unbanAt) throws FatalException, TryAgainException {
+	public ServerBanPojo create(UUID playerId, String playerName, String bungeeServerName, LocalDateTime unbanAt) throws FatalException, TryAgainException {
 		ServerBanPojo row = new ServerBanPojo();
-		row.player_id = player.getUniqueId().toString();
-		row.player_name = player.getName();
+		row.player_id = playerId.toString();
+		row.player_name = playerName;
 		row.bungee_server_name = bungeeServerName;
 		row.unban_at = Timestamp.valueOf(unbanAt);
 		long id = this.jDapper.createOne(row);

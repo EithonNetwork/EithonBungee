@@ -146,7 +146,7 @@ public class BungeePlayerController {
 	private BungeePlayer createOrUpdateBungeePlayer(final Player player)
 			throws FatalException, TryAgainException {
 		return BungeePlayerMapper.rowToModel(
-				playerController.createOrUpdate(player, Config.V.thisBungeeServerName));
+				playerController.createOrUpdate(player.getUniqueId(), player.getName(), Config.V.thisBungeeServerName));
 	}
 
 	public void bungeePlayerAddedOnOtherServerAsync(

@@ -2,12 +2,14 @@ package net.eithon.plugin.bungee.test;
 
 import static org.junit.Assert.assertEquals;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import junit.framework.Assert;
-import net.eithon.library.db.Database;
+import net.eithon.library.mysql.Database;
+import net.eithon.plugin.bungee.db.ServerBanLogic;
 import net.eithon.plugin.bungee.db.ServerBanPojo;
 
 import org.junit.Test;
@@ -16,47 +18,63 @@ public class TestDbServerBan {
 
 	@Test
 	public void create() {
+		try {
 		UUID playerId = UUID.randomUUID();
 		String playerName = "player1";
 		String bungeeServerName = "a";
 		LocalDateTime unbanAt = LocalDateTime.now().plusDays(1).truncatedTo(ChronoUnit.SECONDS);
 		Database database = TestSupport.getDatabaseAndTruncateTables();
-		ServerBanPojo dbServerBan = ServerBanPojo.create(database, playerId, playerName, bungeeServerName, unbanAt);
-		assertEquals(playerId, dbServerBan.getPlayerId());
-		assertEquals(playerName, dbServerBan.getPlayerName());
-		assertEquals(bungeeServerName, dbServerBan.getBungeeServerName());
-		assertEquals(unbanAt, dbServerBan.getUnbanAt());
+		ServerBanLogic handler = new ServerBanLogic(database);
+		ServerBanPojo dbServerBan = handler.create(playerId, playerName, bungeeServerName, unbanAt);
+		assertEquals(playerId.toString(), dbServerBan.player_id);
+		assertEquals(playerName, dbServerBan.player_name);
+		assertEquals(bungeeServerName, dbServerBan.bungee_server_name);
+		assertEquals(Timestamp.valueOf(unbanAt), dbServerBan.unban_at);
+		} catch (Exception e) {
+			Assert.fail();
+		}
 	}	
 	
 	@Test
 	public void getByPlayerId() {
+		try {
 		UUID playerId = UUID.randomUUID();
 		String playerName = "player1";
 		String bungeeServerName = "a";
 		LocalDateTime unbanAt = LocalDateTime.now().plusDays(1).truncatedTo(ChronoUnit.SECONDS);
 		Database database = TestSupport.getDatabaseAndTruncateTables();
-		ServerBanPojo dbServerBan = ServerBanPojo.create(database, playerId, playerName, bungeeServerName, unbanAt);
-		dbServerBan = ServerBanPojo.get(database, playerId, bungeeServerName);
+		ServerBanLogic handler = new ServerBanLogic(database);
+		ServerBanPojo dbServerBan = handler.create(playerId, playerName, bungeeServerName, unbanAt);
+		dbServerBan = handler.get(playerId, bungeeServerName);
 		Assert.assertNotNull(dbServerBan);
-		assertEquals(playerId, dbServerBan.getPlayerId());
-		assertEquals(playerName, dbServerBan.getPlayerName());
-		assertEquals(bungeeServerName, dbServerBan.getBungeeServerName());
-		assertEquals(unbanAt, dbServerBan.getUnbanAt());
+		assertEquals(playerId.toString(), dbServerBan.player_id);
+		assertEquals(playerName, dbServerBan.player_name);
+		assertEquals(bungeeServerName, dbServerBan.bungee_server_name);
+		assertEquals(Timestamp.valueOf(unbanAt), dbServerBan.unban_at);
+	} catch (Exception e) {
+		Assert.fail();
+	}
 	}	
 	
 	@Test
 	public void update() {
+		try {
 		UUID playerId = UUID.randomUUID();
 		String playerName = "player1";
 		String bungeeServerName = "a";
 		LocalDateTime unbanAt = LocalDateTime.now().plusDays(1).truncatedTo(ChronoUnit.SECONDS);
 		Database database = TestSupport.getDatabaseAndTruncateTables();
-		ServerBanPojo dbServerBan = ServerBanPojo.create(database, playerId, playerName, bungeeServerName, unbanAt);
-		dbServerBan = ServerBanPojo.get(database, playerId, bungeeServerName);
+		ServerBanLogic handler = new ServerBanLogic(database);
+		ServerBanPojo dbServerBan = handler.create(playerId, playerName, bungeeServerName, unbanAt);
+		dbServerBan = handler.get(playerId, bungeeServerName);
 		unbanAt = unbanAt.plusSeconds(1);
-		dbServerBan.updateUnbanAt(unbanAt);
-		dbServerBan = ServerBanPojo.get(database, playerId, bungeeServerName);
-		assertEquals(unbanAt, dbServerBan.getUnbanAt());
+		dbServerBan.unban_at = Timestamp.valueOf(unbanAt);
+		handler.update(dbServerBan);
+		dbServerBan = handler.get(playerId, bungeeServerName);
+		assertEquals(Timestamp.valueOf(unbanAt), dbServerBan.unban_at);
+		} catch (Exception e) {
+			Assert.fail();
+		}
 	}
 
 }

@@ -113,7 +113,7 @@ public class Controller {
 			if (bungeeServerName.equalsIgnoreCase(Config.V.thisBungeeServerName)) {
 				this._bungeePlayerController = new BungeePlayerController(this._plugin, this._bungeeController, this._database);
 				this._joinLeaveController = new JoinLeaveController(this._plugin, this._bungeeController);
-				this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController);
+				this._teleportController = new TeleportController(this._plugin, this._bungeePlayerController, this._bungeeController, _database);
 				this._lastMessageFrom = new HashMap<UUID, OfflinePlayer>();
 				this._banController = new BanController(this._plugin, this._database);
 				createEithonBungeeFixesListener();
@@ -182,42 +182,46 @@ public class Controller {
 		registerIncomingPluginChannel(this._plugin, BungeeListener.EITHON_BUNGEE_FIXES_CHANNEL, bungeeListener);
 	}
 
-	public boolean requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
+	public boolean requestTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) throws FatalException, TryAgainException {
 		if (!controllersAreReady()) return false;
 		return this._teleportController.tpToPlayer(movingPlayer, movingPlayer, anchorPlayer, false);
 	}
 
-	public void forcedTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) {
+	public void forcedTpToPlayer(Player movingPlayer, OfflinePlayer anchorPlayer) throws FatalException, TryAgainException {
 		if (!controllersAreReady()) return;
 		this._teleportController.tpToPlayer(movingPlayer, movingPlayer, anchorPlayer, true);
 	}
 
-	public boolean requestTpPlayerHere(Player movingPlayer, OfflinePlayer anchorPlayer) {
+	public boolean requestTpPlayerHere(Player movingPlayer, OfflinePlayer anchorPlayer) throws FatalException, TryAgainException {
 		if (!controllersAreReady()) return false;
 		return this._teleportController.tpPlayerHere(movingPlayer, movingPlayer, anchorPlayer, false);
 	}
 
-	public void forcedTpPlayerHere(Player movingPlayer, OfflinePlayer anchorPlayer) {
+	public void forcedTpPlayerHere(Player movingPlayer, OfflinePlayer anchorPlayer) throws FatalException, TryAgainException {
 		if (!controllersAreReady()) return;
 		this._teleportController.tpPlayerHere(movingPlayer, movingPlayer, anchorPlayer, true);
 	}
 
-	public void tpDeny(Player localPlayer) {
+	public void tpDeny(Player localPlayer) throws FatalException, TryAgainException {
 		if (!controllersAreReady()) return;
 		this._teleportController.deny(localPlayer, localPlayer);
 	}
 
-	public void tpAccept(Player localPlayer) {
+	public void tpAccept(Player localPlayer) throws FatalException, TryAgainException {
 		if (!controllersAreReady()) return;
 		this._teleportController.accept(localPlayer, localPlayer);
 	}
 
-	public void handleTeleportEvent(JSONObject jsonObject) {
+	public void handleTeleportEvent(JSONObject jsonObject) throws FatalException, TryAgainException {
 		if (!controllersAreReady()) {
 			new BukkitRunnable() {
 				@Override
 				public void run() {
-					handleTeleportEvent(jsonObject);
+					try {
+						handleTeleportEvent(jsonObject);
+					} catch (FatalException | TryAgainException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 			.runTaskLater(this._plugin, TimeMisc.secondsToTicks(1));
@@ -312,12 +316,12 @@ public class Controller {
 		return this._teleportController.getWarpNames();
 	}
 
-	public boolean warpAdd(CommandSender sender, String name, Location location) {
+	public boolean warpAdd(CommandSender sender, String name, Location location) throws FatalException, TryAgainException {
 		if (!controllersAreReady()) return false;
 		return this._teleportController.warpAdd(sender, name, location);
 	}
 
-	public boolean warpTo(CommandSender sender, Player player, String name) {
+	public boolean warpTo(CommandSender sender, Player player, String name) throws FatalException, TryAgainException {
 		if (!controllersAreReady()) return false;
 		return this._teleportController.warpTo(sender, player, name);
 	}

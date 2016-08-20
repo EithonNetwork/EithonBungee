@@ -2,8 +2,9 @@ package net.eithon.plugin.bungee.test;
 
 import static org.junit.Assert.assertEquals;
 import junit.framework.Assert;
-import net.eithon.library.db.Database;
-import net.eithon.plugin.bungee.db.DbWarpLocation;
+import net.eithon.library.mysql.Database;
+import net.eithon.plugin.bungee.db.WarpLocationLogic;
+import net.eithon.plugin.bungee.db.WarpLocationPojo;
 
 import org.junit.Test;
 
@@ -11,44 +12,61 @@ public class TestDbWarpLocation {
 
 	@Test
 	public void create() {
-		String name = "warp11";
-		String bungeeServerName = "a";
-		String location = "location 11";
-		Database database = TestSupport.getDatabaseAndTruncateTables();
-		DbWarpLocation warpLocation = DbWarpLocation.create(database, name, bungeeServerName, location);
-		assertEquals(name, warpLocation.getName());
-		assertEquals(bungeeServerName, warpLocation.getBungeeServerName());
-		assertEquals(location, warpLocation.getLocation());
+		try {
+			String name = "warp11";
+			String bungeeServerName = "a";
+			String location = "location 11";
+			Database database = TestSupport.getDatabaseAndTruncateTables();
+			WarpLocationLogic handler = new WarpLocationLogic(database);
+			WarpLocationPojo warpLocation = handler.create(name, bungeeServerName, location);
+			assertEquals(name, warpLocation.name);
+			assertEquals(bungeeServerName, warpLocation.bungee_server_name);
+			assertEquals(location, warpLocation.location);
+		} catch (Exception e) {
+			Assert.fail();
+		}
 	}	
-	
+
 	@Test
 	public void getByName() {
-		String name = "warp12";
-		String bungeeServerName = "a";
-		String location = "location 12";
-		Database database = TestSupport.getDatabaseAndTruncateTables();
-		DbWarpLocation warpLocation = DbWarpLocation.create(database, name, bungeeServerName, location);
-		warpLocation = DbWarpLocation.getByName(database, name);
-		Assert.assertNotNull(warpLocation);
-		assertEquals(name, warpLocation.getName());
-		assertEquals(bungeeServerName, warpLocation.getBungeeServerName());
-		assertEquals(location, warpLocation.getLocation());
+		try {
+			String name = "warp12";
+			String bungeeServerName = "a";
+			String location = "location 12";
+			Database database = TestSupport.getDatabaseAndTruncateTables();
+			WarpLocationLogic handler = new WarpLocationLogic(database);
+			WarpLocationPojo warpLocation = handler.create(name, bungeeServerName, location);
+			warpLocation = handler.getByName(name);
+			Assert.assertNotNull(warpLocation);
+			assertEquals(name, warpLocation.name);
+			assertEquals(bungeeServerName, warpLocation.bungee_server_name);
+			assertEquals(location, warpLocation.location);
+		} catch (Exception e) {
+			Assert.fail();
+		}
 	}	
-	
+
 	@Test
 	public void update() {
-		String name = "warp13";
-		String bungeeServerName = "a";
-		String location = "location 13";
-		Database database = TestSupport.getDatabaseAndTruncateTables();
-		DbWarpLocation warpLocation = DbWarpLocation.create(database, name, bungeeServerName, location);
-		warpLocation = DbWarpLocation.getByName(database, name);
-		bungeeServerName = bungeeServerName + "2";
-		location = location + "2";
-		warpLocation.update(bungeeServerName, location);
-		warpLocation = DbWarpLocation.getByName(database, name);
-		assertEquals(bungeeServerName, warpLocation.getBungeeServerName());
-		assertEquals(location, warpLocation.getLocation());
+		try {
+			String name = "warp13";
+			String bungeeServerName = "a";
+			String location = "location 13";
+			Database database = TestSupport.getDatabaseAndTruncateTables();
+			WarpLocationLogic handler = new WarpLocationLogic(database);
+			WarpLocationPojo warpLocation = handler.create(name, bungeeServerName, location);
+			warpLocation = handler.getByName(name);
+			bungeeServerName = bungeeServerName + "2";
+			warpLocation.bungee_server_name = bungeeServerName;
+			location = location + "2";
+			warpLocation.location = location;
+			handler.update(warpLocation);
+			warpLocation = handler.getByName(name);
+			assertEquals(bungeeServerName, warpLocation.bungee_server_name);
+			assertEquals(location, warpLocation.location);
+		} catch (Exception e) {
+			Assert.fail();
+		}
 	}
 
 }

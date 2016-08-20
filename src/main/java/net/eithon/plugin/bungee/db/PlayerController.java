@@ -8,18 +8,16 @@ import net.eithon.library.exceptions.TryAgainException;
 import net.eithon.library.mysql.Database;
 import net.eithon.library.mysql.DbLogic;
 
-import org.bukkit.OfflinePlayer;
-
 public class PlayerController extends DbLogic<PlayerPojo>{
 
 	public PlayerController(final Database database) throws FatalException {
 		super(PlayerPojo.class, database);
 	}
 	
-	public PlayerPojo create(final OfflinePlayer player, final String bungeeServerName) throws FatalException, TryAgainException {
+	public PlayerPojo create(final UUID playerId, final String playerName, final String bungeeServerName) throws FatalException, TryAgainException {
 		PlayerPojo playerRow = new PlayerPojo();
-		playerRow.player_id = player.getUniqueId().toString();
-		playerRow.player_name = player.getName();
+		playerRow.player_id = playerId.toString();
+		playerRow.player_name = playerName;
 		playerRow.bungee_server_name = bungeeServerName;
 		long id = this.jDapper.createOne(playerRow);
 		return get(id);
@@ -29,15 +27,15 @@ public class PlayerController extends DbLogic<PlayerPojo>{
 		return this.jDapper.readTheOnlyOneWhere("player_id=?", playerId.toString());
 	}
 
-	public PlayerPojo getOrCreate(final OfflinePlayer player, final String bungeeServerName) throws FatalException, TryAgainException {
-		PlayerPojo playerRow = getByPlayerId(player.getUniqueId());
+	public PlayerPojo getOrCreate(final UUID playerId, final String playerName, final String bungeeServerName) throws FatalException, TryAgainException {
+		PlayerPojo playerRow = getByPlayerId(playerId);
 		if (playerRow != null) return playerRow;
-		return create(player, bungeeServerName);
+		return create(playerId, playerName, bungeeServerName);
 	}
 
-	public PlayerPojo createOrUpdate(final OfflinePlayer player, final String bungeeServerName) throws FatalException, TryAgainException {
-		PlayerPojo playerRow = getByPlayerId(player.getUniqueId());
-		if (playerRow == null) return create(player, bungeeServerName);
+	public PlayerPojo createOrUpdate(final UUID playerId, final String playerName, final String bungeeServerName) throws FatalException, TryAgainException {
+		PlayerPojo playerRow = getByPlayerId(playerId);
+		if (playerRow == null) return create(playerId, playerName, bungeeServerName);
 		playerRow.bungee_server_name = bungeeServerName;
 		playerRow.left_at = null;
 		update(playerRow);

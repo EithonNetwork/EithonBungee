@@ -72,10 +72,10 @@ public class BanController {
 			LocalDateTime unbanAt) throws FatalException, TryAgainException {
 		verbose("banPlayerOnThisServer", "Player %s, unban at %s", player.getName(), unbanAt.toString());
 		final UUID playerId = player.getUniqueId();
-		ServerBan serverBan = ServerBan.fromRow(serverBanLogic.get(playerId, serverName));
+		ServerBan serverBan = ServerBan.createFromRow(serverBanLogic.get(playerId, serverName));
 		if (serverBan == null) {
 			verbose("banPlayerOnThisServer", "Create record");
-			serverBan = ServerBan.fromRow(serverBanLogic.create(player, serverName, unbanAt));
+			serverBan = ServerBan.createFromRow(serverBanLogic.create(playerId, player.getName(), serverName, unbanAt));
 		} else {
 			if ((unbanAt != null)
 					&& !unbanAt.isAfter(serverBan.getUnbanAt())) {
@@ -121,7 +121,7 @@ public class BanController {
 	public boolean isPlayerBannedOnThisServer(final Player player) throws FatalException, TryAgainException {
 		verbose("isPlayerBannedOnThisServer", "Player %s", player.getName());
 		final ServerBanPojo row = serverBanLogic.get(player.getUniqueId(), Config.V.thisBungeeServerName);
-		final ServerBan serverBan = ServerBan.fromRow(row);
+		final ServerBan serverBan = ServerBan.createFromRow(row);
 		if (serverBan == null) return false;
 		if (serverBan.getUnbanAt().isAfter(LocalDateTime.now())) return true;
 		unbanPlayer(null, player, Config.V.thisBungeeServerName);
@@ -144,7 +144,7 @@ public class BanController {
 
 	public void unbanPlayer(final CommandSender sender, final OfflinePlayer player, String serverName) throws FatalException, TryAgainException {
 		final ServerBanPojo row = serverBanLogic.get(player.getUniqueId(), serverName);
-		final ServerBan serverBan = ServerBan.fromRow(row);
+		final ServerBan serverBan = ServerBan.createFromRow(row);
 		if (serverBan == null) {
 			if (sender == null) return;
 			Config.M.playerNotBanned.sendMessage(sender, player.getName(), serverName);
@@ -160,7 +160,7 @@ public class BanController {
 	public void listBannedPlayersAsync(CommandSender sender) {
 		try {
 			for (ServerBanPojo row : serverBanLogic.findAll()) {
-				ServerBan serverBan = ServerBan.fromRow(row);
+				ServerBan serverBan = ServerBan.createFromRow(row);
 				sender.sendMessage(String.format("%s: %s (%s)",
 						serverBan.getPlayerName(), serverBan.getBungeeServerName(), 
 						TimeMisc.fromLocalDateTime(serverBan.getUnbanAt())));

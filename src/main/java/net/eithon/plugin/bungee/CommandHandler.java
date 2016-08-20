@@ -3,9 +3,10 @@ package net.eithon.plugin.bungee;
 import net.eithon.library.command.CommandSyntaxException;
 import net.eithon.library.command.EithonCommand;
 import net.eithon.library.command.ICommandSyntax;
+import net.eithon.library.exceptions.FatalException;
+import net.eithon.library.exceptions.TryAgainException;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.plugin.bungee.logic.Controller;
-import net.eithon.plugin.stats.logic.TryHandler;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -106,7 +107,7 @@ public class CommandHandler {
 		.setMandatoryValues(ec -> this._controller.getWarpNames());
 	}
 
-	private void setupBanCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException {
+	private void setupBanCommand(ICommandSyntax commandSyntax) throws CommandSyntaxException  {
 
 		// message <player> <message>
 		ICommandSyntax cmd = commandSyntax.parseCommandSyntax("ban add <player> <server> <time-span : TIME_SPAN  {24h, 48h, 72h, ...}>")
@@ -140,7 +141,7 @@ public class CommandHandler {
 		}
 	}
 
-	private void forcedTpToPlayer(EithonCommand eithonCommand)
+	private void forcedTpToPlayer(EithonCommand eithonCommand) throws FatalException, TryAgainException
 	{
 		Player movingPlayer = eithonCommand.getPlayerOrInformSender();
 		if (movingPlayer == null) return;
@@ -152,7 +153,7 @@ public class CommandHandler {
 	}
 
 
-	private void requestTpToPlayer(EithonCommand eithonCommand)
+	private void requestTpToPlayer(EithonCommand eithonCommand) throws FatalException, TryAgainException
 	{
 		Player movingPlayer = eithonCommand.getPlayerOrInformSender();
 		if (movingPlayer == null) return;
@@ -166,7 +167,7 @@ public class CommandHandler {
 	}
 
 
-	private void forcedTpPlayerHere(EithonCommand eithonCommand)
+	private void forcedTpPlayerHere(EithonCommand eithonCommand) throws FatalException, TryAgainException
 	{
 		Player anchorPlayer = eithonCommand.getPlayerOrInformSender();
 		if (anchorPlayer == null) return;
@@ -177,7 +178,7 @@ public class CommandHandler {
 		this._controller.forcedTpPlayerHere(anchorPlayer, movingPlayer);
 	}
 
-	private void requestTpPlayerHere(EithonCommand eithonCommand)
+	private void requestTpPlayerHere(EithonCommand eithonCommand) throws FatalException, TryAgainException
 	{
 		Player anchorPlayer = eithonCommand.getPlayerOrInformSender();
 		if (anchorPlayer == null) return;
@@ -190,7 +191,7 @@ public class CommandHandler {
 		anchorPlayer.sendMessage(String.format("Request sent to player %s", movingPlayer.getName()));
 	}
 
-	private void tpDeny(EithonCommand eithonCommand)
+	private void tpDeny(EithonCommand eithonCommand) throws FatalException, TryAgainException
 	{
 		Player player = eithonCommand.getPlayerOrInformSender();
 		if (player == null) return;
@@ -198,7 +199,7 @@ public class CommandHandler {
 		player.sendMessage("You have denied the teleportation request.");
 	}
 
-	private void tpAccept(EithonCommand eithonCommand)
+	private void tpAccept(EithonCommand eithonCommand) throws FatalException, TryAgainException
 	{
 		Player player = eithonCommand.getPlayerOrInformSender();
 		if (player == null) return;
@@ -207,7 +208,7 @@ public class CommandHandler {
 
 	}
 
-	private void sendMessageToPlayer(EithonCommand eithonCommand) {
+	private void sendMessageToPlayer(EithonCommand eithonCommand) throws FatalException, TryAgainException {
 		Player sender = eithonCommand.getPlayerOrInformSender();
 		if (sender == null) return;
 		OfflinePlayer receiver = eithonCommand.getArgument("player").asOfflinePlayer();
@@ -215,25 +216,21 @@ public class CommandHandler {
 			throw new NotImplementedException();
 		}
 		String message = eithonCommand.getArgument("message").asString();
-		boolean success = TryHandler.handleExceptions(sender, () -> {
-					return this._controller.sendMessageToPlayer(sender, receiver, message);
-				});
+		boolean success = this._controller.sendMessageToPlayer(sender, receiver, message);
 		if (!success) return;
 		Config.M.messageSent.sendMessage(sender, receiver.getName(), message);
 	}
 
-	private void sendReply(EithonCommand eithonCommand) {
+	private void sendReply(EithonCommand eithonCommand) throws FatalException, TryAgainException {
 		Player sender = eithonCommand.getPlayerOrInformSender();
 		if (sender == null) return;
 		String message = eithonCommand.getArgument("message").asString();
-		String receiverName = TryHandler.handleExceptions(sender, () -> {
-			return this._controller.replyMessageToPlayer(sender, message);
-		});
+		String receiverName = this._controller.replyMessageToPlayer(sender, message);
 		if (receiverName == null) return;
 		Config.M.messageSent.sendMessage(sender, receiverName, message);
 	}
 
-	private void warpAdd(EithonCommand eithonCommand) {
+	private void warpAdd(EithonCommand eithonCommand) throws FatalException, TryAgainException {
 		Player player = eithonCommand.getPlayerOrInformSender();
 		if (player == null) return;
 		String name = eithonCommand.getArgument("name").asString();
@@ -242,7 +239,7 @@ public class CommandHandler {
 		Config.M.warpAdded.sendMessage(player, name);
 	}
 
-	private void warpTo(EithonCommand eithonCommand) {
+	private void warpTo(EithonCommand eithonCommand) throws FatalException, TryAgainException {
 		Player player = eithonCommand.getPlayerOrInformSender();
 		if (player == null) return;
 		String name = eithonCommand.getArgument("name").asString();
