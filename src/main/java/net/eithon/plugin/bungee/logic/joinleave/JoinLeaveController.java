@@ -105,7 +105,7 @@ public class JoinLeaveController {
 	}
 
 	public String getHighestGroup(UUID playerId) {
-		String[] currentGroups = PermissionsFacade.getPlayerPermissionGroups(playerId);
+		String[] currentGroups = PermissionsFacade.getPlayerPermissionGroupNames(playerId);
 		for (String priorityGroup : Config.V.groupPriorities) {
 			for (String playerGroup : currentGroups) {
 				if (playerGroup.equalsIgnoreCase(priorityGroup)) {
