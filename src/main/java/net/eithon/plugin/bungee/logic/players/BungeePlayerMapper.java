@@ -12,7 +12,7 @@ public class BungeePlayerMapper {
 		BungeePlayer model = new BungeePlayer();
 		model.setBungeeServerName(row.bungee_server_name);
 		model.setId(row.id);
-		model.setLeftAt(row.left_at.toLocalDateTime());
+		model.setLeftAt(row.left_at == null ? null : row.left_at.toLocalDateTime());
 		model.setPlayerId(UUID.fromString(row.player_id));
 		model.setPlayerName(row.player_name);
 		return model;
