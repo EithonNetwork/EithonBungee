@@ -8,7 +8,7 @@ import org.junit.Assert;
 
 public class TestSupport {
 	public static Database getDatabaseAndTruncateTables() {
-		MySql mySql = new MySql("rookgaard.eithon.net", "3307", "DEV_e_bungee", "DEV_e_plugin", "DEV_e_plugin");
+		Database database = new Database("rookgaard.eithon.net", "3307", "DEV_e_bungee", "DEV_e_plugin", "DEV_e_plugin");
 		try {
 			database.executeUpdate("DELETE FROM `warp_location` WHERE 1=1");
 			database.executeUpdate("DELETE FROM `player` WHERE 1=1");
