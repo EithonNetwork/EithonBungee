@@ -1,5 +1,6 @@
 package net.eithon.plugin.bungee;
 
+import net.eithon.library.exceptions.FatalException;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.plugin.bungee.logic.Controller;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
@@ -16,7 +17,11 @@ public final class EithonBungeePlugin extends EithonPlugin {
 		super.onEnable();
 		Config.load(this);
 		this._bungeeController = new BungeeController(this);
-		this._controller = new Controller(this, this._bungeeController);
+		try {
+			this._controller = new Controller(this, this._bungeeController);
+		} catch (FatalException e) {
+			e.printStackTrace();
+		}
 		CommandHandler commandHandler = new CommandHandler(this, this._controller);
 		Listener eventListener = new EventListener(this, this._controller);
 		this._bungeeController.initialize();

@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+import net.eithon.library.exceptions.FatalException;
+import net.eithon.library.exceptions.TryAgainException;
 import net.eithon.library.extensions.EithonPlugin;
+import net.eithon.library.mysql.Database;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 import net.eithon.plugin.bungee.logic.players.BungeePlayerController;
@@ -27,20 +29,23 @@ public class TeleportController {
 	final private BungeePlayerController _bungeePlayers;
 	private BungeeController _bungeeController;
 	private EithonPlugin _eithonPlugin;
+	private WarpLocationController _warpHandler;
 
 	public TeleportController(
 			final EithonPlugin eithonPlugin,
 			final BungeePlayerController bungeePlayers, 
-			final BungeeController bungeeController) {
+			final BungeeController bungeeController,
+			final Database database) throws FatalException {
 		this._eithonPlugin = eithonPlugin;
 		this._bungeePlayers = bungeePlayers;
 		this._bungeeController = bungeeController;
 		this._waitingForTeleport = new HashMap<UUID, TeleportPojo>();
 		this._requestsForTeleport = new HashMap<UUID, List<TeleportPojo>>();
+		this._warpHandler = new WarpLocationController(database);
 		this.refreshWarpLocationsAsync();
 	}
 
-	public boolean tpToPlayer(CommandSender sender, Player movingPlayer, OfflinePlayer anchorPlayer, boolean force) {
+	public boolean tpToPlayer(CommandSender sender, Player movingPlayer, OfflinePlayer anchorPlayer, boolean force) throws FatalException, TryAgainException {
 		String bungeeServerName = this._bungeePlayers.getCurrentBungeeServerNameOrInformSender(sender, anchorPlayer);
 		if (bungeeServerName == null) {
 			sender.sendMessage(String.format("Player %s seems to be offline.", anchorPlayer.getName()));
@@ -58,7 +63,7 @@ public class TeleportController {
 		return true;
 	}
 
-	public boolean tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) {
+	public boolean tpPlayerHere(CommandSender sender, Player anchorPlayer, OfflinePlayer movingPlayer, boolean force) throws FatalException, TryAgainException {
 		String bungeeServerName = this._bungeePlayers.getCurrentBungeeServerNameOrInformSender(sender, movingPlayer);
 		if (bungeeServerName == null) return false;
 
@@ -72,8 +77,8 @@ public class TeleportController {
 		return true;
 	}
 
-	public boolean warpTo(CommandSender sender, Player player, String name) {
-		WarpLocation warpLocation = WarpLocation.getByName(name);
+	public boolean warpTo(CommandSender sender, Player player, String name) throws FatalException, TryAgainException {
+		WarpLocation warpLocation = this._warpHandler.getByName(name);
 		if (warpLocation.getBungeeServerName().equalsIgnoreCase(Config.V.thisBungeeServerName)) {
 			player.teleport(warpLocation.getLocation());
 		} else {
@@ -102,7 +107,7 @@ public class TeleportController {
 	}
 
 
-	public void handleTeleportEvent(JSONObject jsonObject) {
+	public void handleTeleportEvent(JSONObject jsonObject) throws FatalException, TryAgainException {
 		TeleportPojo info = TeleportPojo.createFromJsonObject(jsonObject);
 		short messageType = info.getMessageType();
 		verbose("handleTeleportEvent", "info.messageType=%d", messageType);
@@ -144,7 +149,7 @@ public class TeleportController {
 		}
 	}
 
-	private void waitForPlayerToComeToServer(TeleportPojo info) {
+	private void waitForPlayerToComeToServer(TeleportPojo info) throws FatalException, TryAgainException {
 		verbose("waitForPlayerToComeToServer", "info.messageType=%d", info.getMessageType());
 		UUID playerId = info.getMovingPlayerId();
 		// Maybe player is already on server?
@@ -188,7 +193,7 @@ public class TeleportController {
 		Config.M.denyTpTo.sendMessage(localPlayer, remotePlayer.getName());		
 	}
 
-	private Player getLocalPlayer(TeleportPojo info) {
+	private Player getLocalPlayer(TeleportPojo info) throws FatalException, TryAgainException {
 		if (info.getMessageDirectionIsFromMovingToAnchor()) {
 			return Bukkit.getPlayer(info.getAnchorPlayerId());
 		} else {
@@ -204,7 +209,7 @@ public class TeleportController {
 		}
 	}
 
-	private Player getSourcePlayerOrForwardMessage(TeleportPojo info) {
+	private Player getSourcePlayerOrForwardMessage(TeleportPojo info) throws FatalException, TryAgainException {
 		Player sourcePlayer = Bukkit.getPlayer(info.getMovingPlayerId());
 		// Verify that the source player is on line on this server
 		if (sourcePlayer != null) return sourcePlayer;
@@ -217,7 +222,7 @@ public class TeleportController {
 		return null;			
 	}
 
-	public void playerJoined(final Player movingPlayer) {
+	public void playerJoined(final Player movingPlayer) throws FatalException, TryAgainException {
 		verbose("playerJoined", "movingPlayer=%s", movingPlayer.getName());
 		final UUID movingPlayerId = movingPlayer.getUniqueId();
 		TeleportPojo info = null;
@@ -237,7 +242,7 @@ public class TeleportController {
 
 	}
 
-	private void teleportPlayerAccordingToInfo(final Player movingPlayer, TeleportPojo info) {
+	private void teleportPlayerAccordingToInfo(final Player movingPlayer, TeleportPojo info) throws FatalException, TryAgainException {
 		short messageType = info.getMessageType();
 		if (messageType == TeleportPojo.CHANGE_SERVER) return;
 		if (messageType == TeleportPojo.WARP) {
@@ -248,14 +253,14 @@ public class TeleportController {
 	}
 
 	private void teleportToWarpLocation(final Player movingPlayer,
-			TeleportPojo info) {
-		final WarpLocation warpLocation = WarpLocation.getByName(info.getWarpLocationName());
+			TeleportPojo info) throws FatalException, TryAgainException {
+		final WarpLocation warpLocation = this._warpHandler.getByName(info.getWarpLocationName());
 		movingPlayer.teleport(warpLocation.getLocation());
 		return;
 	}
 
 	private void teleportToAnchorPlayer(final Player movingPlayer,
-			TeleportPojo info) {
+			TeleportPojo info) throws FatalException, TryAgainException {
 		final String anchorBungeeServerName = this._bungeePlayers.getCurrentBungeeServerName(info.getAnchorPlayerId());
 		if (anchorBungeeServerName == null) return;
 		if (!anchorBungeeServerName.equalsIgnoreCase(Config.V.thisBungeeServerName)) {
@@ -270,7 +275,7 @@ public class TeleportController {
 		forcedTpToOnlinePlayer(movingPlayer, anchorPlayer);
 	}
 
-	private void sendTeleportMessageToBungeeServer(TeleportPojo info) {
+	private void sendTeleportMessageToBungeeServer(TeleportPojo info) throws FatalException, TryAgainException {
 		UUID remotePlayerId = null;
 		if (info.getMessageDirectionIsFromMovingToAnchor()) {
 			remotePlayerId = info.getAnchorPlayerId();
@@ -290,7 +295,7 @@ public class TeleportController {
 		movingPlayer.teleport(anchorPlayer);
 	}
 
-	public void deny(CommandSender sender, Player localPlayer) {
+	public void deny(CommandSender sender, Player localPlayer) throws FatalException, TryAgainException {
 		List<TeleportPojo> list = null;
 		synchronized (this._requestsForTeleport) {
 			list = this._requestsForTeleport.remove(localPlayer.getUniqueId());
@@ -302,7 +307,7 @@ public class TeleportController {
 		}
 	}
 
-	public void accept(CommandSender sender, Player localPlayer) {
+	public void accept(CommandSender sender, Player localPlayer) throws FatalException, TryAgainException {
 		List<TeleportPojo> list = null;
 		synchronized (this._requestsForTeleport) {
 			list = this._requestsForTeleport.remove(localPlayer.getUniqueId());
@@ -321,42 +326,39 @@ public class TeleportController {
 		}		
 	}
 
-	public List<String> getWarpNames() {
-		return WarpLocation.getAllWarpLocations()
-				.stream()
-				.map(w -> w.getName())
-				.collect(Collectors.toList());
-	}
-
-	public boolean warpAdd(CommandSender sender, String name, Location location) {
+	public boolean warpAdd(CommandSender sender, String name, Location location) throws FatalException, TryAgainException {
 		String bungeeServerName = this._bungeeController.getBungeeServerName();
 		if (bungeeServerName == null) {
 			sender.sendMessage("Could not find the bungee name for this server. Please try again.");
 			return false;
 		}
-		WarpLocation.getOrCreateByName(name, bungeeServerName, location);
+		this._warpHandler.getOrCreateByName(name, bungeeServerName, location);
 		refreshWarpLocationsAsync();
 		broadcastRefresh();
 		return true;
 	}
 
 	public void refreshWarpLocationsAsync() {
-		// End if a new initialize() has been issued.
+		final WarpLocationController warpHandler = this._warpHandler;
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				WarpLocation.refresh();
+				try {
+					warpHandler.refresh();
+				} catch (FatalException | TryAgainException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		.runTaskAsynchronously(this._eithonPlugin);
 	}
 
-	private void tpToPlayer(CommandSender sender, Player movingPlayer, UUID anchorPlayerId, boolean force) {
+	private void tpToPlayer(CommandSender sender, Player movingPlayer, UUID anchorPlayerId, boolean force) throws FatalException, TryAgainException {
 		OfflinePlayer anchorPlayer = Bukkit.getOfflinePlayer(anchorPlayerId);
 		tpToPlayer(sender, movingPlayer, anchorPlayer, force);
 	}
 
-	private void tpPlayerHere(CommandSender sender, Player anchorPlayer, UUID movingPlayerId, boolean force) {
+	private void tpPlayerHere(CommandSender sender, Player anchorPlayer, UUID movingPlayerId, boolean force) throws FatalException, TryAgainException {
 		OfflinePlayer movingPlayer = Bukkit.getOfflinePlayer(movingPlayerId);
 		tpPlayerHere(sender, anchorPlayer, movingPlayer, force);
 	}
@@ -368,5 +370,9 @@ public class TeleportController {
 	private void verbose(String method, String format, Object... args)
 	{
 		this._eithonPlugin.dbgVerbose("TeleportController", method, format, args);
+	}
+
+	public List<String> getWarpNames() {
+		return this._warpHandler.getWarpNames();
 	}
 }

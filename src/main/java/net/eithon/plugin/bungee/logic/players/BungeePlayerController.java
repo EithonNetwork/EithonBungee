@@ -1,13 +1,17 @@
 package net.eithon.plugin.bungee.logic.players;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import net.eithon.library.core.PlayerCollection;
+import net.eithon.library.exceptions.FatalException;
+import net.eithon.library.exceptions.TryAgainException;
+import net.eithon.library.mysql.Database;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
-import net.eithon.plugin.bungee.db.DbPlayer;
+import net.eithon.plugin.bungee.db.PlayerTable;
 import net.eithon.plugin.bungee.logic.bungeecord.BungeeController;
 
 import org.bukkit.Bukkit;
@@ -22,16 +26,18 @@ public class BungeePlayerController {
 	private EithonBungeePlugin _eithonPlugin;
 	private boolean _refreshIsRunning = false;
 	private BungeeController _bungeeController;
+	private PlayerTable playerController;
 
-	public BungeePlayerController(EithonBungeePlugin eithonPlugin, BungeeController bungeeController) {
+	public BungeePlayerController(EithonBungeePlugin eithonPlugin, BungeeController bungeeController, Database database) throws FatalException {
+		this.playerController = new PlayerTable(database);
 		this._eithonPlugin = eithonPlugin;
 		this._bungeeController = bungeeController;
 		this._allCurrentPlayers = new PlayerCollection<BungeePlayer>();
 		refreshAsync();
 	}
 
-	public void purgePlayers() {
-		DbPlayer.deleteByServerName(Config.V.database, Config.V.thisBungeeServerName);
+	public void purgePlayers() throws FatalException, TryAgainException {
+		playerController.deleteByServerName(Config.V.thisBungeeServerName);
 	}
 
 	public void refreshAsync() {
@@ -39,26 +45,49 @@ public class BungeePlayerController {
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
-				refresh();
+				try {
+					refresh();
+				} catch (FatalException | TryAgainException e) {
+					e.printStackTrace();
+				}
 			}
 		};
 		runnable.runTaskAsynchronously(this._eithonPlugin);
 	}
 
-	private void refresh() {
+	private void refresh() throws FatalException, TryAgainException {
 		verbose("refresh", "Enter");
 		synchronized(this._allCurrentPlayers) {
 			if (this._refreshIsRunning) return;
 			boolean refreshServers = false;
 			try {
 				this._refreshIsRunning = true;
-				final List<BungeePlayer> allBungeePlayers = BungeePlayer.findAll(false);
+				final List<BungeePlayer> allBungeePlayers = 
+						playerController.findAll()
+						.stream()
+						.map(row -> BungeePlayerMapper.rowToModel(row))
+						.collect(Collectors.toList());
 				this._allCurrentPlayers.clear();
 				for (BungeePlayer bungeePlayer : allBungeePlayers) {
 					final String playerName = bungeePlayer.getPlayerName();
-					if (bungeePlayer.maybeDelete(Config.V.thisBungeeServerName)) {
-						verbose("refresh", "Removed player %s, server %s", 
+					Player player = Bukkit.getPlayer(bungeePlayer.getPlayerId());
+					if (player != null) continue;
+					// Player is not online on this server
+					if (bungeePlayer.isSameServer(Config.V.thisBungeeServerName)) {
+						// This server was the last one noted for this player
+						if (!bungeePlayer.isOnline()) {
+							if (bungeePlayer.isOld()) {
+								verbose("refresh", "Removed player %s, server %s", 
+										playerName, Config.V.thisBungeeServerName);
+								playerController.delete(bungeePlayer.getId());
+								refreshServers = true;
+							}
+							continue;
+						}
+						verbose("refresh", "Updated player %s, not any longer on server %s", 
 								playerName, Config.V.thisBungeeServerName);
+						bungeePlayer.setLeftAt(LocalDateTime.now());
+						playerController.update(BungeePlayerMapper.modelToRow(bungeePlayer));
 						refreshServers = true;
 						continue;
 					}
@@ -71,7 +100,7 @@ public class BungeePlayerController {
 					}
 				}
 				for (Player player : Bukkit.getOnlinePlayers()) {
-					BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, Config.V.thisBungeeServerName);
+					BungeePlayer bungeePlayer = createOrUpdateBungeePlayer(player);
 					if (this._allCurrentPlayers.hasInformation(player)) continue;
 					this._allCurrentPlayers.put(bungeePlayer.getPlayerId(), bungeePlayer);
 					verbose("refresh", "Added player %s, current server", 
@@ -85,22 +114,26 @@ public class BungeePlayerController {
 		}
 		verbose("refresh", "Leave");
 	}
-
+	
 	public void addPlayerOnThisServerAsync(final Player player) {
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
-				addPlayerOnThisServer(player);
+				try {
+					addPlayerOnThisServer(player);
+				} catch (FatalException | TryAgainException e) {
+					e.printStackTrace();
+				}
 			}
 		};
 		runnable.runTaskAsynchronously(this._eithonPlugin);
 	}
 
-	private void addPlayerOnThisServer(final Player player) {
+	private void addPlayerOnThisServer(final Player player) throws FatalException, TryAgainException {
 		verbose("addPlayerOnThisServer", "player=%s, Local bungeeServerName=%s",
 				player.getName(), Config.V.thisBungeeServerName);
 		synchronized(this._allCurrentPlayers) {
-			final BungeePlayer bungeePlayer = BungeePlayer.createOrUpdate(player, Config.V.thisBungeeServerName);
+			final BungeePlayer bungeePlayer = createOrUpdateBungeePlayer(player);
 			if (bungeePlayer == null) {
 				this._eithonPlugin.logError("BungePlayerController.addPlayerOnThisServer: " +
 						String.format("Could not create a bungee player record for player %s.", player.getName()));
@@ -110,6 +143,12 @@ public class BungeePlayerController {
 		}
 	}
 
+	private BungeePlayer createOrUpdateBungeePlayer(final Player player)
+			throws FatalException, TryAgainException {
+		return BungeePlayerMapper.rowToModel(
+				playerController.createOrUpdate(player.getUniqueId(), player.getName(), Config.V.thisBungeeServerName));
+	}
+
 	public void bungeePlayerAddedOnOtherServerAsync(
 			final UUID playerId, 
 			final String playerName, 
@@ -117,7 +156,11 @@ public class BungeePlayerController {
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
-				bungeePlayerAddedOnOtherServer(playerId, playerName, otherServerName);
+				try {
+					bungeePlayerAddedOnOtherServer(playerId, playerName, otherServerName);
+				} catch (FatalException | TryAgainException e) {
+					e.printStackTrace();
+				}
 			}
 		};
 		runnable.runTaskAsynchronously(this._eithonPlugin);
@@ -126,9 +169,9 @@ public class BungeePlayerController {
 	private void bungeePlayerAddedOnOtherServer(
 			final UUID playerId, 
 			final String playerName, 
-			final String otherServerName) {
+			final String otherServerName) throws FatalException, TryAgainException {
 		synchronized(this._allCurrentPlayers) {
-			final BungeePlayer bungeePlayer = BungeePlayer.getByPlayerId(playerId);
+			final BungeePlayer bungeePlayer = getBungeePlayerByPlayerId(playerId);
 			if (bungeePlayer == null) return;
 			final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
 			if (!otherServerName.equalsIgnoreCase(currentBungeeServerName)) {
@@ -141,6 +184,12 @@ public class BungeePlayerController {
 		}
 	}
 
+	private BungeePlayer getBungeePlayerByPlayerId(final UUID playerId)
+			throws FatalException, TryAgainException {
+		return BungeePlayerMapper.rowToModel(
+				playerController.getByPlayerId(playerId));
+	}
+
 	public void removePlayerAsync(
 			final UUID playerId,
 			final String playerName,
@@ -148,7 +197,11 @@ public class BungeePlayerController {
 		final BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
-				removeBungeePlayer(playerId, playerName, otherServerName);
+				try {
+					removeBungeePlayer(playerId, playerName, otherServerName);
+				} catch (FatalException | TryAgainException e) {
+					e.printStackTrace();
+				}
 			}
 		};
 		runnable.runTaskAsynchronously(this._eithonPlugin);
@@ -157,14 +210,16 @@ public class BungeePlayerController {
 	private void removeBungeePlayer(
 			final UUID playerId,
 			final String playerName, 
-			final String otherServerName) {
+			final String otherServerName) throws FatalException, TryAgainException {
 		synchronized(this._allCurrentPlayers) {
 			BungeePlayer bungeePlayer = this._allCurrentPlayers.get(playerId);
 			boolean found = bungeePlayer != null;
 			if (!found) {
-				bungeePlayer = BungeePlayer.getByPlayerId(playerId);
+				bungeePlayer = getBungeePlayerByPlayerId(playerId);
 				if (bungeePlayer == null) return;
-			} else bungeePlayer.refresh();
+			} else {
+				bungeePlayer = getBungeePlayerByPlayerId(playerId);
+			}
 			final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
 			if (((currentBungeeServerName != null) 
 					&& !currentBungeeServerName.equalsIgnoreCase(otherServerName))) {
@@ -176,7 +231,12 @@ public class BungeePlayerController {
 				this._allCurrentPlayers.put(playerId, bungeePlayer);
 			} else {
 				if (found) this._allCurrentPlayers.remove(playerId);
-				bungeePlayer.maybeDelete(Config.V.thisBungeeServerName);
+				if (bungeePlayer.isOnline()) {
+					bungeePlayer.setLeftAt(LocalDateTime.now());
+					playerController.update(BungeePlayerMapper.modelToRow(bungeePlayer));
+				} else {
+					if (bungeePlayer.isOld()) playerController.delete(bungeePlayer.getId());
+				}
 			}
 		}
 	}
@@ -191,14 +251,14 @@ public class BungeePlayerController {
 		}
 	}
 
-	public BungeePlayer getBungeePlayerOrInformSender(CommandSender sender, OfflinePlayer player) {
+	public BungeePlayer getBungeePlayerOrInformSender(CommandSender sender, OfflinePlayer player) throws FatalException, TryAgainException {
 		BungeePlayer bungeePlayer = getBungeePlayer(player);
 		if (bungeePlayer != null) return bungeePlayer;
 		if (sender != null) sender.sendMessage(String.format("Could not find player %s on any server.", player.getName()));
 		return null;
 	}
 
-	private BungeePlayer getBungeePlayer(OfflinePlayer player) {
+	private BungeePlayer getBungeePlayer(OfflinePlayer player) throws FatalException, TryAgainException {
 		verbose("getBungeePlayer", "Player = %s", player.getName());
 		BungeePlayer cachedBungeePlayer = null;
 		synchronized(this._allCurrentPlayers) {
@@ -207,7 +267,7 @@ public class BungeePlayerController {
 				verbose("getBungeePlayer", cachedBungeePlayer.toString());
 				return cachedBungeePlayer;
 			}
-			BungeePlayer bungeePlayer = BungeePlayer.getByOfflinePlayer(player);
+			BungeePlayer bungeePlayer = getBungeePlayerByPlayerId(player.getUniqueId());
 			if (bungeePlayer == null) return null;
 			this._allCurrentPlayers.put(player, bungeePlayer);
 			verbose("getBungeePlayer", bungeePlayer.toString());
@@ -215,7 +275,7 @@ public class BungeePlayerController {
 		}
 	}
 
-	public String getCurrentBungeeServerNameOrInformSender(CommandSender sender, OfflinePlayer player) {
+	public String getCurrentBungeeServerNameOrInformSender(CommandSender sender, OfflinePlayer player) throws FatalException, TryAgainException {
 		BungeePlayer bungeePlayer = getBungeePlayerOrInformSender(sender, player);
 		if (bungeePlayer == null) return null;
 		final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
@@ -226,33 +286,33 @@ public class BungeePlayerController {
 		return currentBungeeServerName;
 	}
 
-	public String getCurrentBungeeServerName(OfflinePlayer player) {
+	public String getCurrentBungeeServerName(OfflinePlayer player) throws FatalException, TryAgainException {
 		BungeePlayer bungeePlayer = getBungeePlayer(player);
 		if (bungeePlayer == null) return null;
 		return bungeePlayer.getCurrentBungeeServerName();		
 	}
 
-	public String getCurrentBungeeServerName(UUID playerId) {
+	public String getCurrentBungeeServerName(UUID playerId) throws FatalException, TryAgainException {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
 		if (player == null) return null;
 		return getCurrentBungeeServerName(player);		
 	}
 
-	public String getPreviousBungeeServerName(OfflinePlayer player) {
+	public String getPreviousBungeeServerName(OfflinePlayer player) throws FatalException, TryAgainException {
 		if (player == null) return null;
 		BungeePlayer bungeePlayer = getBungeePlayer(player);
 		if (bungeePlayer == null) return null;
-		return bungeePlayer.getPreviousBungeeServerName();		
+		return bungeePlayer.getPreviousBungeeServerName2();		
 	}
 
-	public String getAnyBungeeServerName(OfflinePlayer player) {
+	public String getAnyBungeeServerName(OfflinePlayer player) throws FatalException, TryAgainException {
 		if (player == null) return null;
 		BungeePlayer bungeePlayer = getBungeePlayer(player);
 		if (bungeePlayer == null) return null;
 		return bungeePlayer.getAnyBungeeServerName();		
 	}
 
-	public String getPreviousBungeeServerName(UUID playerId) {
+	public String getPreviousBungeeServerName(UUID playerId) throws FatalException, TryAgainException {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
 		if (player == null) return null;
 		return getPreviousBungeeServerName(player);		

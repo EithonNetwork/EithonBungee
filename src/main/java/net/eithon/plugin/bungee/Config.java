@@ -3,8 +3,6 @@ package net.eithon.plugin.bungee;
 import java.util.List;
 
 import net.eithon.library.extensions.EithonPlugin;
-import net.eithon.library.mysql.Database;
-import net.eithon.library.mysql.MySql;
 import net.eithon.library.plugin.ConfigurableMessage;
 import net.eithon.library.plugin.Configuration;
 import net.eithon.plugin.bungee.logic.individualmessage.IndividualConfigurableMessage;
@@ -19,7 +17,6 @@ public class Config {
 	}
 	
 	public static class V {
-		public static Database database;
 		public static long maxAllowedTeleportDelayInSeconds;
 		public static long maxAllowedMessageDelayInSeconds;
 		public static List<String> groupPriorities;
@@ -29,29 +26,30 @@ public class Config {
 		public static String thisBungeeServerName;
 		public static long secondsBetweenHeartBeats;
 		public static boolean mandatoryPlayerNames;
+		public static String databaseUrl;
+		public static String databaseUsername;
+		public static String databasePassword;
 
 		static void load(Configuration config) {
-			database = null;
 			secondsBetweenHeartBeats = config.getSeconds("TimeSpanBetweenHeartBeats", 10);
 			maxAllowedTeleportDelayInSeconds = config.getSeconds("MaxAllowedTeleportDelayTimeSpan", 30);
 			maxAllowedMessageDelayInSeconds = config.getSeconds("MaxAllowedMessageDelayInSeconds", 10);
 			groupPriorities = config.getStringList("GroupPriorities");
-			database = getDatabase(config);
 			reloadWarpLocationsAfterSeconds = config.getSeconds("ReloadWarpLocationsAfterTimeSpan", "5m");
 			primaryBungeeServer = config.getString("PrimaryBungeeServer", "Hub");
 			bungeeServerNames = config.getStringList("BungeeServers");
 			thisBungeeServerName = config.getString("ThisBungeeServer", "Hub");
 			mandatoryPlayerNames = config.getBoolean("MandatoryPlayerNames", true);
+			getDatabase(config);
 		}
 
-		private static Database getDatabase(Configuration config) {
+		private static void getDatabase(Configuration config) {
 			final String databaseHostname = config.getString("database.Hostname", null);
 			final String databasePort = config.getString("database.Port", null);
 			final String databaseName = config.getString("database.Name", null);
-			final String databaseUsername = config.getString("database.Username", null);
-			final String databasePassword = config.getString("database.Password", null);
-			return new MySql(databaseHostname, databasePort, databaseName,
-					databaseUsername, databasePassword);
+			databaseUrl = "jdbc:mysql://" + databaseHostname + ":" + databasePort + "/" + databaseName;
+			databaseUsername = config.getString("database.Username", null);
+			databasePassword = config.getString("database.Password", null);
 		}
 
 	}

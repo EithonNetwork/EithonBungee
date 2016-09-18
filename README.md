@@ -4,6 +4,10 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.14 (2016-09-17)
+
+* CHANGE: Refactored the DB parts.
+
 ### 1.13 (2016-08-23)
 
 * CHANGE: New PermissionFacade contract.

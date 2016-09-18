@@ -1,5 +1,7 @@
 package net.eithon.plugin.bungee;
 
+import net.eithon.library.exceptions.FatalException;
+import net.eithon.library.exceptions.TryAgainException;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.plugin.EithonPublicMessageEvent;
 import net.eithon.plugin.bungee.logic.Controller;
@@ -39,7 +41,11 @@ public class EventListener implements Listener {
 			this._controller.handleHeartbeat(data);
 			break;
 		case TeleportController.TELEPORT_TO_PLAYER:
-			this._controller.handleTeleportEvent(data);
+			try {
+				this._controller.handleTeleportEvent(data);
+			} catch (FatalException | TryAgainException e) {
+				e.printStackTrace();
+			}
 			break;
 		case Controller.MESSAGE_TO_PLAYER:
 			this._controller.handleMessageEvent(data);
