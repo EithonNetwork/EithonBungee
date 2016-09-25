@@ -1,5 +1,6 @@
 package net.eithon.plugin.bungee;
 
+import net.eithon.library.core.CoreMisc;
 import net.eithon.library.exceptions.FatalException;
 import net.eithon.library.exceptions.TryAgainException;
 import net.eithon.library.extensions.EithonPlugin;
@@ -34,7 +35,7 @@ public class EventListener implements Listener {
 	// Handle teleport events
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeEvent(EithonBungeeEvent event) {
-		verbose("onEithonBungeeEvent", "event name=%s", event.getName());
+		minor("onEithonBungeeEvent", "event name=%s", event.getName());
 		JSONObject data = event.getData();
 		switch(event.getName()) {
 		case Controller.HEARTBEAT:
@@ -72,7 +73,7 @@ public class EventListener implements Listener {
 	public void onPlayerJoinEvent(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
-		this._eithonPlugin.dbgMinor("onPlayerJoinEvent: Player=%s", player.getName());
+		minor("onPlayerJoinEvent", "Player=%s", player.getName());
 		event.setJoinMessage("");
 		this._controller.playerJoined(event.getPlayer());
 	}
@@ -81,7 +82,7 @@ public class EventListener implements Listener {
 	public void onPlayerRespawnEvent(PlayerRespawnEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
-		this._eithonPlugin.dbgMinor("onPlayerRespawnEvent: Player=%s", player.getName());
+		minor("onPlayerRespawnEvent", "Player=%s", player.getName());
 		this._controller.takeActionIfPlayerIsBannedOnThisServer(player);
 	}
 
@@ -89,7 +90,7 @@ public class EventListener implements Listener {
 	public void onPlayerQuitEvent(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
-		this._eithonPlugin.dbgMinor("onPlayerQuitEvent: Player=%s", player.getName());
+		minor("onPlayerQuitEvent", "Player=%s", player.getName());
 		event.setQuitMessage("");
 		this._controller.playerLeftThisServer(player);
 	}
@@ -98,7 +99,7 @@ public class EventListener implements Listener {
 	public void onPlayerKickEvent(PlayerKickEvent event) {
 		Player player = event.getPlayer();
 		if (player == null) return;
-		this._eithonPlugin.dbgMinor("onPlayerKickEvent: Player=%s", player.getName());
+		minor("onPlayerKickEvent", "Player=%s", player.getName());
 		this._controller.playerLeftThisServer(player);
 	}
 
@@ -106,7 +107,7 @@ public class EventListener implements Listener {
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeJoinEvent(EithonBungeeJoinEvent event) {
 		final String playerName = event.getPlayerName();
-		this._eithonPlugin.dbgMinor("onEithonBungeeJoinEvent: Player=%s, to server %s", playerName, event.getThatServerName());
+		minor("onEithonBungeeJoinEvent", "Player=%s, to server %s", playerName, event.getThatServerName());
 		if (event.getPlayerId() == null) return;
 		this._controller.playerJoinedOnOtherServer(event.getPlayerId(), playerName, event.getThatServerName());
 		if (event.getIsNewOnServer() && this._controller.serverIsThePrimaryBungeeServer(event.getThatServerName())) {
@@ -121,7 +122,7 @@ public class EventListener implements Listener {
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeSwitchEvent(EithonBungeeSwitchEvent event) {
 		final String playerName = event.getPlayerName();
-		this._eithonPlugin.dbgMinor("onEithonBungeeSwitchEvent: Player=%s, from server %s to server %s", 
+		minor("onEithonBungeeSwitchEvent", "Player=%s, from server %s to server %s", 
 				playerName, event.getPreviousServerName(), event.getThatServerName());
 		if (event.getPlayerId() == null) return;
 		this._controller.playerJoinedOnOtherServer(event.getPlayerId(), event.getPlayerName(), event.getThatServerName());
@@ -132,18 +133,24 @@ public class EventListener implements Listener {
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeLeaveEvent(EithonBungeeLeaveEvent event) {
 		if (event.getPlayerId() == null) return;
-		this._eithonPlugin.dbgMinor("onEithonBungeeLeaveEvent: Player=%s", event.getPlayerName());
+		minor("onEithonBungeeLeaveEvent", "Player=%s", event.getPlayerName());
 		this._controller.eithonBungeeLeaveReceived(event.getThatServerName(), event.getPlayerId(), event.getPlayerName(), event.getMainGroup());
 	}
 
 	// Message to be broadcasted
 	@EventHandler
 	public void onEithonPublicMessageEvent(EithonPublicMessageEvent event) {
-		this._eithonPlugin.dbgMinor("onEithonPublicMessageEvent: Player=%s", event.getMessage());
+		minor("onEithonPublicMessageEvent", "Player=%s", event.getMessage());
 		this._controller.publicMessage(event.getMessage(), event.getUseTitle());
 	}
 
+	void minor(String method, String format, Object... args) {
+		String message = CoreMisc.safeFormat(format, args);
+		this._eithonPlugin.dbgMinor("EventListener.%s: %s", method, message);
+	}
+
 	void verbose(String method, String format, Object... args) {
-		this._eithonPlugin.dbgVerbose("EventListener", method, format, args);
+		String message = CoreMisc.safeFormat(format, args);
+		this._eithonPlugin.dbgVerbose("EventListener.%s: %s", method, message);
 	}
 }
