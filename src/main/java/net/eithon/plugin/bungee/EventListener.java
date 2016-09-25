@@ -106,7 +106,7 @@ public class EventListener implements Listener {
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeJoinEvent(EithonBungeeJoinEvent event) {
 		final String playerName = event.getPlayerName();
-		this._eithonPlugin.dbgMinor("onEithonBungeeJoinEvent: Player=%s", playerName);
+		this._eithonPlugin.dbgMinor("onEithonBungeeJoinEvent: Player=%s, to server %s", playerName, event.getThatServerName());
 		if (event.getPlayerId() == null) return;
 		this._controller.playerJoinedOnOtherServer(event.getPlayerId(), playerName, event.getThatServerName());
 		if (event.getIsNewOnServer() && this._controller.serverIsThePrimaryBungeeServer(event.getThatServerName())) {
@@ -121,7 +121,8 @@ public class EventListener implements Listener {
 	@EventHandler(ignoreCancelled=true)
 	public void onEithonBungeeSwitchEvent(EithonBungeeSwitchEvent event) {
 		final String playerName = event.getPlayerName();
-		this._eithonPlugin.dbgMinor("onEithonBungeeSwitchEvent: Player=%s", playerName);
+		this._eithonPlugin.dbgMinor("onEithonBungeeSwitchEvent: Player=%s, from server %s to server %s", 
+				playerName, event.getPreviousServerName(), event.getThatServerName());
 		if (event.getPlayerId() == null) return;
 		this._controller.playerJoinedOnOtherServer(event.getPlayerId(), event.getPlayerName(), event.getThatServerName());
 		this._controller.broadcastPlayerSwitched(event.getPreviousServerName(), event.getThatServerName(), event.getPlayerId(), playerName, event.getMainGroup());

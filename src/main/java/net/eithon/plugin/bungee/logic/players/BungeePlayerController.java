@@ -9,6 +9,7 @@ import net.eithon.library.core.PlayerCollection;
 import net.eithon.library.exceptions.FatalException;
 import net.eithon.library.exceptions.TryAgainException;
 import net.eithon.library.mysql.Database;
+import net.eithon.library.time.TimeMisc;
 import net.eithon.plugin.bungee.Config;
 import net.eithon.plugin.bungee.EithonBungeePlugin;
 import net.eithon.plugin.bungee.db.PlayerTable;
@@ -163,7 +164,7 @@ public class BungeePlayerController {
 				}
 			}
 		};
-		runnable.runTaskAsynchronously(this._eithonPlugin);
+		runnable.runTaskLaterAsynchronously(this._eithonPlugin, TimeMisc.secondsToTicks(2.0));
 	}
 
 	private void bungeePlayerAddedOnOtherServer(
@@ -176,9 +177,10 @@ public class BungeePlayerController {
 			final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
 			if (!otherServerName.equalsIgnoreCase(currentBungeeServerName)) {
 				this._eithonPlugin.logError(
-						"BungeePlayers.addBungeePlayer(%s,%s): Server name in DB = %s. Will use DB value.",
+						"BungeePlayers.addBungeePlayer(%s,%s): Server name in DB = %s. Will trust the name in the message.",
 						playerName, otherServerName,
 						bungeePlayer == null? "NULL" : currentBungeeServerName);
+				bungeePlayer.setBungeeServerName(otherServerName);
 			}
 			this._allCurrentPlayers.put(playerId, bungeePlayer);
 		}
