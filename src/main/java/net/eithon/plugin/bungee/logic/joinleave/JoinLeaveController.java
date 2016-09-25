@@ -53,6 +53,7 @@ public class JoinLeaveController {
 	
 	public void publishJoinEventOnThisServer(JSONObject data) {
 		JoinLeaveInfo info = JoinLeaveInfo.getFromJson(data);
+		this._eithonPlugin.dbgMinor("JoinLeaveController.publishJoinEventOnThisServer(%s)", info.toString());
 		EithonBungeeJoinEvent e = new EithonBungeeJoinEvent(Config.V.thisBungeeServerName, info.getToServerName(), 
 				info.getPlayerId(), info.getPlayerName(), info.getMainGroup());
 		if (info.getIsFirstJoinToday()) e.setIsFirstJoinToday();
@@ -62,6 +63,7 @@ public class JoinLeaveController {
 	
 	public void publishSwitchEventOnThisServer(JSONObject data) {
 		JoinLeaveInfo info = JoinLeaveInfo.getFromJson(data);
+		this._eithonPlugin.dbgMinor("JoinLeaveController.publishSwitchEventOnThisServer(%s)", info.toString());
 		EithonBungeeSwitchEvent e = new EithonBungeeSwitchEvent(Config.V.thisBungeeServerName, info.getFromServerName(), info.getToServerName(), 
 				info.getPlayerId(), info.getPlayerName(), info.getMainGroup());
 		Bukkit.getServer().getPluginManager().callEvent(e);			
@@ -137,7 +139,8 @@ public class JoinLeaveController {
 		if ((this._eithonStatsPlugin != null)
 				&& (EithonStatsApi.isFirstIntervalToday(player))) {
 			info.setIsFirstJoinToday();
-		}
+		}		
+		this._eithonPlugin.dbgMinor("JoinLeaveController.sendEventToOtherServers(%s)", info.toString());
 		this._bungeeController.sendDataToAll(eventName, info, true);
 	}
 	
