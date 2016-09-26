@@ -75,7 +75,7 @@ public class EventListener implements Listener {
 		if (player == null) return;
 		minor("onPlayerJoinEvent", "Player=%s", player.getName());
 		event.setJoinMessage("");
-		this._controller.playerJoined(event.getPlayer());
+		this._controller.playerJoinedThisServer(event.getPlayer());
 	}
 
 	@EventHandler

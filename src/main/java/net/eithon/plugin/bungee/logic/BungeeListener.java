@@ -2,6 +2,7 @@ package net.eithon.plugin.bungee.logic;
 
 import java.util.UUID;
 
+import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
 
 import org.bukkit.entity.Player;
@@ -30,7 +31,7 @@ class BungeeListener implements PluginMessageListener {
 				channel, player == null ? "NULL" : player.getName(), message.toString());
 
 		if (!channel.equals(EITHON_BUNGEE_FIXES_CHANNEL)) {
-			verbose("onPluginMessageReceived", String.format("Unknown channel: %s", channel));			
+			minor("onPluginMessageReceived", String.format("Unknown channel: %s", channel));			
 			return;
 		}
 		
@@ -43,11 +44,16 @@ class BungeeListener implements PluginMessageListener {
 			String playerName = in.readUTF();
 			this._controller.publishLeaveEventOnThisServer(serverName, UUID.fromString(playerId), playerName);
 		} else {
-			verbose("onPluginMessageReceived", String.format("Unknown command: %s", command));			
+			minor("onPluginMessageReceived", String.format("Unknown command: %s", command));			
 			return;			
 		}
 		
 		verbose("onPluginMessageReceived", "Leave");
+	}
+
+	private void minor(String method, String format, Object... args) {
+		String message = CoreMisc.safeFormat(format, args);
+		this._eithonPlugin.dbgMinor("BungeeListener.%s: %s", method, message);	
 	}
 
 	private void verbose(String method, String format, Object... args) {
