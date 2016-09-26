@@ -4,6 +4,15 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.14.2 (2016-09-25)
+
+* BUG: Added more debug printouts.
+
+### 1.14.1 (2016-09-25)
+
+* BUG: Now waits 2 seconds before adding player from other server to list of known players, to let the correct server name get into the DB table.
+* BUG: Added more debug printouts.
+
 ### 1.14 (2016-09-17)
 
 * CHANGE: Refactored the DB parts.

@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import net.eithon.library.command.EithonCommand;
+import net.eithon.library.core.CoreMisc;
 import net.eithon.library.exceptions.FatalException;
 import net.eithon.library.exceptions.TryAgainException;
 import net.eithon.library.mysql.Database;
@@ -86,7 +87,11 @@ public class Controller {
 
 	private boolean controllersAreReady() { 
 		boolean controllersAreReady = this._bungeeServerName != null;
-		verbose("controllersAreReady", controllersAreReady ? "TRUE" : "FALSE");
+		if (!controllersAreReady) {
+			minor("controllersAreReady", "FALSE");
+		} else {
+			verbose("controllersAreReady", "TRUE");
+		}
 		return controllersAreReady; 
 	}
 
@@ -468,7 +473,13 @@ public class Controller {
 		this._banController.listBannedPlayersAsync(sender);
 	}
 
+	private void minor(String method, String format, Object... args) {
+		String message = CoreMisc.safeFormat(format, args);
+		this._plugin.dbgMinor("Controller.%s: %s", method, message);
+	}
+
 	private void verbose(String method, String format, Object... args) {
-		this._plugin.dbgVerbose("Controller", method, format, args);	
+		String message = CoreMisc.safeFormat(format, args);
+		this._plugin.dbgVerbose("Controller.%s: %s", method, message);
 	}
 }
