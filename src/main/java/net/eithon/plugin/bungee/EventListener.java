@@ -150,7 +150,6 @@ public class EventListener implements Listener {
 	}
 
 	void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._eithonPlugin.dbgVerbose("EventListener.%s: %s", method, message);
+		this._eithonPlugin.dbgVerbose("EventListener", method, format, args);
 	}
 }

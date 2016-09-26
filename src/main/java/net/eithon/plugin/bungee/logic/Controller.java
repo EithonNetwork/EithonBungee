@@ -479,7 +479,6 @@ public class Controller {
 	}
 
 	private void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._plugin.dbgVerbose("Controller.%s: %s", method, message);
+		this._plugin.dbgVerbose("Controller", method, format, args);
 	}
 }
