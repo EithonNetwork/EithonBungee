@@ -177,7 +177,7 @@ public class BungeePlayerController {
 			final String currentBungeeServerName = bungeePlayer.getCurrentBungeeServerName();
 			if (!otherServerName.equalsIgnoreCase(currentBungeeServerName)) {
 				this._eithonPlugin.logError(
-						"BungeePlayers.addBungeePlayer(%s,%s): Server name in DB = %s. Will trust the name in the message.",
+						"BungeePlayerController.addBungeePlayer(%s,%s): Server name in DB = %s. Will trust the name in the message.",
 						playerName, otherServerName,
 						bungeePlayer == null? "NULL" : currentBungeeServerName);
 				bungeePlayer.setBungeeServerName(otherServerName);
@@ -227,7 +227,7 @@ public class BungeePlayerController {
 					&& !currentBungeeServerName.equalsIgnoreCase(otherServerName))) {
 				// Join/leave probably out of sync. Update instead of remove.
 				this._eithonPlugin.logWarn(
-						"BungeePlayers.removeBungeePlayer(%s,%s): Server name in DB = %s. Will add/update instead of remove.",
+						"BungeePlayerController.removeBungeePlayer(%s,%s): Server name in DB = %s. Will add/update instead of remove.",
 						playerName, otherServerName,
 						bungeePlayer == null? "NULL" : currentBungeeServerName);
 				this._allCurrentPlayers.put(playerId, bungeePlayer);
