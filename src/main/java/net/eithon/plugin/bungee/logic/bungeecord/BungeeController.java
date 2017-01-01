@@ -1,5 +1,6 @@
 package net.eithon.plugin.bungee.logic.bungeecord;
 
+import net.eithon.library.core.CoreMisc;
 import net.eithon.library.extensions.EithonPlugin;
 import net.eithon.library.json.IJsonObject;
 
@@ -66,7 +67,7 @@ public class BungeeController {
 		verbose("sendEventToServer", "Enter, targetServerName = %s, name= %s, json=%s",
 				targetServerName, name, jsonString);
 		if (targetServerName == null) {
-			verbose("sendEventToServer", "targetServerName NULL, Leave");
+			minor("sendEventToServer", "targetServerName NULL, Leave");
 			return false;
 		}
 		String thisServerName = this.getBungeeServerName();
@@ -107,6 +108,11 @@ public class BungeeController {
 
 	private void verbose(String method, String format, Object... args) {
 		this._eithonPlugin.dbgVerbose("BungeeController", method, format, args);	
+	}
+
+	private void minor(String method, String format, Object... args) {
+		String message = CoreMisc.safeFormat(format, args);
+		this._eithonPlugin.dbgMinor("BungeeController.%s: %s", method, message);	
 	}
 
 	public boolean playerHasPermissionToAccessServerOrInformSender(

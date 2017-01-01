@@ -4,6 +4,14 @@ A plugin to handle BungeeCord stuff.
 
 ## Release history
 
+### 1.15 (2016-12-29)
+
+* CHANGE: Bukkit 1.11.
+
+### 1.14.3 (2016-09-25)
+
+* BUG: Added more debug printouts.
+
 ### 1.14.2 (2016-09-25)
 
 * BUG: Added more debug printouts.

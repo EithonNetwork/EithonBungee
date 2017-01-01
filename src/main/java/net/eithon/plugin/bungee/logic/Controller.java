@@ -368,12 +368,12 @@ public class Controller {
 		this._joinLeaveController.publishLeaveEventOnThisServer(serverName, playerId, playerName, null);
 	}
 
-	public void playerJoined(final Player player) {	
+	public void playerJoinedThisServer(final Player player) {	
 		if (!controllersAreReady()) {
 			new BukkitRunnable() {
 				@Override
 				public void run() {
-					playerJoined(player);
+					playerJoinedThisServer(player);
 				}
 			}
 			.runTaskLaterAsynchronously(this._plugin, TimeMisc.secondsToTicks(1.0));
@@ -479,7 +479,6 @@ public class Controller {
 	}
 
 	private void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._plugin.dbgVerbose("Controller.%s: %s", method, message);
+		this._plugin.dbgVerbose("Controller", method, format, args);
 	}
 }

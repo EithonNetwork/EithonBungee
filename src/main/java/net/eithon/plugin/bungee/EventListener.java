@@ -75,7 +75,7 @@ public class EventListener implements Listener {
 		if (player == null) return;
 		minor("onPlayerJoinEvent", "Player=%s", player.getName());
 		event.setJoinMessage("");
-		this._controller.playerJoined(event.getPlayer());
+		this._controller.playerJoinedThisServer(event.getPlayer());
 	}
 
 	@EventHandler
@@ -150,7 +150,6 @@ public class EventListener implements Listener {
 	}
 
 	void verbose(String method, String format, Object... args) {
-		String message = CoreMisc.safeFormat(format, args);
-		this._eithonPlugin.dbgVerbose("EventListener.%s: %s", method, message);
+		this._eithonPlugin.dbgVerbose("EventListener", method, format, args);
 	}
 }
